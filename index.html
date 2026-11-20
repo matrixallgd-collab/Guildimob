@@ -2123,8 +2123,6 @@
     const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec";
     const SITE_DOMAIN = "https://guildimob.com";
     const FALLBACK_WHATSAPP = "5514988002390";
-    const MASTER_LOCAL_LOGIN = "guilherme delfino";
-    const MASTER_LOCAL_PASS = "11837tH95ekj#";
 
     /* STORAGE HELPERS (SANDBOX & SAFARI SAFE) */
     function safeGetLS(key, fallback) {
@@ -4089,22 +4087,7 @@
             }
             showToast(res.error || "Credenciais inválidas.");
           } else {
-            // Validação local em modo demonstração (permite configurar o Cofre Master!)
-            if (login.toLowerCase() === MASTER_LOCAL_LOGIN && senha === MASTER_LOCAL_PASS) {
-              state.authUser = {
-                role: "MASTER",
-                login: MASTER_LOCAL_LOGIN,
-                senha: MASTER_LOCAL_PASS,
-                nome: "Guilherme Delfino",
-                creci: "CRECI Master",
-                whatsapp: FALLBACK_WHATSAPP
-              };
-              closeModal("loginModal");
-              e.target.reset();
-              showToast("Login Master efetuado!");
-              openTeamConsole();
-              return;
-            }
+            showToast("Conecte o backend Code.gs para autenticar com segurança no servidor.");
             const demoBrokers = safeGetLS("guild_demo_brokers", []);
             const found = demoBrokers.find(b => b.login.toLowerCase() === login.toLowerCase() && b.senha === senha && b.ativo !== "NAO");
             if (found) {
