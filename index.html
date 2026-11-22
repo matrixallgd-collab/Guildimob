@@ -2241,6 +2241,347 @@
       flex: 0 0 auto;
     }
 
+  
+    /* FIX TELA CHEIA SEMPRE NA FRENTE DE QUALQUER MODAL */
+    .lightbox, #lightboxModal {
+      z-index: 99999 !important;
+    }
+
+    /* BOTÃO WHATSAPP OFICIAL (CORES DA LOGO + LIQUID GLASS) */
+    .btn-whatsapp {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(134, 239, 172, 0.55);
+      background: linear-gradient(135deg, #25D366 0%, #16A34A 52%, #128C7E 100%);
+      color: #ffffff !important;
+      font-weight: 800;
+      font-size: 0.88rem;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(37, 211, 102, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+    .btn-whatsapp:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+      box-shadow: 0 10px 26px rgba(37, 211, 102, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    .btn-whatsapp:active {
+      transform: scale(0.98);
+    }
+    .btn-whatsapp svg {
+      width: 19px;
+      height: 19px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+
+    /* CARD "VER MAIS" ESTILO CRUNCHYROLL NO FINAL DO CARROSSEL */
+    .streaming-more-card {
+      flex: 0 0 175px;
+      min-height: 295px;
+      border-radius: var(--radius-lg);
+      border: 1px dashed rgba(212, 175, 55, 0.45);
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.72), rgba(6, 13, 26, 0.88));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      text-align: center;
+      color: var(--gold-300);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .streaming-more-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold-400);
+      background: linear-gradient(160deg, rgba(212, 175, 55, 0.16), rgba(6, 13, 26, 0.92));
+    }
+    .streaming-more-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 175, 55, 0.16);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+  
+    /* ========================================================================
+     * EFEITO RPG "CHEIO DE MANA" — BOTÃO WHATSAPP + PORTAL DO CORRETOR
+     * ======================================================================== */
+    @keyframes manaPulseGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 14px rgba(37, 211, 102, 0.72),
+          0 0 28px rgba(56, 189, 248, 0.45),
+          0 0 44px rgba(212, 175, 55, 0.25),
+          inset 0 0 12px rgba(255, 255, 255, 0.35);
+      }
+      50% {
+        box-shadow:
+          0 0 22px rgba(37, 211, 102, 0.95),
+          0 0 42px rgba(56, 189, 248, 0.75),
+          0 0 64px rgba(243, 229, 171, 0.45),
+          inset 0 0 18px rgba(255, 255, 255, 0.55);
+      }
+    }
+    @keyframes manaOrbitSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes manaSweep {
+      0% { transform: translateX(-140%) skewX(-24deg); }
+      45%, 100% { transform: translateX(240%) skewX(-24deg); }
+    }
+    @keyframes manaShockwaveAnim {
+      0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0.95; }
+      100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+    }
+    @keyframes manaParticleFly {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--mdx), var(--mdy)) scale(0.15); opacity: 0; }
+    }
+    @keyframes manaPortalOpen {
+      0% { opacity: 0; transform: translateY(18px) scale(0.86); filter: blur(8px); }
+      60% { opacity: 1; transform: translateY(-3px) scale(1.02); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    /* Brilho eletrizante em todos os botões WhatsApp */
+    .btn-whatsapp {
+      position: relative;
+      overflow: hidden;
+      animation: manaPulseGlow 2.4s ease-in-out infinite;
+    }
+    .btn-whatsapp::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 48%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.48), rgba(125,211,252,0.45), transparent);
+      transform: translateX(-140%) skewX(-24deg);
+      animation: manaSweep 3.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Orbe Flutuante de Mana do WhatsApp */
+    .mana-whats-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 84px;
+      z-index: 950;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid rgba(167, 243, 208, 0.85);
+      background: radial-gradient(circle at 30% 30%, #4ade80 0%, #16a34a 52%, #065f46 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: manaPulseGlow 2.1s ease-in-out infinite;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+    }
+    @media (min-width: 769px) {
+      .mana-whats-fab { bottom: 26px; right: 26px; width: 64px; height: 64px; }
+    }
+    body.modal-open .mana-whats-fab,
+    body.modal-open .mana-broker-portal {
+      display: none !important;
+    }
+    .mana-whats-fab:hover {
+      transform: scale(1.09);
+    }
+    .mana-whats-fab:active {
+      transform: scale(0.94);
+    }
+    .mana-whats-fab::before {
+      content: "";
+      position: absolute;
+      inset: -7px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0deg, #38bdf8 60deg, #4ade80 140deg, transparent 210deg, #f3e5ab 280deg, transparent 360deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+      animation: manaOrbitSpin 2.6s linear infinite;
+      pointer-events: none;
+    }
+    .mana-whats-fab::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      background: conic-gradient(from 180deg, transparent 0deg, rgba(56,189,248,0.75) 50deg, transparent 130deg, rgba(74,222,128,0.8) 230deg, transparent 320deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      animation: manaOrbitSpin 4.2s linear infinite reverse;
+      pointer-events: none;
+    }
+    .mana-whats-fab.portal-open {
+      transform: scale(0.92);
+      animation: none;
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.55);
+    }
+    .mana-whats-fab svg {
+      width: 30px;
+      height: 30px;
+      fill: #ffffff;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.65));
+      z-index: 2;
+    }
+
+    /* Cartão Portal Mágico do Corretor Guilherme Delfino */
+    .mana-broker-portal {
+      position: fixed;
+      right: 16px;
+      bottom: 154px;
+      z-index: 955;
+      width: min(330px, calc(100vw - 32px));
+      border-radius: 22px;
+      padding: 16px;
+      background: linear-gradient(155deg, rgba(9, 19, 38, 0.94), rgba(5, 11, 24, 0.97));
+      border: 1px solid rgba(110, 231, 183, 0.52);
+      backdrop-filter: blur(26px) saturate(185%);
+      -webkit-backdrop-filter: blur(26px) saturate(185%);
+      box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.65),
+        0 0 32px rgba(37, 211, 102, 0.28),
+        0 0 16px rgba(56, 189, 248, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    @media (min-width: 769px) {
+      .mana-broker-portal { bottom: 102px; right: 26px; }
+    }
+    .mana-broker-portal.open {
+      display: flex;
+      animation: manaPortalOpen 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .mana-broker-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    .mana-broker-crest {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      background: radial-gradient(circle at 30% 30%, rgba(56,189,248,0.28), rgba(16,185,129,0.2), rgba(6,13,26,0.9));
+      border: 1px solid rgba(212, 175, 55, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(212, 175, 55, 0.25);
+      flex-shrink: 0;
+    }
+    .mana-online-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+      margin-right: 5px;
+    }
+    .mana-quick-btn {
+      width: 100%;
+      text-align: left;
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.16s ease;
+    }
+    .mana-quick-btn:hover {
+      background: rgba(37, 211, 102, 0.16);
+      border-color: rgba(110, 231, 183, 0.5);
+      transform: translateX(2px);
+    }
+    .mana-shockwave {
+      position: fixed;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #6ee7b7;
+      box-shadow: 0 0 18px #38bdf8, inset 0 0 12px #4ade80;
+      pointer-events: none;
+      z-index: 99998;
+      animation: manaShockwaveAnim 0.52s ease-out forwards;
+    }
+    .mana-particle {
+      position: fixed;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99998;
+      animation: manaParticleFly 0.56s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+  
+    /* MOTOR DE FLUIDEZ ADAPTATIVA 60Hz / 120Hz (PRO-MOTION / HIGH REFRESH RATE) */
+    html, body {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeSpeed;
+      scroll-behavior: smooth;
+    }
+    .prop-card, .hero-spotlight, .modal-sheet, .card-slides, .streaming-track {
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .prop-card {
+      content-visibility: auto;
+      contain-intrinsic-size: 360px 410px;
+      will-change: transform;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease;
+    }
+    .card-slides {
+      will-change: transform;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .streaming-track, .filter-pills, .hero-cta-row {
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+    }
+    /* Economia automática: se o aparelho cair abaixo de 45 FPS, reduz blur pesado para segurar 60 FPS cravados */
+    body.perf-lite .glass, body.perf-lite .glass-soft, body.perf-lite .tarja-badge {
+      backdrop-filter: blur(10px) saturate(135%) !important;
+      -webkit-backdrop-filter: blur(10px) saturate(135%) !important;
+    }
+    body.perf-lite .prop-card::after {
+      animation: none !important;
+    }
+    /* Modo 120Hz ProMotion / LTPO: micro-transições ainda mais ágeis */
+    body.perf-120hz .prop-card {
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.16s ease;
+    }
+    body.perf-120hz .card-slides {
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
   </style>
 </head>
 <body>
@@ -2457,6 +2798,35 @@
     <button class="dock-item" id="dockAnuncie" type="button">➕ Anuncie</button>
   </nav>
 
+  <!-- ORBE DE MANA FLUTUANTE WHATSAPP + PORTAL DO CORRETOR GUILHERME DELFINO -->
+  <button class="mana-whats-fab" id="manaWhatsFab" type="button" aria-label="Atendimento mágico WhatsApp Guilherme Delfino" title="Atendimento Direto — Guilherme Delfino (CRECI 272251-F)">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.01 3C8.84 3 3 8.76 3 15.86c0 2.53.74 4.99 2.15 7.09L3.7 29l6.31-1.63a13.1 13.1 0 0 0 6 1.46c7.17 0 13-5.76 13-12.86C29.01 8.76 23.18 3 16.01 3zm0 23.56c-1.95 0-3.85-.52-5.5-1.5l-.39-.23-3.75.97 1-3.64-.25-.4a10.6 10.6 0 0 1-1.64-5.7c0-5.85 4.72-10.61 10.53-10.61 5.81 0 10.54 4.76 10.54 10.61 0 5.86-4.73 10.5-10.54 10.5zm5.79-7.9c-.32-.16-1.88-.92-2.17-1.02-.29-.11-.5-.16-.71.16-.21.31-.81 1.02-1 1.23-.18.21-.37.24-.68.08-.32-.16-1.33-.49-2.53-1.56-.94-.83-1.57-1.86-1.75-2.17-.18-.31-.02-.48.14-.64.14-.14.32-.37.47-.55.16-.18.21-.31.32-.52.1-.21.05-.39-.03-.55-.08-.16-.71-1.7-.97-2.33-.26-.61-.52-.53-.71-.54h-.6c-.21 0-.55.08-.84.39-.29.31-1.1 1.07-1.1 2.61 0 1.54 1.13 3.03 1.28 3.24.16.21 2.22 3.38 5.38 4.74.75.32 1.34.52 1.8.66.76.24 1.44.21 1.99.13.61-.09 1.88-.76 2.14-1.5.26-.73.26-1.36.18-1.5-.08-.13-.29-.21-.6-.37z"/></svg>
+  </button>
+
+  <aside class="mana-broker-portal" id="manaBrokerPortal" role="dialog" aria-label="Atendimento Guilherme Delfino">
+    <div class="mana-broker-head">
+      <div class="mana-broker-crest" aria-hidden="true">⚡</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#6ee7b7;font-weight:800;"><span class="mana-online-dot"></span>Corretor de Imóveis</div>
+        <div class="serif gold-text" style="font-size:1.15rem;font-weight:800;line-height:1.15;">Guilherme Delfino</div>
+        <div style="font-size:0.74rem;color:#cbd5e1;font-weight:600;margin-top:2px;">CRECI 272251-F • J-50143</div>
+      </div>
+      <button type="button" class="btn-glass" id="btnCloseManaPortal" style="padding:5px 9px;font-size:0.78rem;border-radius:10px;" aria-label="Fechar atendimento">✕</button>
+    </div>
+    <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.4;background:rgba(255,255,255,0.04);padding:8px 10px;border-radius:12px;border:1px solid rgba(212,175,55,0.18);">
+      Atendimento consultivo direto para imóveis de alto padrão, lançamentos e negociações em Bauru e Piratininga.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <button type="button" class="mana-quick-btn" data-mana-msg="Olá Guilherme Delfino (CRECI 272251-F)! Vim pelo site GUILD IMOB e gostaria de atendimento sobre os Lançamentos (Harmonis / Guestier III).">🚀 Quero saber dos Lançamentos (Harmonis / Guestier III)</button>
+      <button type="button" class="mana-quick-btn" data-mana-msg="Olá Guilherme Delfino (CRECI 272251-F)! Quero anunciar meu imóvel ou terreno na GUILD IMOB.">🏠 Quero anunciar meu imóvel ou terreno</button>
+      <button type="button" class="btn-whatsapp" id="btnManaDirectWhats" style="width:100%;margin-top:4px;">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.01 3C8.84 3 3 8.76 3 15.86c0 2.53.74 4.99 2.15 7.09L3.7 29l6.31-1.63a13.1 13.1 0 0 0 6 1.46c7.17 0 13-5.76 13-12.86C29.01 8.76 23.18 3 16.01 3zm0 23.56c-1.95 0-3.85-.52-5.5-1.5l-.39-.23-3.75.97 1-3.64-.25-.4a10.6 10.6 0 0 1-1.64-5.7c0-5.85 4.72-10.61 10.53-10.61 5.81 0 10.54 4.76 10.54 10.61 0 5.86-4.73 10.5-10.54 10.5zm5.79-7.9c-.32-.16-1.88-.92-2.17-1.02-.29-.11-.5-.16-.71.16-.21.31-.81 1.02-1 1.23-.18.21-.37.24-.68.08-.32-.16-1.33-.49-2.53-1.56-.94-.83-1.57-1.86-1.75-2.17-.18-.31-.02-.48.14-.64.14-.14.32-.37.47-.55.16-.18.21-.31.32-.52.1-.21.05-.39-.03-.55-.08-.16-.71-1.7-.97-2.33-.26-.61-.52-.53-.71-.54h-.6c-.21 0-.55.08-.84.39-.29.31-1.1 1.07-1.1 2.61 0 1.54 1.13 3.03 1.28 3.24.16.21 2.22 3.38 5.38 4.74.75.32 1.34.52 1.8.66.76.24 1.44.21 1.99.13.61-.09 1.88-.76 2.14-1.5.26-.73.26-1.36.18-1.5-.08-.13-.29-.21-.6-.37z"/></svg>
+        <span>Iniciar Conversa no WhatsApp</span>
+      </button>
+    </div>
+  </aside>
+
+
   <!-- MODAL: PROPERTY DETAIL (PALCO FULLSCREEN + GAVETA LIQUID GLASS) -->
   <div class="modal-backdrop" id="propertyModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
     <div class="modal-sheet wide">
@@ -2506,7 +2876,6 @@
 
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 0 8px;flex-wrap:wrap;">
             <h3 class="serif" style="margin:0;font-size:1.25rem;color:var(--gold-300);">Sobre a Propriedade</h3>
-            <button type="button" class="btn-glass" id="btnDetailSpeak" style="padding:5px 11px;font-size:0.74rem;display:inline-flex;align-items:center;gap:5px;border-color:rgba(212,175,55,0.45);color:var(--gold-300);" aria-label="Ouvir descrição do imóvel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg><span id="btnDetailSpeakLabel">Ouvir descrição</span></button>
           </div>
           <p id="detailDescription" style="white-space:pre-line;color:var(--text-secondary);font-size:0.92rem;margin:0 0 16px;"></p>
 
@@ -2639,7 +3008,7 @@
 
       <!-- THUMB-ZONE CONVERSION DOCK (2 BOTÕES ENXUTOS) -->
       <div class="conversion-dock">
-        <button class="btn-gold" id="btnWhatsInterest" type="button">💬 Falar no WhatsApp</button>
+        <button class="btn-whatsapp" id="btnWhatsInterest" type="button"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.002 3.2c-7.058 0-12.8 5.742-12.8 12.8 0 2.256.588 4.456 1.706 6.394L3.1 29l6.774-1.776A12.74 12.74 0 0 0 16.002 28.8c7.058 0 12.8-5.742 12.8-12.8s-5.742-12.8-12.8-12.8zm0 23.38c-1.996 0-3.954-.536-5.662-1.55l-.406-.24-4.02 1.054 1.074-3.92-.264-.42A10.53 10.53 0 0 1 5.422 16c0-5.834 4.746-10.58 10.58-10.58S26.582 10.166 26.582 16 21.836 26.58 16.002 26.58zm5.804-7.92c-.318-.16-1.884-.93-2.176-1.036-.292-.106-.504-.16-.716.16-.212.318-.822 1.036-1.008 1.248-.186.212-.372.238-.69.08-.318-.16-1.344-.496-2.56-1.58-.946-.844-1.584-1.886-1.77-2.204-.186-.318-.02-.49.14-.648.144-.142.318-.372.478-.558.16-.186.212-.318.318-.53.106-.212.054-.398-.026-.558-.08-.16-.716-1.726-.982-2.364-.258-.62-.52-.536-.716-.546h-.61c-.212 0-.558.08-.85.398-.292.318-1.114 1.09-1.114 2.656s1.14 3.08 1.3 3.292c.16.212 2.244 3.426 5.436 4.804.76.328 1.352.524 1.814.67.762.242 1.456.208 2.004.126.612-.092 1.884-.77 2.15-1.514.266-.744.266-1.38.186-1.514-.08-.132-.292-.212-.61-.372z"/></svg><span>WhatsApp</span></button>
         <button class="btn-glass" id="btnShortLink" type="button">🔗 Link Curto</button>
       </div>
     </div>
@@ -2655,7 +3024,7 @@
       <p style="font-size:0.84rem;color:var(--text-secondary);margin-top:0;">Seus imóveis salvos ficam guardados neste navegador sem precisar criar conta. Compartilhe sua seleção completa em 1 clique.</p>
       <div class="admin-list" id="favoritesList"></div>
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn-gold" id="btnShareFavWhats" type="button" style="flex:1;">💬 Enviar Minha Lista no WhatsApp</button>
+        <button class="btn-whatsapp" id="btnShareFavWhats" type="button" style="flex:1;"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.002 3.2c-7.058 0-12.8 5.742-12.8 12.8 0 2.256.588 4.456 1.706 6.394L3.1 29l6.774-1.776A12.74 12.74 0 0 0 16.002 28.8c7.058 0 12.8-5.742 12.8-12.8s-5.742-12.8-12.8-12.8zm0 23.38c-1.996 0-3.954-.536-5.662-1.55l-.406-.24-4.02 1.054 1.074-3.92-.264-.42A10.53 10.53 0 0 1 5.422 16c0-5.834 4.746-10.58 10.58-10.58S26.582 10.166 26.582 16 21.836 26.58 16.002 26.58zm5.804-7.92c-.318-.16-1.884-.93-2.176-1.036-.292-.106-.504-.16-.716.16-.212.318-.822 1.036-1.008 1.248-.186.212-.372.238-.69.08-.318-.16-1.344-.496-2.56-1.58-.946-.844-1.584-1.886-1.77-2.204-.186-.318-.02-.49.14-.648.144-.142.318-.372.478-.558.16-.186.212-.318.318-.53.106-.212.054-.398-.026-.558-.08-.16-.716-1.726-.982-2.364-.258-.62-.52-.536-.716-.546h-.61c-.212 0-.558.08-.85.398-.292.318-1.114 1.09-1.114 2.656s1.14 3.08 1.3 3.292c.16.212 2.244 3.426 5.436 4.804.76.328 1.352.524 1.814.67.762.242 1.456.208 2.004.126.612-.092 1.884-.77 2.15-1.514.266-.744.266-1.38.186-1.514-.08-.132-.292-.212-.61-.372z"/></svg><span>Enviar Minha Lista no WhatsApp</span></button>
         <button class="btn-glass btn-danger" id="btnClearFavs" type="button">Limpar Lista</button>
       </div>
     </div>
@@ -4714,11 +5083,13 @@
       const isFav = state.favorites.includes(p.id);
       const meta = computePropertyTier(p, allActive);
 
-      const slidesHtml = midias.map(m => `
+      const slidesHtml = midias.map((m, mi) => `
         <div class="card-slide">
           ${m.type === "video"
             ? `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#091326;color:var(--gold-300);font-weight:700;">▶ Vídeo Tour</div>`
-            : `<img src="${escapeHtml(m.thumb || m.full)}" alt="${escapeHtml(p.titulo)}" loading="lazy">`}
+            : (mi === idx
+                ? `<img src="${escapeHtml(m.thumb || m.full)}" alt="${escapeHtml(p.titulo)}" loading="lazy" decoding="async">`
+                : `<img data-lazy-src="${escapeHtml(m.thumb || m.full)}" alt="${escapeHtml(p.titulo)}" loading="lazy" decoding="async">`)}
         </div>`).join("");
 
       const dotsHtml = midias.length > 1
@@ -4983,33 +5354,33 @@
             </div>
           </section>`;
 
-        // 2. Fileiras Streaming
+        // 2. Fileiras Streaming (Estilo Crunchyroll: 6 cards leves por fileira + Card "Ver mais" no final)
+        const ROW_LIMIT = 6;
         const rows = [];
         const new48h = ativos.filter(p => isPropertyNew48h(p));
-        const recentsTop = (new48h.length ? new48h : ativos.slice().reverse()).slice(0, 12);
-        if (recentsTop.length) {
-          rows.push({ title: "✨ Recém-Adicionados", sub: "Novidades na vitrine", items: recentsTop, filter: "TODOS" });
+        const recentsPool = (new48h.length ? new48h : ativos.slice().reverse());
+        if (recentsPool.length) {
+          rows.push({ title: "✨ Recém-Adicionados", sub: "Novidades na vitrine", items: recentsPool.slice(0, ROW_LIMIT), total: recentsPool.length, filter: "TODOS" });
         }
 
-        const mostViewed = ativos.slice().sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0)).slice(0, 12);
-        if (mostViewed.length > 1) {
-          rows.push({ title: "🔥 Em Alta na Guild", sub: "Mais visitados", items: mostViewed, filter: "TODOS", sort: "mais_vistos" });
+        const mostViewedPool = ativos.slice().sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0));
+        if (mostViewedPool.length > 1) {
+          rows.push({ title: "🔥 Em Alta na Guild", sub: "Mais visitados", items: mostViewedPool.slice(0, ROW_LIMIT), total: mostViewedPool.length, filter: "TODOS", sort: "mais_vistos" });
         }
 
         if (hasTaste) {
-          const recs = ativos.map(p => ({ p, s: scorePropertyForUser(p) }))
+          const recsPool = ativos.map(p => ({ p, s: scorePropertyForUser(p) }))
             .filter(x => x.s > 0)
             .sort((a, b) => b.s - a.s)
-            .slice(0, 12)
             .map(x => x.p);
-          if (recs.length) {
-            rows.push({ title: "🎯 Inspirados na Sua Busca", sub: "Curadoria pelo seu perfil", items: recs, filter: "TODOS" });
+          if (recsPool.length) {
+            rows.push({ title: "🎯 Inspirados na Sua Busca", sub: "Curadoria pelo seu perfil", items: recsPool.slice(0, ROW_LIMIT), total: recsPool.length, filter: "TODOS" });
           }
         }
 
         const recentOpened = (state.recentViewedIds || []).map(id => ativos.find(p => p.id === id)).filter(Boolean);
         if (recentOpened.length) {
-          rows.push({ title: "🕒 Vistos Recentemente", sub: "Continue de onde parou", items: recentOpened.slice(0, 10), filter: "TODOS" });
+          rows.push({ title: "🕒 Vistos Recentemente", sub: "Continue de onde parou", items: recentOpened.slice(0, ROW_LIMIT), total: recentOpened.length, filter: "TODOS" });
         }
 
         // Segmentos
@@ -5021,7 +5392,7 @@
         });
         Object.keys(segMap).forEach(seg => {
           if (segMap[seg].length >= 1 && ativos.length > 3) {
-            rows.push({ title: "🏛️ " + seg, sub: segMap[seg].length + " opções", items: segMap[seg].slice(0, 12), filter: seg });
+            rows.push({ title: "🏛️ " + seg, sub: segMap[seg].length + " opções", items: segMap[seg].slice(0, ROW_LIMIT), total: segMap[seg].length, filter: seg });
           }
         });
 
@@ -5033,6 +5404,12 @@
             </div>
             <div class="streaming-track">
               ${r.items.map(p => buildPropertyCardHtml(p, ativos)).join("")}
+              ${r.total > r.items.length ? `
+                <button type="button" class="streaming-more-card" data-view-all="${escapeHtml(r.filter)}" data-view-sort="${escapeHtml(r.sort || "")}">
+                  <span class="streaming-more-icon">+</span>
+                  <strong style="font-size:0.92rem;">Ver mais</strong>
+                  <span style="font-size:0.74rem;color:var(--text-secondary);">+${r.total - r.items.length} opções nesta categoria</span>
+                </button>` : ""}
             </div>
           </section>`).join("");
 
@@ -5140,7 +5517,17 @@
       // Atualiza APENAS o trilho e os pontinhos no DOM (60fps sem reconstruir a página)
       document.querySelectorAll(`[data-carousel-id="${propId}"]`).forEach(carousel => {
         const slides = carousel.querySelector(".card-slides");
-        if (slides) slides.style.transform = `translateX(-${next * 100}%)`;
+        if (slides) {
+          const targetSlide = slides.children[next];
+          if (targetSlide) {
+            const lazyImg = targetSlide.querySelector("img[data-lazy-src]");
+            if (lazyImg) {
+              lazyImg.src = lazyImg.getAttribute("data-lazy-src");
+              lazyImg.removeAttribute("data-lazy-src");
+            }
+          }
+          slides.style.transform = `translateX(-${next * 100}%)`;
+        }
         carousel.querySelectorAll(".carousel-dot").forEach((d, idx) => {
           d.classList.toggle("active", idx === next);
         });
@@ -5347,7 +5734,6 @@
       }
       document.getElementById("detailViewsBadge").textContent = formatViewsText(prop.visualizacoes || 0);
       document.getElementById("detailDescription").textContent = prop.descricao || "Consulte nosso especialista para detalhes completos desta propriedade.";
-      const _spkBtn = document.getElementById("btnDetailSpeak"); if (_spkBtn) _spkBtn.style.display = (prop.descricao && prop.descricao.trim()) ? "inline-flex" : "none";
 
       const specs = [
         { k: "Terreno", v: prop.areaTerreno ? prop.areaTerreno + " m²" : "—" },
@@ -9881,35 +10267,6 @@
         if (el) el.addEventListener("change", () => setTimeout(window.updateCapsuleActiveBadge, 40));
       });
 
-      // TTS (Áudio-descrição na ficha do imóvel)
-      let isSpeakingDetail = false;
-      const btnSpeak = document.getElementById("btnDetailSpeak");
-      if (btnSpeak) {
-        btnSpeak.addEventListener("click", () => {
-          const prop = state.selectedProperty;
-          const lbl = document.getElementById("btnDetailSpeakLabel");
-          if (!("speechSynthesis" in window)) { showToast("Áudio-descrição indisponível neste navegador."); return; }
-          if (isSpeakingDetail) {
-            window.speechSynthesis.cancel();
-            isSpeakingDetail = false;
-            if (lbl) lbl.textContent = "Ouvir descrição";
-            return;
-          }
-          const txt = [prop?.titulo, prop?.bairro, prop?.valor ? ("Valor " + formatBRL(prop.valor)) : "", prop?.descricao].filter(Boolean).join(". ");
-          if (!txt.trim()) return;
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(txt);
-          u.lang = "pt-BR";
-          u.rate = 1.02;
-          u.onend = u.onerror = () => {
-            isSpeakingDetail = false;
-            if (lbl) lbl.textContent = "Ouvir descrição";
-          };
-          isSpeakingDetail = true;
-          if (lbl) lbl.textContent = "Parar áudio";
-          window.speechSynthesis.speak(u);
-        });
-      }
 
       // Visualizador Interativo de Planta Baixa (sem download forçado)
       let pvZoomed = false;
@@ -10009,6 +10366,189 @@
         if (b) b.addEventListener("click", () => closeModal("plantaViewerModal"));
       });
 
+      
+      // Efeito RPG "Cheio de Mana" + Portal Mágico do Corretor Guilherme Delfino
+      function triggerManaBurst(cx, cy) {
+        const wave = document.createElement("span");
+        wave.className = "mana-shockwave";
+        wave.style.left = cx + "px";
+        wave.style.top = cy + "px";
+        document.body.appendChild(wave);
+        setTimeout(() => wave.remove(), 540);
+
+        const colors = ["#4ade80", "#38bdf8", "#f3e5ab", "#25D366", "#a7f3d0"];
+        for (let i = 0; i < 14; i++) {
+          const p = document.createElement("span");
+          p.className = "mana-particle";
+          const ang = (Math.PI * 2 * i) / 14 + (Math.random() * 0.35);
+          const dist = 34 + Math.random() * 44;
+          const col = colors[i % colors.length];
+          p.style.left = (cx - 3) + "px";
+          p.style.top = (cy - 3) + "px";
+          p.style.background = col;
+          p.style.boxShadow = `0 0 10px ${col}`;
+          p.style.setProperty("--mdx", Math.round(Math.cos(ang) * dist) + "px");
+          p.style.setProperty("--mdy", Math.round(Math.sin(ang) * dist) + "px");
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 580);
+        }
+      }
+
+      const manaFab = document.getElementById("manaWhatsFab");
+      const manaPortal = document.getElementById("manaBrokerPortal");
+      const btnCloseMana = document.getElementById("btnCloseManaPortal");
+      const btnManaDirect = document.getElementById("btnManaDirectWhats");
+
+
+      // Efeito sonoro sutil de espada saindo da bainha (estilo anime/medieval) ao clicar no WhatsApp
+      let _swordAudioCtx = null;
+      function playSwordUnsheatheSfx() {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          if (!_swordAudioCtx) _swordAudioCtx = new AudioCtx();
+          const ctx = _swordAudioCtx;
+          if (ctx.state === "suspended") ctx.resume();
+
+          const now = ctx.currentTime;
+          const master = ctx.createGain();
+          master.gain.setValueAtTime(0.001, now);
+          master.gain.linearRampToValueAtTime(0.11, now + 0.035);
+          master.gain.exponentialRampToValueAtTime(0.0008, now + 0.42);
+          master.connect(ctx.destination);
+
+          // 1) Deslizar suave da lâmina na bainha (ruído filtrado ascendente)
+          const bufLen = Math.floor(ctx.sampleRate * 0.28);
+          const noiseBuf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+          const data = noiseBuf.getChannelData(0);
+          for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * 0.55;
+          const noise = ctx.createBufferSource();
+          noise.buffer = noiseBuf;
+
+          const bp = ctx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.Q.setValueAtTime(5.5, now);
+          bp.frequency.setValueAtTime(1750, now);
+          bp.frequency.exponentialRampToValueAtTime(5600, now + 0.22);
+
+          const noiseGain = ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.001, now);
+          noiseGain.gain.linearRampToValueAtTime(0.38, now + 0.05);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+
+          noise.connect(bp);
+          bp.connect(noiseGain);
+          noiseGain.connect(master);
+          noise.start(now);
+          noise.stop(now + 0.28);
+
+          // 2) Brilho metálico fino ("shing!") suave e elegante
+          const harmonics = [
+            { f0: 2780, f1: 2920, g: 0.22, dur: 0.36 },
+            { f0: 4170, f1: 4320, g: 0.14, dur: 0.30 },
+            { f0: 5890, f1: 6040, g: 0.08, dur: 0.22 }
+          ];
+          harmonics.forEach((h) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(h.f0, now + 0.04);
+            osc.frequency.exponentialRampToValueAtTime(h.f1, now + 0.18);
+            g.gain.setValueAtTime(0.0005, now + 0.04);
+            g.gain.linearRampToValueAtTime(h.g, now + 0.085);
+            g.gain.exponentialRampToValueAtTime(0.0005, now + 0.04 + h.dur);
+            osc.connect(g);
+            g.connect(master);
+            osc.start(now + 0.04);
+            osc.stop(now + 0.06 + h.dur);
+          });
+        } catch (e) {}
+      }
+
+      function openManaWhatsUrl(msgText, ev) {
+        playSwordUnsheatheSfx();
+        if (ev) {
+          const r = ev.currentTarget.getBoundingClientRect();
+          triggerManaBurst(ev.clientX || (r.left + r.width / 2), ev.clientY || (r.top + r.height / 2));
+        }
+        showToast("⚡ Conectando com Guilherme Delfino • CRECI 272251-F...");
+        setTimeout(() => {
+          window.open(`https://wa.me/${FALLBACK_WHATSAPP}?text=${encodeURIComponent(msgText)}`, "_blank", "noopener");
+        }, 260);
+      }
+
+      if (manaFab && manaPortal) {
+        manaFab.addEventListener("click", (e) => {
+          playSwordUnsheatheSfx();
+          const r = manaFab.getBoundingClientRect();
+          triggerManaBurst(e.clientX || (r.left + r.width / 2), e.clientY || (r.top + r.height / 2));
+          const isOpen = manaPortal.classList.toggle("open");
+          manaFab.classList.toggle("portal-open", isOpen);
+        });
+      }
+      if (btnCloseMana && manaPortal && manaFab) {
+        btnCloseMana.addEventListener("click", () => {
+          manaPortal.classList.remove("open");
+          manaFab.classList.remove("portal-open");
+        });
+      }
+      if (btnManaDirect) {
+        btnManaDirect.addEventListener("click", (e) => {
+          openManaWhatsUrl("Olá Guilherme Delfino (CRECI 272251-F)! Vim pelo site GUILD IMOB e gostaria de atendimento.", e);
+        });
+      }
+      document.querySelectorAll("[data-mana-msg]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          openManaWhatsUrl(btn.getAttribute("data-mana-msg") || "Olá Guilherme Delfino!", e);
+        });
+      });
+
+      // Explosão de mana também ao clicar em qualquer botão .btn-whatsapp (ex: dentro do imóvel)
+      document.addEventListener("click", (e) => {
+        const waBtn = e.target.closest(".btn-whatsapp, #btnSendPropostaWhats, a[href*='wa.me']");
+        if (!waBtn || waBtn.id === "btnManaDirectWhats") return;
+        playSwordUnsheatheSfx();
+        const r = waBtn.getBoundingClientRect();
+        triggerManaBurst(e.clientX || (r.left + r.width / 2), e.clientY || (r.top + r.height / 2));
+      }, { passive: true });
+
+      
+    /* MOTOR AUTOMÁTICO DE FPS (60Hz / 120Hz ADAPTATIVO — SAFARI PRO-MOTION & CHROME) */
+    function initAdaptiveRefreshEngine() {
+      if (window.__guildFpsEngineStarted) return;
+      window.__guildFpsEngineStarted = true;
+      let frames = 0;
+      let start = performance.now();
+      let samples = [];
+
+      function probe(now) {
+        frames++;
+        const elapsed = now - start;
+        if (elapsed >= 600) {
+          const fps = Math.round((frames * 1000) / elapsed);
+          samples.push(fps);
+          frames = 0;
+          start = now;
+          if (samples.length >= 3) {
+            const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+            if (avg >= 95) {
+              document.body.classList.add("perf-120hz");
+              document.body.classList.remove("perf-lite");
+            } else if (avg < 45) {
+              document.body.classList.add("perf-lite");
+              document.body.classList.remove("perf-120hz");
+            } else {
+              document.body.classList.remove("perf-lite");
+            }
+            return;
+          }
+        }
+        requestAnimationFrame(probe);
+      }
+      requestAnimationFrame(probe);
+    }
+
+      initAdaptiveRefreshEngine();
       setupAmbientAudioController();
     });
   </script>
