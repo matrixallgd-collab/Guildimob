@@ -1665,12 +1665,16 @@
     .tarja-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 9px;
+      gap: 3px;
+      padding: 3px 7px;
       border-radius: 999px;
-      font-size: 0.66rem;
+      font-size: 0.56rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      max-width: 78%;
+      overflow: hidden;
+      text-overflow: ellipsis;
       text-transform: uppercase;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -4975,8 +4979,8 @@
 
       updateDetailFavButton();
       renderStageMedia();
-      recalcSimulator();
-      renderLaunchPlansBox(prop);
+      try { recalcSimulator(); } catch (e) {}
+      try { renderLaunchPlansBox(prop); } catch (e) {}
       openModal("propertyModal");
       registerUniqueView(prop);
     }
@@ -4998,7 +5002,7 @@
       if (cur.type === "video") {
         stage.innerHTML = `<iframe src="${escapeHtml(cur.full)}" allow="autoplay; fullscreen" allowfullscreen title="Vídeo do imóvel"></iframe>`;
       } else {
-        stage.innerHTML = `<img id="activeStageImg" src="${escapeHtml(cur.full || cur.thumb)}" alt="${escapeHtml(prop.titulo)}" style="transform:rotate(${state.stageRotation}deg);">`;
+        stage.innerHTML = `<img id="activeStageImg" src="${escapeHtml(cur.full || cur.thumb)}" alt="${escapeHtml(prop.titulo)}" style="transform:rotate(${state.stageRotation}deg);cursor:zoom-in;" title="Toque para abrir em tela cheia">`; const sImg = document.getElementById("activeStageImg"); if (sImg) sImg.addEventListener("click", () => { const fb = document.getElementById("btnFullscreenStage"); if (fb) fb.click(); });
       }
 
       document.getElementById("stageCounterBadge").textContent = `${state.stageIndex + 1} / ${midias.length}`;
@@ -6949,9 +6953,25 @@
       } catch (e) {}
     }
 
+    let activeLaunchSimMode = "sem_juros";
+    function setLaunchSimMode(mode) {
+      activeLaunchSimMode = (mode === "com_juros") ? "com_juros" : "sem_juros";
+      const bSem = document.getElementById("btnModeSemJuros");
+      const bCom = document.getElementById("btnModeComJuros");
+      if (bSem) bSem.className = activeLaunchSimMode === "sem_juros" ? "btn-gold" : "btn-glass";
+      if (bCom) bCom.className = activeLaunchSimMode === "com_juros" ? "btn-gold" : "btn-glass";
+      document.querySelectorAll(".lp-sem-juros-only").forEach(el => {
+        el.style.display = activeLaunchSimMode === "sem_juros" ? "" : "none";
+      });
+      document.querySelectorAll(".lp-com-juros-only").forEach(el => {
+        el.style.display = activeLaunchSimMode === "com_juros" ? "" : "none";
+      });
+      recalcLaunchBestPlan();
+    }
+
     function renderLaunchPlansBox(prop) {
       const box = document.getElementById("launchPlansBox");
-      const sacBox = (document.getElementById("simDrawerBox") && document.getElementById("simDrawerBox").closest(".glass-soft, .simulator-card, div[style]")) || null;
+      const sacBox = document.getElementById("simDrawerBox");
       if (sacBox) sacBox.style.display = (prop && prop.isLaunch) ? "none" : "";
       if (!box) return;
       if (!prop || !prop.isLaunch || prop.isSold48h) {
@@ -9075,10 +9095,7 @@
       });
       
       
-      const btnSemJ = document.getElementById("btnModeSemJuros");
-      const btnComJ = document.getElementById("btnModeComJuros");
-      if (btnSemJ) btnSemJ.addEventListener("click", () => { state.launchSimMode = "sem_juros"; updateLaunchSimModeUI(); recalcLaunchBestPlan(); });
-      if (btnComJ) btnComJ.addEventListener("click", () => { state.launchSimMode = "com_juros"; updateLaunchSimModeUI(); recalcLaunchBestPlan(); });
+
 
       const bSemJ = document.getElementById("btnModeSemJuros");
       if (bSemJ) bSemJ.addEventListener("click", () => setLaunchSimMode("sem_juros"));
