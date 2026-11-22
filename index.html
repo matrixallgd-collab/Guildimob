@@ -2960,7 +2960,7 @@
             <div class="form-group">
               <label class="form-label" for="devDriveMatTipo">Tipo de Arquivo</label>
               <select id="devDriveMatTipo" class="select-field">
-                <option value="planta">🗺️ Planta Baixa (PDF/Imagem)</option>
+                <option value="planta">🗺️ Planta Baixa 4K p/ Zoom (PNG/JPG/WebP) ou PDF</option>
                 <option value="ebook">📖 E-book do Condomínio (PDF)</option>
                 <option value="lazer">📸 Foto Limpa de Lazer (JPG/PNG/WebP)</option>
               </select>
@@ -7071,6 +7071,23 @@
         };
         im.src = src;
       });
+    }
+
+    
+    state._plantaHdCache = state._plantaHdCache || {};
+    async function getBestPlantaSrc(key) {
+      if (!key) return "";
+      if (state._plantaHdCache[key]) return state._plantaHdCache[key];
+      if (state.isLive && state.apiUrl) {
+        try {
+          const res = await apiGet({ action: "getPlantaHd", condoKey: key });
+          if (res && res.ok && res.dataUrl) {
+            state._plantaHdCache[key] = res.dataUrl;
+            return res.dataUrl;
+          }
+        } catch (e) {}
+      }
+      return CONDO_PLANTAS_B64[key] || "";
     }
 
     function openLotPickerOnMap() {
