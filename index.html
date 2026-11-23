@@ -3531,6 +3531,20 @@
           </div>
         </div>
 
+                <!-- IMPORTADOR AUTOMÁTICO DE FICHA PDF (IMOBIBRASIL / OUTROS CRMs) -->
+        <div class="glass-soft" style="padding:14px;border-radius:var(--radius-lg);margin-bottom:14px;border-color:rgba(52,211,153,0.45);background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(8,16,34,0.85));">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <strong style="font-size:0.9rem;color:#6ee7b7;">📄 Importar Imóvel por PDF (Ficha ImobiBrasil / CRM)</strong>
+            <span class="glass-badge" style="border-color:rgba(52,211,153,0.4);color:#a7f3d0;">Preenchimento 100% Automático</span>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin:0 0 10px;line-height:1.4;">Envie o PDF da ficha do imóvel (ex: ImobiBrasil). A IA preenche automaticamente código, endereço, CEP, valor, metragens (frente/fundo/laterais), quartos, salas, descrição, características/cômodos, proprietário, telefone, comissão e cliques. Depois basta selecionar as fotos baixadas!</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input type="file" id="importFichaPdfInput" class="input-field" accept=".pdf,application/pdf" style="flex:1;min-width:190px;">
+            <button type="button" class="btn-gold" id="btnImportFichaPdf">📥 Ler PDF &amp; Preencher Tudo</button>
+          </div>
+          <div id="importFichaPdfStatus" style="font-size:0.78rem;color:#6ee7b7;margin-top:8px;"></div>
+        </div>
+
         <form id="propertyForm">
           <input type="hidden" id="propEditId">
           <input type="hidden" id="propEditFolderId">
@@ -3680,6 +3694,10 @@
               <label class="form-label" for="propVagas">Vagas Garagem</label>
               <input type="number" id="propVagas" class="input-field" placeholder="4">
             </div>
+            <div class="form-group">
+              <label class="form-label" for="propSalas">Salas</label>
+              <input type="number" id="propSalas" class="input-field" placeholder="1">
+            </div>
           </div>
 
           <div class="form-group">
@@ -3707,6 +3725,14 @@
               <div class="form-group">
                 <label class="form-label" for="propObsInternas">Obs. Internas (Chaves / Portaria)</label>
                 <input type="text" id="propObsInternas" class="input-field" placeholder="Ex: Chaves na portaria, avisar 2h antes">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="propRevisarEm">Revisar Imóvel em (Data)</label>
+                <input type="text" id="propRevisarEm" class="input-field" placeholder="Ex: 30/12/2026">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="propCliquesIniciais">Cliques / Acessos Anteriores</label>
+                <input type="number" id="propCliquesIniciais" class="input-field" placeholder="Ex: 214">
               </div>
             </div>
           </div>
@@ -5949,7 +5975,8 @@
         { k: "Suítes", v: prop.suites || "—" },
         { k: "Quartos", v: prop.quartos || "—" },
         { k: "Banheiros", v: prop.banheiros || "—" },
-        { k: "Vagas", v: prop.vagas || "—" }
+        { k: "Vagas", v: prop.vagas || "—" },
+        ...(prop.salas ? [{ k: "Salas", v: prop.salas }] : [])
       ];
       document.getElementById("detailSpecs").innerHTML = specs.map(s => `
         <div class="spec-box"><strong>${s.v}</strong><span>${s.k}</span></div>`).join("");
@@ -6980,6 +7007,9 @@
       document.getElementById("propSuites").value = p.suites || "";
       document.getElementById("propBanheiros").value = p.banheiros || "";
       document.getElementById("propVagas").value = p.vagas || "";
+      if (document.getElementById("propSalas")) document.getElementById("propSalas").value = p.salas || "";
+      if (document.getElementById("propRevisarEm")) document.getElementById("propRevisarEm").value = p.revisarEm || "";
+      if (document.getElementById("propCliquesIniciais")) document.getElementById("propCliquesIniciais").value = p.visualizacoes || "";
       document.getElementById("propDescricao").value = p.descricao || "";
 
       state.selectedTags = new Set(p.tags || []);
@@ -9840,6 +9870,9 @@
           suites: Number(document.getElementById("propSuites").value) || 0,
           banheiros: Number(document.getElementById("propBanheiros").value) || 0,
           vagas: Number(document.getElementById("propVagas").value) || 0,
+          salas: Number(document.getElementById("propSalas")?.value) || 0,
+          revisarEm: (document.getElementById("propRevisarEm")?.value || "").trim(),
+          visualizacoes: Number(document.getElementById("propCliquesIniciais")?.value) || 0,
           descricao: document.getElementById("propDescricao").value.trim(),
           tags: Array.from(state.selectedTags),
           midiasExistentes: state.existingMidiasEdit
@@ -11385,6 +11418,118 @@
       document.querySelectorAll('#adminTabsBar [data-tab="tabLivroIa"]').forEach(b => {
         b.addEventListener("click", loadLivroIaNativa);
       });
+
+      
+      const btnImportPdf = document.getElementById("btnImportFichaPdf");
+      if (btnImportPdf) {
+        btnImportPdf.addEventListener("click", async () => {
+          if (!state.authUser) { showToast("Faça login na equipe primeiro."); return; }
+          if (!state.isLive || !state.apiUrl) { showToast("Conecte o backend Code.gs para usar a leitura de PDF por IA."); return; }
+          const inp = document.getElementById("importFichaPdfInput");
+          const file = inp && inp.files && inp.files[0];
+          const stEl = document.getElementById("importFichaPdfStatus");
+          if (!file) { showToast("Selecione o arquivo PDF da ficha do imóvel primeiro."); return; }
+
+          btnImportPdf.disabled = true;
+          btnImportPdf.textContent = "⏳ Lendo PDF com IA...";
+          if (stEl) stEl.textContent = "⏳ Extraindo dados, metragens, proprietário e características do PDF...";
+          try {
+            const b64 = await new Promise((resolve, reject) => {
+              const r = new FileReader();
+              r.onload = () => resolve(r.result);
+              r.onerror = () => reject(new Error("Falha ao ler PDF."));
+              r.readAsDataURL(file);
+            });
+            const res = await apiPost({
+              action: "iaImportarFichaPdf",
+              login: state.authUser.login,
+              senha: state.authUser.senha,
+              mimeType: file.type || "application/pdf",
+              base64: b64
+            });
+            if (!res || !res.ok || !res.dados) throw new Error((res && res.error) || "Erro ao extrair dados do PDF.");
+            const d = res.dados;
+
+            const setVal = (id, v) => {
+              const el = document.getElementById(id);
+              if (el && v !== undefined && v !== null && String(v).trim() !== "") el.value = String(v).trim();
+            };
+            const setNum = (id, v) => {
+              const el = document.getElementById(id);
+              const n = Number(v);
+              if (el && !isNaN(n) && n > 0) el.value = formatBRDecimal(n);
+            };
+            const setInt = (id, v) => {
+              const el = document.getElementById(id);
+              const n = Number(v);
+              if (el && !isNaN(n) && n > 0) el.value = String(Math.round(n));
+            };
+
+            setVal("propCodigo", d.codigo);
+            setVal("propTitulo", d.titulo);
+            if (d.tipo) {
+              const selTipo = document.getElementById("propTipo");
+              if (selTipo) {
+                const matchOpt = Array.from(selTipo.options).find(o => o.value.toLowerCase() === String(d.tipo).toLowerCase());
+                if (matchOpt) selTipo.value = matchOpt.value;
+              }
+            }
+            if (d.finalidade) {
+              const selFin = document.getElementById("propFinalidade");
+              if (selFin) {
+                const matchFin = Array.from(selFin.options).find(o => o.value.toLowerCase() === String(d.finalidade).toLowerCase());
+                if (matchFin) selFin.value = matchFin.value;
+              }
+            }
+            setVal("propCep", d.cep);
+            setVal("propLogradouro", d.enderecoExato);
+            setVal("propBairro", d.bairro);
+            setVal("propCondominio", d.condominio);
+            setVal("propCidade", d.cidade || "Bauru - SP");
+            setNum("propValor", d.valor);
+            setNum("propTerreno", d.areaTerreno);
+            setNum("propConstruida", d.areaConstruida);
+            setNum("propFrente", d.frente);
+            setNum("propFundo", d.fundo);
+            setNum("propLatEsq", d.latEsq);
+            setNum("propLatDir", d.latDir);
+            setInt("propQuartos", d.quartos);
+            setInt("propSuites", d.suites);
+            setInt("propBanheiros", d.banheiros);
+            setInt("propVagas", d.vagas);
+            setInt("propSalas", d.salas);
+            setVal("propDescricao", d.descricao);
+            setVal("propOwnerNome", d.proprietarioNome);
+            setVal("propOwnerWhats", d.proprietarioWhats);
+            setVal("propComissao", d.comissaoPct);
+            setVal("propRevisarEm", d.revisarEm);
+            setInt("propCliquesIniciais", d.cliques);
+            setVal("propObsInternas", d.obsInternas);
+
+            if (Array.isArray(d.tags) && d.tags.length) {
+              d.tags.forEach(t => {
+                const cleanT = String(t || "").trim();
+                if (!cleanT) return;
+                state.selectedTags.add(cleanT);
+                const existsBase = (typeof CHECKLIST_GROUPS !== "undefined") && CHECKLIST_GROUPS.some(g => g.items.includes(cleanT));
+                if (!existsBase && !state.customTags.includes(cleanT)) state.customTags.push(cleanT);
+              });
+              renderChecklistUI();
+            }
+
+            if (stEl) {
+              stEl.innerHTML = `✅ <strong>Ficha importada!</strong> ${escapeHtml(d.titulo || d.bairro || "Imóvel")} • Proprietário: <strong>${escapeHtml(d.proprietarioNome || "—")}</strong> • Comissão: <strong>${escapeHtml(d.comissaoPct || "—")}</strong>. Agora selecione as fotos baixadas abaixo e clique em Salvar!`;
+            }
+            showToast("📄 Ficha PDF importada e preenchida 100%!");
+          } catch (err) {
+            if (stEl) stEl.textContent = "❌ " + (err.message || err);
+            showToast("Erro ao ler PDF: " + (err.message || err));
+          } finally {
+            btnImportPdf.disabled = false;
+            btnImportPdf.textContent = "📥 Ler PDF & Preencher Tudo";
+          }
+        });
+      }
 
       setupAmbientAudioController();
     });
