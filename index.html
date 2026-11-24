@@ -2665,6 +2665,606 @@
       gap: 8px;
     }
 
+
+    /* === REDESIGN MOBILE-FIRST 9:16 (TOPO ULTRA-COMPACTO, GAVETAS, PIPS, SPOTLIGHT, WHATSAPP -25%) === */
+    .topbar {
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+    .topbar-inner {
+      min-height: 48px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+    @media (max-width: 640px) {
+      .topbar-inner {
+        min-height: 44px;
+        padding: 4px 10px;
+      }
+      .brand-logo-wrap {
+        width: 34px !important;
+        height: 34px !important;
+      }
+      #headerCreciLabel {
+        font-size: 0.48rem !important;
+      }
+      .container {
+        padding-top: 8px !important;
+      }
+    }
+
+    /* Topo Ultra-Compacto: Barra Google + 3 Botões Redondos Liquid Glass */
+    .compact-top-shell {
+      position: relative;
+      z-index: 30;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .google-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 4px 6px 4px 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(16, 29, 54, 0.88), rgba(8, 17, 34, 0.94));
+      border: 1px solid rgba(212, 175, 55, 0.34);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .google-search-bar:focus-within {
+      border-color: rgba(243, 229, 171, 0.72);
+      box-shadow: 0 8px 28px rgba(212, 175, 55, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+    .google-search-bar .g-search-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-300);
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+    .google-search-bar input[type="search"] {
+      flex: 1;
+      min-width: 0;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      color: #f8fafc !important;
+      font-size: 0.86rem !important;
+      padding: 7px 4px !important;
+    }
+    .google-search-bar input[type="search"]::placeholder {
+      color: rgba(203, 213, 225, 0.68);
+    }
+    .google-search-bar .search-clear-btn {
+      position: static;
+      transform: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .google-search-go {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(243, 229, 171, 0.55);
+      background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 60%, #a17c1a 100%);
+      color: #060d1a;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+      transition: transform 0.18s ease;
+    }
+    .google-search-go:active { transform: scale(0.93); }
+
+    /* Fileira centralizada com 3 Botões Redondos estilo Liquid Glass (~46px) */
+    .quick-orbs-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 24px;
+      padding: 2px 4px;
+    }
+    .quick-orb-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #e2e8f0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .quick-orb-circle {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22), rgba(16, 32, 60, 0.85) 62%, rgba(6, 13, 26, 0.96) 100%);
+      border: 1.5px solid rgba(212, 175, 55, 0.55);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.26), 0 0 12px rgba(212, 175, 55, 0.16);
+      color: var(--gold-300);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .quick-orb-circle::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      pointer-events: none;
+      transition: border-color 0.2s ease, opacity 0.2s ease;
+    }
+    .quick-orb-item[data-drawer="lancamentos"] .quick-orb-circle {
+      border-color: rgba(52, 211, 153, 0.65);
+      color: #6ee7b7;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.26), 0 0 12px rgba(52, 211, 153, 0.2);
+    }
+    .quick-orb-item[data-drawer="lancamentos"] .quick-orb-circle::before {
+      border-color: rgba(52, 211, 153, 0.24);
+    }
+    .quick-orb-item.active .quick-orb-circle {
+      transform: scale(1.06);
+      border-color: #f3e5ab;
+      background: radial-gradient(circle at 30% 25%, rgba(243, 229, 171, 0.32), rgba(24, 46, 82, 0.92) 65%, rgba(8, 17, 34, 0.98) 100%);
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.45), inset 0 1px 3px rgba(255, 255, 255, 0.35);
+    }
+    .quick-orb-item[data-drawer="lancamentos"].active .quick-orb-circle {
+      border-color: #6ee7b7;
+      box-shadow: 0 0 18px rgba(52, 211, 153, 0.48), inset 0 1px 3px rgba(255, 255, 255, 0.35);
+    }
+    .quick-orb-item:active .quick-orb-circle {
+      transform: scale(0.94);
+    }
+    .quick-orb-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: rgba(241, 245, 249, 0.9);
+      line-height: 1.1;
+    }
+    .quick-orb-item.active .quick-orb-label {
+      color: var(--gold-300);
+    }
+    .quick-orb-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fbbf24, #d4af37);
+      color: #060d1a;
+      font-size: 0.62rem;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    }
+    .quick-orb-badge.has-count { display: inline-flex; }
+
+    /* Gavetas Compactas (Dropdown/Drawer suave logo abaixo dos 3 botões) */
+    .compact-drawer {
+      display: none;
+      margin-top: 2px;
+      padding: 12px 12px 10px;
+      border-radius: 18px;
+      background: linear-gradient(160deg, rgba(12, 24, 46, 0.96), rgba(6, 13, 26, 0.98));
+      border: 1px solid rgba(212, 175, 55, 0.32);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      animation: drawerSlideIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .compact-drawer.open { display: block; }
+    @keyframes drawerSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .drawer-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold-300);
+    }
+    .drawer-close-mini {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #cbd5e1;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .drawer-track-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(203, 213, 225, 0.78);
+      margin: 4px 0 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .drawer-h-track {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .drawer-h-track::-webkit-scrollbar { display: none; }
+    .drawer-h-track .pill {
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding: 6px 12px;
+      font-size: 0.76rem;
+    }
+
+    /* Abas internas da gaveta Filtros */
+    .drawer-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .drawer-tab-btn {
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 7px 6px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .drawer-tab-btn.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.28), rgba(212, 175, 55, 0.14));
+      color: #f3e5ab;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+    }
+    .drawer-tab-pane { display: none; }
+    .drawer-tab-pane.active { display: block; }
+
+    .basic-drawer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .basic-drawer-grid .full-span { grid-column: 1 / -1; }
+    .basic-drawer-grid .select-field {
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      border-radius: 11px;
+    }
+
+    /* Contraste corrigido para Busca IA / Concierge IA */
+    .ia-concierge-box {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.14), rgba(15, 28, 52, 0.92));
+      border: 1px solid rgba(243, 229, 171, 0.42);
+      border-radius: 14px;
+      padding: 12px;
+      color: #ffffff;
+    }
+    .ia-concierge-box p {
+      margin: 0 0 10px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: #f8fafc;
+    }
+    #btnOpenConcierge,
+    .btn-concierge-hc {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #f3e5ab;
+      background: linear-gradient(135deg, #1d355e 0%, #0f2040 100%);
+      color: #ffffff !important;
+      font-weight: 800;
+      font-size: 0.84rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    #btnOpenConcierge span.ia-gold { color: #f3e5ab !important; }
+    .ia-quick-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-top: 8px;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .ia-quick-chips::-webkit-scrollbar { display: none; }
+    .ia-quick-chip {
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(243, 229, 171, 0.35);
+      color: #f3e5ab;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.71rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Cards horizontais na Gaveta de Lançamentos */
+    .launch-drawer-track {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 2px 2px 6px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .launch-drawer-track::-webkit-scrollbar { display: none; }
+    .launch-mini-card {
+      position: relative;
+      min-width: 224px;
+      max-width: 238px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(10, 20, 38, 0.94);
+      border: 1px solid rgba(52, 211, 153, 0.32);
+      display: flex;
+      flex-direction: column;
+    }
+    .launch-mini-media {
+      position: relative;
+      height: 102px;
+      background: #060d1a;
+      overflow: hidden;
+    }
+    .launch-mini-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .badge-maquete-3d-top {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.94), rgba(5, 150, 105, 0.96));
+      border: 1px solid rgba(167, 243, 208, 0.85);
+      color: #ffffff !important;
+      font-size: 0.67rem;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+    .launch-mini-body {
+      padding: 8px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+    .launch-mini-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .launch-mini-sub {
+      font-size: 0.69rem;
+      color: #a7f3d0;
+    }
+
+    /* Ajuste cirúrgico: Rótulo discreto de classe ao lado dos pontinhos nos cards */
+    .rank-tier-micro {
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-left: 3px;
+      line-height: 1;
+      opacity: 0.92;
+      white-space: nowrap;
+    }
+    .rank-tier-micro.cobre { color: #D48A45; text-shadow: 0 0 6px rgba(184, 115, 51, 0.45); }
+    .rank-tier-micro.bronze { color: #E5A155; text-shadow: 0 0 6px rgba(217, 146, 68, 0.5); }
+    .rank-tier-micro.prata { color: #E2E8F0; text-shadow: 0 0 6px rgba(226, 232, 240, 0.45); }
+    .rank-tier-micro.ouro { color: #F3D266; text-shadow: 0 0 7px rgba(212, 175, 55, 0.6); }
+    .rank-tier-micro.platina { color: #F8FAFC; text-shadow: 0 0 7px rgba(248, 250, 252, 0.65); }
+    .rank-tier-micro.esmeralda { color: #34D399; text-shadow: 0 0 7px rgba(52, 211, 153, 0.65); }
+    .rank-tier-micro.diamante { color: #7DD3FC; text-shadow: 0 0 8px rgba(125, 211, 252, 0.75); }
+
+    /* Evita que muitos pontos de carrossel estourem a largura do card */
+    .carousel-dots {
+      max-width: 82%;
+      overflow: hidden;
+      flex-wrap: nowrap;
+    }
+
+    /* Spotlight Carrossel Dinâmico ~25% mais compacto */
+    .spotlight-carousel-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .hero-spotlight {
+      margin-bottom: 0 !important;
+      min-height: 180px !important;
+      transition: opacity 0.32s ease;
+    }
+    .hero-spotlight-img {
+      min-height: 175px !important;
+    }
+    .hero-spotlight-body {
+      padding: 14px 16px !important;
+      gap: 6px !important;
+    }
+    @media (max-width: 640px) {
+      .hero-spotlight {
+        grid-template-columns: 1fr !important;
+        min-height: auto !important;
+      }
+      .hero-spotlight-img {
+        aspect-ratio: 16 / 7.8 !important;
+        max-height: 158px !important;
+        min-height: 132px !important;
+      }
+      .hero-spotlight-body {
+        padding: 11px 13px 12px !important;
+        gap: 5px !important;
+      }
+      .hero-spotlight-body h2 {
+        font-size: 1.06rem !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+    .spotlight-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 7px;
+    }
+    .spotlight-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .spotlight-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      border: none;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      transition: all 0.22s ease;
+    }
+    .spotlight-dot.active {
+      width: 18px;
+      background: var(--gold-400);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.65);
+    }
+    .spotlight-nav-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: rgba(11, 21, 40, 0.75);
+      color: var(--gold-300);
+      font-size: 0.85rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Botão Flutuante WhatsApp 25% menor e mais próximo da borda inferior direita */
+    .mana-whats-fab {
+      width: 45px !important;
+      height: 45px !important;
+      right: 10px !important;
+      bottom: 72px !important;
+      border-width: 1.5px !important;
+    }
+    .mana-whats-fab::before {
+      inset: -5px !important;
+    }
+    .mana-whats-fab::after {
+      inset: -9px !important;
+    }
+    .mana-whats-fab svg {
+      width: 22px !important;
+      height: 22px !important;
+    }
+    .mana-broker-portal {
+      right: 10px !important;
+      bottom: 126px !important;
+    }
+    @media (min-width: 769px) {
+      .mana-whats-fab {
+        width: 48px !important;
+        height: 48px !important;
+        right: 16px !important;
+        bottom: 20px !important;
+      }
+      .mana-broker-portal {
+        right: 16px !important;
+        bottom: 80px !important;
+      }
+    }
+
+    /* Barra de Zoom HD + Centralização no Modal "Marcar Lote na Planta" */
+    .lot-picker-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      padding: 7px 10px;
+      border-radius: 12px;
+      background: rgba(10, 20, 38, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+    }
+    .lot-picker-stage {
+      overflow: auto;
+      max-height: 64vh;
+      border-radius: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      background: #0b1322;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+      text-align: center;
+    }
+    .lot-picker-stage canvas {
+      display: block;
+      margin: 0 auto;
+      cursor: crosshair;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
   </style>
 </head>
 <body>
@@ -2711,98 +3311,176 @@
       <button class="btn-gold" id="btnViewRadarMatch" type="button">Ver Imóvel Compatível</button>
     </div>
 
-    <!-- HERO SEARCH & FILTERS (NÍVEL 1: BÁSICO + BOTÃO BUSCAR | NÍVEL 2: FILTRO REFINADO) -->
-    <section class="hero-search glass">
-      <div class="hero-top">
-        <div>
-          <h1 class="hero-heading serif">Encontre propriedades <span class="gold-text">exclusivas</span></h1>
-          <p class="hero-subtitle">Curadoria inteligente, simulação e atendimento direto.</p>
-        </div>
-      </div>
-
-      <div class="search-row" style="grid-template-columns:1fr auto;gap:8px;margin-bottom:10px;">
-        <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
-          <input type="search" id="searchInput" class="input-field" placeholder="Bairro, condomínio, código..." style="padding-top:10px;padding-bottom:10px;font-size:0.86rem;">
-          <button type="button" class="search-clear-btn" id="btnClearSearch" aria-label="Limpar busca" title="Limpar busca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-        <button type="button" class="btn-gold" id="btnSearchGo" style="padding:10px 16px;font-size:0.84rem;">Buscar</button>
-      </div>
-      <div class="capsule-toggle-row">
-        <button type="button" class="btn-capsule-toggle" id="btnToggleFilterCapsule" aria-expanded="false" aria-controls="heroFiltersCollapsible">
-          <span>Filtros, Categorias &amp; Ferramentas</span>
-          <span class="capsule-active-badge" id="capsuleActiveBadge">0 ativos</span>
-          <svg class="capsule-chevron-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- TOPO ULTRA-COMPACTO: BARRA GOOGLE + 3 BOTÕES REDONDOS LIQUID GLASS COM GAVETAS -->
+    <section class="compact-top-shell" id="compactTopShell">
+      <div class="google-search-bar" role="search">
+        <span class="g-search-icon" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="search" id="searchInput" placeholder="Buscar casa, bairro, condomínio ou código..." autocomplete="off">
+        <button type="button" class="search-clear-btn" id="btnClearSearch" aria-label="Limpar busca" title="Limpar busca">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
-      </div>
-      <div class="hero-filters-collapsible" id="heroFiltersCollapsible">
-        <div style="margin-bottom:10px;"><div class="hero-cta-row">
-          <button class="btn-glass" id="btnOpenWelcomeIntent" type="button" style="border-color:var(--gold-400);color:var(--gold-300);">🧭 O que procura?</button>
-          <button class="btn-gold" id="btnOpenConcierge" type="button">✨ Concierge IA</button>
-          <button class="btn-glass" id="btnOpenRadarHero" type="button" style="border-color:var(--gold-500);color:var(--gold-300);">🎯 Radar</button>
-          <button class="btn-glass" id="btnOpenEmp3dHero" type="button" style="border-color:rgba(52,211,153,0.45);color:#a7f3d0;" title="Explore condomínios e lançamentos em Maquete 3D">🗺️ Empreendimentos 3D</button>
-          <button class="btn-glass" id="btnOpenOwnerPortalHero" type="button" title="Acompanhe acessos, dossiê e preço do seu imóvel">🏠 Sou Proprietário</button>
-        </div></div>
-        <div class="launch-filter-bar" id="launchQuickFilterBar" style="display:none;">
-        <select id="launchCondoFilter" class="select-field" aria-label="Empreendimento">
-          <option value="">Empreendimento: Todos</option>
-          <option value="harmonis">Harmonis Parque Residencial</option>
-          <option value="guestier3">Guestier Boutique III</option>
-        </select>
-        <select id="launchQuadraFilter" class="select-field" aria-label="Quadra">
-          <option value="">Quadra: Todas</option>
-        </select>
-        <select id="launchLoteFilter" class="select-field" aria-label="Lote">
-          <option value="">Lote: Todos</option>
-        </select>
-      </div>
-      <div class="basic-filter-row" id="standardBasicFilterRow">
-        <select id="basicQuartosSelect" class="select-field" aria-label="Quartos ou Suítes">
-          <option value="0">Quartos: Todos</option>
-          <option value="1">1+ Quarto</option>
-          <option value="2">2+ Quartos</option>
-          <option value="3">3+ Quartos</option>
-          <option value="4">4+ Quartos</option>
-        </select>
-        <select id="basicMaxPriceSelect" class="select-field" aria-label="Valor máximo">
-          <option value="0">Valor: Todos</option>
-          <option value="250000">Até R$ 250 mil</option>
-          <option value="500000">Até R$ 500 mil</option>
-          <option value="1000000">Até R$ 1 milhão</option>
-          <option value="2000000">Até R$ 2 milhões</option>
-          <option value="3500000">Até R$ 3,5 milhões</option>
-        </select>
-        <button type="button" class="btn-glass" id="btnOpenRefinedFilters" style="border-radius:12px;padding:9px 10px;font-size:0.8rem;border-color:var(--gold-500);color:var(--gold-300);">
-          ⚙️ Filtros Avançados <span id="refinedCountBadge" style="display:none;background:var(--gold-500);color:#060D1A;border-radius:999px;padding:1px 6px;font-size:0.7rem;font-weight:800;">0</span>
+        <button type="button" class="google-search-go" id="btnSearchGo" aria-label="Pesquisar" title="Pesquisar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
-      <div class="filter-pills" id="filterPills">
-        <button class="pill active" data-filter="TODOS" type="button">Todos</button>
-        <button class="pill" data-filter="LANCAMENTO" type="button" style="border-color:rgba(16,185,129,0.55);color:#a7f3d0;">🚀 Lançamentos</button>
-        <button class="pill" data-filter="PROPRIETARIO" type="button">👤 Proprietários</button>
-        <button class="pill" data-filter="Casa Térrea" type="button">Casa Térrea</button>
-        <button class="pill" data-filter="Sobrado" type="button">Sobrado</button>
-        <button class="pill" data-filter="Apartamento" type="button">Apartamento</button>
-        <button class="pill" data-filter="Terreno" type="button">Terreno</button>
-        <button class="pill" data-filter="Piscina Aquecida" type="button">Piscina Aquecida</button>
-        <button class="pill" data-filter="Painel Fotovoltaico" type="button">Energia Solar</button>
-        <button class="pill" data-filter="Área Gourmet" type="button">Área Gourmet</button>
+      <div class="quick-orbs-row" role="toolbar" aria-label="Atalhos rápidos">
+        <button type="button" class="quick-orb-item" id="btnOrbRanking" data-drawer="ranking" aria-expanded="false" aria-controls="drawerRanking">
+          <span class="quick-orb-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <span class="quick-orb-badge" id="orbRankingBadge"></span>
+          </span>
+          <span class="quick-orb-label">Ranking</span>
+        </button>
+
+        <button type="button" class="quick-orb-item" id="btnOrbFiltros" data-drawer="filtros" aria-expanded="false" aria-controls="drawerFiltros">
+          <span class="quick-orb-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor"/></svg>
+            <span class="quick-orb-badge" id="orbFiltrosBadge"></span>
+          </span>
+          <span class="quick-orb-label">Filtros</span>
+        </button>
+
+        <button type="button" class="quick-orb-item" id="btnOrbLancamentos" data-drawer="lancamentos" aria-expanded="false" aria-controls="drawerLancamentos">
+          <span class="quick-orb-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+          </span>
+          <span class="quick-orb-label">Lançamentos</span>
+        </button>
       </div>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin:6px 0 4px;display:flex;justify-content:space-between;align-items:center;">
-        <span>✨ Classes RPG (deslize ↔)</span>
+
+      <!-- GAVETA 1: RANKING (2 TRILHOS HORIZONTAIS) -->
+      <div class="compact-drawer" id="drawerRanking" role="region" aria-label="Ranking por Categoria e Classe">
+        <div class="drawer-head">
+          <span class="drawer-title">🏆 Ranking da Vitrine</span>
+          <button type="button" class="drawer-close-mini" data-close-drawer>Fechar ✕</button>
+        </div>
+        <div class="drawer-track-label"><span>Categoria</span><span>deslize ↔</span></div>
+        <div class="drawer-h-track" id="filterPills">
+          <button class="pill active" data-filter="TODOS" type="button">Geral</button>
+          <button class="pill" data-filter="CASAS_ALL" type="button">Casas</button>
+          <button class="pill" data-filter="Apartamento" type="button">Apartamentos</button>
+          <button class="pill" data-filter="Terreno" type="button">Terrenos</button>
+          <button class="pill" data-filter="LANCAMENTO" type="button" style="border-color:rgba(16,185,129,0.55);color:#a7f3d0;">🚀 Lançamentos</button>
+          <button class="pill" data-filter="PROPRIETARIO" type="button">👤 Proprietários</button>
+        </div>
+        <div class="drawer-track-label" style="margin-top:8px;"><span>Classe</span><span>deslize ↔</span></div>
+        <div class="drawer-h-track" id="tierPillsBar">
+          <button class="pill active" data-tier="TODAS" type="button">✨ Todos</button>
+          <button class="pill" data-tier="diamante" type="button" style="border-color:rgba(125,211,252,0.5);">💎 Diamante</button>
+          <button class="pill" data-tier="esmeralda" type="button" style="border-color:rgba(52,211,153,0.5);">💚 Esmeralda</button>
+          <button class="pill" data-tier="platina" type="button" style="border-color:rgba(226,232,240,0.45);">💠 Platina</button>
+          <button class="pill" data-tier="ouro" type="button" style="border-color:rgba(251,191,36,0.5);">🥇 Ouro</button>
+          <button class="pill" data-tier="prata" type="button" style="border-color:rgba(203,213,225,0.4);">🥈 Prata</button>
+          <button class="pill" data-tier="bronze" type="button" style="border-color:rgba(217,119,6,0.45);">🥉 Bronze</button>
+          <button class="pill" data-tier="cobre" type="button" style="border-color:rgba(180,83,9,0.45);">🪙 Cobre</button>
+        </div>
       </div>
-      <div class="filter-pills" id="tierPillsBar">
-        <button class="pill active" data-tier="TODAS" type="button">✨ Todas</button>
-        <button class="pill" data-tier="diamante" type="button" style="border-color:rgba(185,242,255,0.45);">💎 Diamante</button>
-        <button class="pill" data-tier="esmeralda" type="button" style="border-color:rgba(52,211,153,0.45);">💚 Esmeralda</button>
-        <button class="pill" data-tier="platina" type="button" style="border-color:rgba(226,232,240,0.45);">💠 Platina</button>
-        <button class="pill" data-tier="ouro" type="button" style="border-color:rgba(251,191,36,0.5);">🥇 Ouro</button>
-        <button class="pill" data-tier="prata" type="button" style="border-color:rgba(203,213,225,0.4);">🥈 Prata</button>
-        <button class="pill" data-tier="bronze" type="button" style="border-color:rgba(217,119,6,0.45);">🥉 Bronze</button>
-        <button class="pill" data-tier="cobre" type="button" style="border-color:rgba(180,83,9,0.45);">🪙 Cobre</button>
+
+      <!-- GAVETA 2: FILTROS (3 ABAS INTERNAS: BÁSICO | AVANÇADO | BUSCA IA) -->
+      <div class="compact-drawer" id="drawerFiltros" role="region" aria-label="Filtros de Imóveis">
+        <div class="drawer-head">
+          <span class="drawer-title">⚙️ Filtros &amp; Curadoria</span>
+          <button type="button" class="drawer-close-mini" data-close-drawer>Fechar ✕</button>
+        </div>
+        <div class="drawer-tabs" role="tablist">
+          <button type="button" class="drawer-tab-btn active" data-ftab="basico" role="tab" aria-selected="true">Básico</button>
+          <button type="button" class="drawer-tab-btn" data-ftab="avancado" role="tab" aria-selected="false">Avançado</button>
+          <button type="button" class="drawer-tab-btn" data-ftab="ia" role="tab" aria-selected="false">✨ Busca IA</button>
+        </div>
+
+        <!-- Aba Básico -->
+        <div class="drawer-tab-pane active" id="ftab-basico">
+          <div class="launch-filter-bar" id="launchQuickFilterBar" style="display:none;margin-bottom:8px;">
+            <select id="launchCondoFilter" class="select-field" aria-label="Empreendimento">
+              <option value="">Empreendimento: Todos</option>
+              <option value="harmonis">Harmonis Parque Residencial</option>
+              <option value="guestier3">Guestier Boutique III</option>
+            </select>
+            <select id="launchQuadraFilter" class="select-field" aria-label="Quadra">
+              <option value="">Quadra: Todas</option>
+            </select>
+            <select id="launchLoteFilter" class="select-field" aria-label="Lote">
+              <option value="">Lote: Todos</option>
+            </select>
+          </div>
+          <div class="basic-drawer-grid" id="standardBasicFilterRow">
+            <select id="basicTipoSelect" class="select-field full-span" aria-label="Tipo de imóvel">
+              <option value="TODOS">Tipo: Todos os imóveis</option>
+              <option value="CASAS_ALL">Casa (Térrea / Sobrado)</option>
+              <option value="Apartamento">Apartamento</option>
+              <option value="Chácara">Chácara / Sítio</option>
+              <option value="Terreno">Terreno / Lote</option>
+              <option value="LANCAMENTO">Lançamentos</option>
+            </select>
+            <select id="basicQuartosSelect" class="select-field" aria-label="Quartos ou Suítes">
+              <option value="0">Quartos: Todos</option>
+              <option value="1">1+ Quarto</option>
+              <option value="2">2+ Quartos</option>
+              <option value="3">3+ Quartos</option>
+              <option value="4">4+ Quartos</option>
+            </select>
+            <select id="basicMaxPriceSelect" class="select-field" aria-label="Faixa de Valor">
+              <option value="0">Valor: Todos</option>
+              <option value="250000">Até R$ 250 mil</option>
+              <option value="500000">Até R$ 500 mil</option>
+              <option value="1000000">Até R$ 1 milhão</option>
+              <option value="2000000">Até R$ 2 milhões</option>
+              <option value="3500000">Até R$ 3,5 milhões</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-gold" id="btnBasicDrawerSearch" style="flex:1;padding:9px 14px;font-size:0.82rem;">🔍 Pesquisar</button>
+            <button type="button" class="btn-glass" id="btnBasicDrawerReset" style="padding:9px 12px;font-size:0.78rem;">Limpar</button>
+          </div>
+        </div>
+
+        <!-- Aba Avançado -->
+        <div class="drawer-tab-pane" id="ftab-avancado">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <input type="number" id="advAreaMin" class="input-field" placeholder="Metragem mín. (m²)" style="padding:8px 10px;font-size:0.78rem;">
+            <input type="text" id="advCondoText" class="input-field" placeholder="Condomínio ou bairro" style="padding:8px 10px;font-size:0.78rem;">
+          </div>
+          <div class="drawer-h-track" id="advQuickFeatureChips" style="margin-bottom:8px;">
+            <button type="button" class="pill" data-adv-tag="Piscina Aquecida">Piscina Aquecida</button>
+            <button type="button" class="pill" data-adv-tag="Área Gourmet">Área Gourmet</button>
+            <button type="button" class="pill" data-adv-tag="Painel Fotovoltaico">Energia Solar</button>
+            <button type="button" class="pill" data-adv-tag="Portaria 24h">Portaria 24h</button>
+            <button type="button" class="pill" data-adv-tag="Mobiliado">Mobiliado</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn-gold" id="btnApplyAdvDrawer" style="flex:1;padding:8px 12px;font-size:0.8rem;">Aplicar Avançado</button>
+            <button type="button" class="btn-glass" id="btnOpenRefinedFilters" style="padding:8px 11px;font-size:0.76rem;border-color:var(--gold-500);color:var(--gold-300);">
+              Mais opções <span id="refinedCountBadge" style="display:none;background:var(--gold-500);color:#060D1A;border-radius:999px;padding:1px 6px;font-size:0.68rem;font-weight:800;">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Aba Busca IA -->
+        <div class="drawer-tab-pane" id="ftab-ia">
+          <div class="ia-concierge-box">
+            <p>Descreva em linguagem natural o imóvel ideal e o <strong style="color:#f3e5ab;">Concierge IA</strong> filtra a vitrine e recomenda as melhores opções.</p>
+            <button type="button" id="btnOpenConcierge" class="btn-concierge-hc">
+              <span class="ia-gold">✨</span> <span>Abrir Concierge IA</span>
+            </button>
+            <div class="ia-quick-chips">
+              <button type="button" class="ia-quick-chip" data-ia-prompt="Casa térrea em condomínio até 1 milhão com piscina">Casa c/ piscina até 1M</button>
+              <button type="button" class="ia-quick-chip" data-ia-prompt="Apartamento 2 ou 3 quartos pronto para morar">Apto pronto</button>
+              <button type="button" class="ia-quick-chip" data-ia-prompt="Terreno em condomínio fechado com lazer completo">Terreno em condomínio</button>
+            </div>
+          </div>
+        </div>
       </div>
-    
+
+      <!-- GAVETA 3: LANÇAMENTOS (CARDS HORIZONTAIS COM SELO "ABRIR MAQUETE 3D") -->
+      <div class="compact-drawer" id="drawerLancamentos" role="region" aria-label="Condomínios de Lançamento">
+        <div class="drawer-head">
+          <span class="drawer-title">🚀 Condomínios de Lançamento</span>
+          <button type="button" class="drawer-close-mini" data-close-drawer>Fechar ✕</button>
+        </div>
+        <div class="launch-drawer-track" id="launchDrawerTrack"></div>
       </div>
     </section>
 
@@ -2826,30 +3504,7 @@
       <button type="button" class="btn-glass" id="btnLoadMore" style="border-color:var(--gold-500);color:var(--gold-300);">Carregar mais imóveis</button>
     </div>
 
-    <!-- DUAL CONVERSION CARDS: RADAR & OWNER CAPTURE -->
-    <section class="cta-grid">
-      <div class="cta-card glass">
-        <div>
-          <span class="glass-badge" style="margin-bottom:10px;">🎯 Alerta Inteligente</span>
-          <h3 class="serif">Não achou o que procura?</h3>
-          <p>Descreva o perfil do imóvel ideal no nosso <strong>Radar de Desejos</strong>. Assim que um imóvel compatível for aprovado pela curadoria, você recebe um alerta automático no navegador.</p>
-        </div>
-        <div>
-          <button class="btn-gold" id="btnOpenRadarCard" type="button">Ativar Radar de Desejos</button>
-        </div>
-      </div>
-
-      <div class="cta-card glass">
-        <div>
-          <span class="glass-badge" style="margin-bottom:10px;">🏛️ Para Proprietários</span>
-          <h3 class="serif">Cadastre seu imóvel com a Guild Imob</h3>
-          <p>Solicite a avaliação e captação fotográfica oficial do seu imóvel. Nossa equipe cuida da produção visual, dossiê técnico e qualificação dos interessados com sigilo total.</p>
-        </div>
-        <div>
-          <button class="btn-glass" id="btnOpenCaptacaoCard" type="button" style="border-color:var(--gold-500);color:var(--gold-300);">Solicitar Captação Oficial →</button>
-        </div>
-      </div>
-    </section>
+    <!-- RADAR & CAPTAÇÃO CENTRALIZADOS NA DOCK INFERIOR E NO RODAPÉ -->
 
     <!-- FOOTER LEGAL, CRECI & LGPD -->
     <footer class="glass-soft" id="guildFooter" style="margin-top:28px;padding:18px 20px;border-radius:var(--radius-xl);display:flex;flex-direction:column;gap:10px;border:1px solid rgba(212,175,55,0.22);">
@@ -2861,6 +3516,7 @@
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn-glass" id="btnOpenRadarCard" style="border-color:rgba(212,175,55,0.45);color:var(--gold-300);">🎯 Radar de Desejos</button>
           <button type="button" class="btn-glass" id="btnOpenOwnerPortalFooter">🔐 Área do Proprietário</button>
           <button type="button" class="btn-gold" id="btnOpenCaptacaoFooter">🏛️ Anuncie seu Imóvel</button>
         </div>
@@ -4238,8 +4894,21 @@
         </div>
         <button class="modal-close" data-close="lotPickerModal" type="button"><span style="display:inline-flex;align-items:center;gap:5px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Fechar</span></span></button>
       </div>
-      <div style="overflow:auto;max-height:68vh;border-radius:12px;border:1px solid rgba(212,175,55,0.35);background:#fff;position:relative;">
-        <canvas id="lotPickerCanvas" style="width:100%;height:auto;display:block;cursor:crosshair;"></canvas>
+      <div class="lot-picker-toolbar">
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+          <span style="font-size:0.72rem;color:var(--gold-300);font-weight:700;">Zoom HD:</span>
+          <button type="button" class="pill active" data-lp-zoom="1" style="padding:4px 9px;font-size:0.72rem;">1x</button>
+          <button type="button" class="pill" data-lp-zoom="2" style="padding:4px 9px;font-size:0.72rem;">2x</button>
+          <button type="button" class="pill" data-lp-zoom="3" style="padding:4px 9px;font-size:0.72rem;">3x</button>
+          <button type="button" class="pill" data-lp-zoom="4" style="padding:4px 9px;font-size:0.72rem;">4x</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button type="button" class="btn-glass" id="btnLotPickerCenter" style="padding:5px 10px;font-size:0.72rem;">🎯 Centralizar</button>
+          <button type="button" class="btn-gold" id="btnLotPickerConfirm" style="display:none;padding:5px 12px;font-size:0.74rem;">✓ Confirmar Lote</button>
+        </div>
+      </div>
+      <div class="lot-picker-stage" id="lotPickerStage">
+        <canvas id="lotPickerCanvas"></canvas>
       </div>
     </div>
   </div>
@@ -5471,14 +6140,443 @@
             <h3 class="card-title">${escapeHtml(p.titulo)}</h3>
             <div style="font-size:0.75rem;color:var(--text-secondary);line-height:1.35;">${escapeHtml(specLine || p.tipo)}</div>
             <div class="card-footer">
-              <div style="display:flex;align-items:center;gap:6px;">
+              <div style="display:flex;align-items:center;gap:5px;min-width:0;">
                 <span>${escapeHtml(p.codigo)}</span>
-                <span class="card-rank-pips" title="Curadoria ${meta.label}">${pipsHtml}</span>
+                <span class="card-rank-pips" title="Curadoria ${meta.label}">${pipsHtml}<span class="rank-tier-micro ${meta.tier}">${escapeHtml(meta.label)}</span></span>
               </div>
               <span>👁️ ${p.visualizacoes || 0}</span>
             </div>
           </div>
         </article>`;
+    }
+
+
+    // === REDESIGN MOBILE-FIRST 9:16 HELPERS ===
+    function normalizeTipoLabel(raw) {
+      let s = String(raw || "Outros").trim();
+      if (!s) return "Outros";
+      // Corrige mojibake comum vindo da planilha (ex: Casa TÃ©rrea -> Casa Térrea)
+      s = s
+        .replace(/TÃ©rrea/gi, "Térrea")
+        .replace(/ChÃ¡cara/gi, "Chácara")
+        .replace(/SÃ­tio/gi, "Sítio")
+        .replace(/CondomÃ­nio/gi, "Condomínio")
+        .replace(/GalpÃ£o/gi, "Galpão")
+        .replace(/SalÃ£o/gi, "Salão")
+        .replace(/Ã¡/g, "á").replace(/Ã©/g, "é").replace(/Ã­/g, "í")
+        .replace(/Ã³/g, "ó").replace(/Ãº/g, "ú").replace(/Ã£/g, "ã")
+        .replace(/Ãµ/g, "õ").replace(/Ã§/g, "ç");
+      return s;
+    }
+
+    function applySubtleSharpen(ctx, x, y, w, h, amount = 0.3) {
+      const imgData = ctx.getImageData(x, y, w, h);
+      const src = imgData.data;
+      const out = new Uint8ClampedArray(src.length);
+      const a = amount;
+      const center = 1 + 4 * a;
+      for (let row = 1; row < h - 1; row++) {
+        for (let col = 1; col < w - 1; col++) {
+          const i = (row * w + col) * 4;
+          const up = ((row - 1) * w + col) * 4;
+          const dn = ((row + 1) * w + col) * 4;
+          const lf = (row * w + (col - 1)) * 4;
+          const rt = (row * w + (col + 1)) * 4;
+          for (let c = 0; c < 3; c++) {
+            out[i + c] = src[i + c] * center - a * (src[up + c] + src[dn + c] + src[lf + c] + src[rt + c]);
+          }
+          out[i + 3] = src[i + 3];
+        }
+      }
+      for (let i = 0; i < src.length; i += 4) {
+        if (out[i + 3] === 0) {
+          out[i] = src[i]; out[i + 1] = src[i + 1]; out[i + 2] = src[i + 2]; out[i + 3] = src[i + 3];
+        }
+      }
+      imgData.data.set(out);
+      ctx.putImageData(imgData, x, y);
+    }
+
+    function getPropertyRecencyTimestamp(p) {
+      const raw = p.dataCadastro || p.createdAt || p.dataCriacao || p.dataAtualizacao || "";
+      if (raw) {
+        const ts = Date.parse(raw);
+        // Ignora datas legadas muito antigas de importação (> 180 dias) no critério primário para que o desempate por inserção funcione
+        if (!isNaN(ts) && (Date.now() - ts) <= (180 * 86400 * 1000)) return ts;
+      }
+      const m = String(p.id || "").match(/LOCAL_(\d+)/);
+      if (m) return Number(m[1]);
+      return 0;
+    }
+
+    function buildSmartRecentsList(ativos) {
+      // Mapeia índice original na planilha/array para desempate por ordem inversa de inserção
+      const indexed = ativos.map((p, idx) => ({
+        p,
+        idx,
+        ts: getPropertyRecencyTimestamp(p),
+        isLaunch: Boolean(p.isLaunch)
+      }));
+
+      const sortByRecent = (a, b) => {
+        if (b.ts !== a.ts) return b.ts - a.ts;
+        return b.idx - a.idx; // Ordem inversa de inserção (últimos cadastrados primeiro)
+      };
+
+      const owners = indexed.filter(x => !x.isLaunch).sort(sortByRecent).map(x => x.p);
+      const launches = indexed.filter(x => x.isLaunch).sort(sortByRecent).map(x => x.p).slice(0, 2);
+
+      // Prioriza proprietários; adiciona no máximo 2 lançamentos ao final se houver espaço
+      if (owners.length >= 6) return owners;
+      return [...owners, ...launches];
+    }
+
+    function buildSmartSpotlightList(ativos) {
+      if (!ativos || !ativos.length) return [];
+      const tiersRank = { diamante: 7, esmeralda: 6, platina: 5, ouro: 4, prata: 3, bronze: 2, cobre: 1 };
+      const scored = ativos.map(p => {
+        const meta = computePropertyTier(p, ativos);
+        const tWeight = tiersRank[meta.tier] || 1;
+        const ownerBonus = p.isLaunch ? 0 : 12;
+        const outlierBonus = meta.isOutlier ? 10 : 0;
+        const viewsBonus = Math.min(12, Math.floor((Number(p.visualizacoes) || 0) / 25));
+        const hasRealPhoto = (p.midias && p.midias.length > 0 && p.midias[0].full !== ASSET_DEMO_1) ? 4 : 0;
+        const score = (tWeight * 5) + ownerBonus + outlierBonus + viewsBonus + hasRealPhoto;
+        return { p, meta, score, cat: p.isLaunch ? "LANCAMENTO" : normalizeTipoLabel(p.tipo || "Outros") };
+      }).sort((a, b) => b.score - a.score);
+
+      // Curadoria variada entre categorias (5 a 8 imóveis "Fora da Curva")
+      const picked = [];
+      const usedIds = new Set();
+      const catCounts = {};
+      // 1ª passada: 1 melhor de cada categoria (priorizando proprietários)
+      for (const item of scored) {
+        if (picked.length >= 7) break;
+        if (item.cat === "LANCAMENTO" && (catCounts["LANCAMENTO"] || 0) >= 1) continue;
+        if (!catCounts[item.cat]) {
+          picked.push(item.p);
+          usedIds.add(item.p.id);
+          catCounts[item.cat] = 1;
+        }
+      }
+      // 2ª passada: completa até 6–7 itens com melhores proprietários de classes altas
+      for (const item of scored) {
+        if (picked.length >= 7) break;
+        if (usedIds.has(item.p.id)) continue;
+        if (item.cat === "LANCAMENTO" && (catCounts["LANCAMENTO"] || 0) >= 1) continue;
+        picked.push(item.p);
+        usedIds.add(item.p.id);
+        catCounts[item.cat] = (catCounts[item.cat] || 0) + 1;
+      }
+
+      // Embaralha a ordem inicial uma vez por sessão de acesso para o site parecer sempre vivo
+      if (!state._spotlightOrderIds || !state._spotlightOrderIds.length) {
+        const arr = picked.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        state._spotlightOrderIds = arr.map(x => x.id);
+      }
+      const ordered = state._spotlightOrderIds.map(id => picked.find(x => x.id === id)).filter(Boolean);
+      picked.forEach(x => { if (!ordered.some(o => o.id === x.id)) ordered.push(x); });
+      return ordered.length ? ordered : [ativos[0]];
+    }
+
+    function buildSpotlightCardHtml(heroProp, ativos) {
+      const heroImg = (heroProp.midias && heroProp.midias[0]) ? (heroProp.midias[0].full || heroProp.midias[0].thumb) : ASSET_DEMO_1;
+      const heroMeta = computePropertyTier(heroProp, ativos);
+      const tipoNorm = normalizeTipoLabel(heroProp.tipo);
+      return `
+        <section class="hero-spotlight glass ${heroMeta.aura}" id="activeSpotlightCard" data-open-prop="${escapeHtml(heroProp.id)}">
+          <div class="hero-spotlight-img">
+            <img src="${escapeHtml(heroImg)}" alt="${escapeHtml(heroProp.titulo)}">
+          </div>
+          <div class="hero-spotlight-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <span class="gold-text" style="font-weight:800;font-size:1.15rem;">${formatBRL(heroProp.valor)}</span>
+              <span class="tier-label-pill">✨ Destaque ${escapeHtml(heroMeta.label)}</span>
+            </div>
+            <span style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold-300);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${escapeHtml(heroProp.bairro)} • ${escapeHtml(heroProp.codigo)}</span>
+            <h2 class="serif" style="margin:0;font-size:1.2rem;line-height:1.16;">${escapeHtml(heroProp.titulo)}</h2>
+            <div class="card-specs">
+              <span class="card-spec-item">${escapeHtml(tipoNorm)}</span>
+              ${heroProp.suites ? `<span class="card-spec-item">${heroProp.suites} suítes</span>` : (heroProp.quartos ? `<span class="card-spec-item">${heroProp.quartos} qts</span>` : "")}
+              ${heroProp.vagas ? `<span class="card-spec-item">${heroProp.vagas} vagas</span>` : ""}
+              <span class="card-spec-item">${heroProp.areaConstruida || heroProp.areaTerreno || 0} m²</span>
+            </div>
+            <div style="margin-top:2px;">
+              <span class="btn-gold" style="padding:7px 14px;font-size:0.78rem;">Ver Detalhes & Simular →</span>
+            </div>
+          </div>
+        </section>`;
+    }
+
+    function initSpotlightCarouselControls(spotlightList, ativos) {
+      if (state._spotlightTimer) {
+        clearInterval(state._spotlightTimer);
+        state._spotlightTimer = null;
+      }
+      const wrap = document.getElementById("spotlightCarouselWrap");
+      if (!wrap || !spotlightList || spotlightList.length <= 1) return;
+
+      function goToSlide(nextIdx) {
+        state._spotlightIdx = (nextIdx + spotlightList.length) % spotlightList.length;
+        const prop = spotlightList[state._spotlightIdx];
+        const oldCard = document.getElementById("activeSpotlightCard");
+        if (oldCard) {
+          const tmp = document.createElement("div");
+          tmp.innerHTML = buildSpotlightCardHtml(prop, ativos).trim();
+          const newCard = tmp.firstElementChild;
+          newCard.addEventListener("click", () => openPropertyDetail(prop.id));
+          oldCard.replaceWith(newCard);
+        }
+        wrap.querySelectorAll(".spotlight-dot").forEach((d, idx) => {
+          d.classList.toggle("active", idx === state._spotlightIdx);
+        });
+      }
+
+      const prevBtn = document.getElementById("btnSpotlightPrev");
+      const nextBtn = document.getElementById("btnSpotlightNext");
+      if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); goToSlide(state._spotlightIdx - 1); resetTimer(); };
+      if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); goToSlide(state._spotlightIdx + 1); resetTimer(); };
+      wrap.querySelectorAll(".spotlight-dot").forEach(dot => {
+        dot.onclick = (e) => {
+          e.stopPropagation();
+          goToSlide(Number(dot.getAttribute("data-sp-idx")) || 0);
+          resetTimer();
+        };
+      });
+
+      // Swipe touch suave no Spotlight
+      let spTouchX = 0;
+      wrap.addEventListener("touchstart", (e) => { spTouchX = e.touches[0].clientX; }, { passive: true });
+      wrap.addEventListener("touchend", (e) => {
+        const diff = e.changedTouches[0].clientX - spTouchX;
+        if (Math.abs(diff) > 36) {
+          goToSlide(state._spotlightIdx + (diff < 0 ? 1 : -1));
+          resetTimer();
+        }
+      }, { passive: true });
+
+      function resetTimer() {
+        if (state._spotlightTimer) clearInterval(state._spotlightTimer);
+        state._spotlightTimer = setInterval(() => {
+          if (!document.body.classList.contains("modal-open") && document.getElementById("activeSpotlightCard")) {
+            goToSlide(state._spotlightIdx + 1);
+          }
+        }, 7000);
+      }
+      resetTimer();
+    }
+
+    function renderLaunchDrawerCards() {
+      const track = document.getElementById("launchDrawerTrack");
+      if (!track) return;
+      const cfgs = typeof getActiveLancamentosConfig === "function" ? getActiveLancamentosConfig() : [];
+      if (!cfgs.length) {
+        track.innerHTML = `<div style="font-size:0.78rem;color:var(--text-muted);padding:10px;">Nenhum lançamento cadastrado no momento.</div>`;
+        return;
+      }
+      track.innerHTML = cfgs.map(cfg => {
+        const key = cfg.condoKey || cfg.id;
+        const lots = state.properties.filter(p => p.isLaunch && (p.condoKey || "") === key);
+        const lazerKey = key.startsWith("guestier") ? "guestier" : (CONDO_LAZER_B64[key] ? key : "harmonis");
+        const cover = (CONDO_LAZER_B64[lazerKey] && CONDO_LAZER_B64[lazerKey][0]) || CONDO_PLANTAS_B64[key] || ASSET_DEMO_1;
+        const maqUrl = cfg.maqueteUrl || resolveMapa3dUrlForProperty({ bairro: cfg.nome, titulo: cfg.nome }, key) || "";
+        const minAvista = lots.length ? Math.min(...lots.map(x => x.valorAVista || x.valor || 0)) : 0;
+        return `
+          <div class="launch-mini-card">
+            <div class="launch-mini-media">
+              ${maqUrl ? `<a class="badge-maquete-3d-top" href="${escapeHtml(maqUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎮 Abrir Maquete 3D</a>` : ""}
+              <img src="${escapeHtml(cover)}" alt="${escapeHtml(cfg.nome)}" loading="lazy">
+            </div>
+            <div class="launch-mini-body">
+              <h4 class="launch-mini-title">${escapeHtml(cfg.nome)}</h4>
+              <div class="launch-mini-sub">📍 ${escapeHtml(cfg.cidade || "Bauru - SP")} • ${lots.length} lotes</div>
+              ${minAvista ? `<div style="font-size:0.72rem;color:var(--gold-300);font-weight:700;">A partir de ${formatBRL(minAvista)}</div>` : ""}
+              <div style="display:flex;gap:5px;margin-top:auto;padding-top:4px;">
+                <button type="button" class="btn-gold" data-drawer-launch-filter="${escapeHtml(key)}" style="flex:1;padding:6px 8px;font-size:0.72rem;">Ver Lotes</button>
+                ${maqUrl ? `<a class="btn-glass" href="${escapeHtml(maqUrl)}" target="_blank" rel="noopener" style="padding:6px 8px;font-size:0.72rem;text-decoration:none;border-color:rgba(52,211,153,0.5);color:#6ee7b7;">3D ↗</a>` : ""}
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+
+      track.querySelectorAll("[data-drawer-launch-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const k = btn.getAttribute("data-drawer-launch-filter");
+          state.activeFilter = "LANCAMENTO";
+          state.activeLaunchCondo = k;
+          state.activeQuadra = "";
+          state.activeLote = "";
+          state.forceGridMode = true;
+          const lcs = document.getElementById("launchCondoFilter");
+          if (lcs) lcs.value = k;
+          document.querySelectorAll("#filterPills .pill").forEach(p => {
+            p.classList.toggle("active", p.getAttribute("data-filter") === "LANCAMENTO");
+          });
+          closeAllCompactDrawers();
+          applyFiltersAndRender();
+          const el = document.getElementById("resultsCountLabel");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
+
+    function closeAllCompactDrawers() {
+      document.querySelectorAll(".compact-drawer").forEach(d => d.classList.remove("open"));
+      document.querySelectorAll(".quick-orb-item").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function initCompactTopDrawers() {
+      const orbBtns = document.querySelectorAll(".quick-orb-item[data-drawer]");
+      const drawerMap = {
+        ranking: document.getElementById("drawerRanking"),
+        filtros: document.getElementById("drawerFiltros"),
+        lancamentos: document.getElementById("drawerLancamentos")
+      };
+
+      orbBtns.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const key = btn.getAttribute("data-drawer");
+          const target = drawerMap[key];
+          if (!target) return;
+          const wasOpen = target.classList.contains("open");
+          closeAllCompactDrawers();
+          if (!wasOpen) {
+            if (key === "lancamentos") renderLaunchDrawerCards();
+            target.classList.add("open");
+            btn.classList.add("active");
+            btn.setAttribute("aria-expanded", "true");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-close-drawer]").forEach(b => {
+        b.addEventListener("click", closeAllCompactDrawers);
+      });
+
+      // Abas internas da gaveta Filtros
+      document.querySelectorAll(".drawer-tab-btn[data-ftab]").forEach(tabBtn => {
+        tabBtn.addEventListener("click", () => {
+          const tab = tabBtn.getAttribute("data-ftab");
+          document.querySelectorAll(".drawer-tab-btn").forEach(b => {
+            const act = b === tabBtn;
+            b.classList.toggle("active", act);
+            b.setAttribute("aria-selected", String(act));
+          });
+          document.querySelectorAll(".drawer-tab-pane").forEach(p => {
+            p.classList.toggle("active", p.id === "ftab-" + tab);
+          });
+        });
+      });
+
+      // Aba Básico: Tipo + Botão Pesquisar + Limpar
+      const basicTipoSel = document.getElementById("basicTipoSelect");
+      if (basicTipoSel) {
+        basicTipoSel.addEventListener("change", (e) => {
+          state.activeFilter = e.target.value || "TODOS";
+          document.querySelectorAll("#filterPills .pill").forEach(p => {
+            p.classList.toggle("active", p.getAttribute("data-filter") === state.activeFilter);
+          });
+        });
+      }
+      const btnBasicGo = document.getElementById("btnBasicDrawerSearch");
+      if (btnBasicGo) {
+        btnBasicGo.addEventListener("click", () => {
+          if (basicTipoSel) state.activeFilter = basicTipoSel.value || "TODOS";
+          const qSel = document.getElementById("basicQuartosSelect");
+          const pSel = document.getElementById("basicMaxPriceSelect");
+          if (qSel) state.refined.quartos = Number(qSel.value) || 0;
+          if (pSel) state.refined.maxPrice = Number(pSel.value) || 0;
+          state.forceGridMode = true;
+          closeAllCompactDrawers();
+          applyFiltersAndRender();
+          updateOrbBadges();
+        });
+      }
+      const btnBasicReset = document.getElementById("btnBasicDrawerReset");
+      if (btnBasicReset) {
+        btnBasicReset.addEventListener("click", () => {
+          state.activeFilter = "TODOS";
+          state.activeTier = "TODAS";
+          state.advAreaMin = 0;
+          state.searchQuery = "";
+          state.forceGridMode = false;
+          state.refined = { quartos: 0, banheiros: 0, vagas: 0, minPrice: 0, maxPrice: 0, entradaMax: 0, parcelaMax: 0, primeiroImovel: false, tags: [] };
+          if (basicTipoSel) basicTipoSel.value = "TODOS";
+          const qSel = document.getElementById("basicQuartosSelect"); if (qSel) qSel.value = "0";
+          const pSel = document.getElementById("basicMaxPriceSelect"); if (pSel) pSel.value = "0";
+          const sInp = document.getElementById("searchInput"); if (sInp) sInp.value = "";
+          const aMin = document.getElementById("advAreaMin"); if (aMin) aMin.value = "";
+          const aCond = document.getElementById("advCondoText"); if (aCond) aCond.value = "";
+          document.querySelectorAll("#filterPills .pill").forEach(x => x.classList.toggle("active", x.getAttribute("data-filter") === "TODOS"));
+          document.querySelectorAll("#tierPillsBar .pill").forEach(x => x.classList.toggle("active", x.getAttribute("data-tier") === "TODAS"));
+          document.querySelectorAll("#advQuickFeatureChips .pill").forEach(x => x.classList.remove("active"));
+          applyFiltersAndRender();
+          updateOrbBadges();
+        });
+      }
+
+      // Aba Avançado inline
+      document.querySelectorAll("#advQuickFeatureChips [data-adv-tag]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const tag = chip.getAttribute("data-adv-tag");
+          const idx = state.refined.tags.indexOf(tag);
+          if (idx >= 0) { state.refined.tags.splice(idx, 1); chip.classList.remove("active"); }
+          else { state.refined.tags.push(tag); chip.classList.add("active"); }
+        });
+      });
+      const btnAdvApply = document.getElementById("btnApplyAdvDrawer");
+      if (btnAdvApply) {
+        btnAdvApply.addEventListener("click", () => {
+          state.advAreaMin = Number(document.getElementById("advAreaMin")?.value) || 0;
+          const condoQ = (document.getElementById("advCondoText")?.value || "").trim();
+          if (condoQ) {
+            state.searchQuery = condoQ;
+            const sInp = document.getElementById("searchInput");
+            if (sInp) sInp.value = condoQ;
+          }
+          state.forceGridMode = true;
+          closeAllCompactDrawers();
+          applyFiltersAndRender();
+          updateOrbBadges();
+        });
+      }
+
+      // Aba Busca IA: chips rápidos que abrem o Concierge IA já preenchendo a pergunta
+      document.querySelectorAll(".ia-quick-chip[data-ia-prompt]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const prompt = chip.getAttribute("data-ia-prompt");
+          closeAllCompactDrawers();
+          openModal("conciergeModal");
+          const inp = document.getElementById("conciergeInput");
+          if (inp && prompt) {
+            inp.value = prompt;
+            inp.focus();
+          }
+        });
+      });
+
+      function updateOrbBadges() {
+        const rkBadge = document.getElementById("orbRankingBadge");
+        const flBadge = document.getElementById("orbFiltrosBadge");
+        const rkCount = (state.activeFilter && state.activeFilter !== "TODOS" ? 1 : 0) + (state.activeTier && state.activeTier !== "TODAS" ? 1 : 0);
+        const rf = state.refined || {};
+        const flCount = (rf.quartos > 0 ? 1 : 0) + (rf.maxPrice > 0 ? 1 : 0) + (rf.minPrice > 0 ? 1 : 0) + (state.advAreaMin > 0 ? 1 : 0) + (rf.tags ? rf.tags.length : 0);
+        if (rkBadge) { rkBadge.textContent = rkCount; rkBadge.classList.toggle("has-count", rkCount > 0); }
+        if (flBadge) { flBadge.textContent = flCount; flBadge.classList.toggle("has-count", flCount > 0); }
+      }
+      window.updateOrbBadges = updateOrbBadges;
+      ["filterPills", "tierPillsBar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", () => setTimeout(updateOrbBadges, 40));
+      });
     }
 
     /* FILTERS & FEED RENDER */
@@ -5503,12 +6601,20 @@
         }
       } else if (f === "PROPRIETARIO") {
         list = list.filter(p => !p.isLaunch);
+      } else if (f === "CASAS_ALL") {
+        list = list.filter(p => {
+          const t = normalizeTipoLabel(p.tipo).toLowerCase();
+          return t.includes("casa") || t.includes("sobrado");
+        });
       } else if (f !== "TODOS") {
         list = list.filter(p => {
-          const inTipo = String(p.tipo || "").toLowerCase() === f.toLowerCase();
+          const inTipo = normalizeTipoLabel(p.tipo).toLowerCase() === normalizeTipoLabel(f).toLowerCase();
           const inTags = (p.tags || []).some(t => t.toLowerCase().includes(f.toLowerCase()));
           return inTipo || inTags;
         });
+      }
+      if (state.advAreaMin > 0) {
+        list = list.filter(p => Math.max(Number(p.areaConstruida) || 0, Number(p.areaTerreno) || 0) >= state.advAreaMin);
       }
 
       if (q) {
@@ -5662,56 +6768,55 @@
         grid.innerHTML = "";
         loadMoreWrap.style.display = "none";
 
-        // 1. Hero Destaque (Top propriedade)
-        const heroProp = ativos.find(p => p.destaque) || ativos[0];
-        const heroImg = (heroProp.midias && heroProp.midias[0]) ? (heroProp.midias[0].full || heroProp.midias[0].thumb) : ASSET_DEMO_1;
-        const heroMeta = computePropertyTier(heroProp, ativos);
+        // 1. Hero Destaque: Carrossel Rotativo Inteligente (5 a 8 imóveis "Fora da Curva", variando categorias e embaralhado por visita)
+        const spotlightList = buildSmartSpotlightList(ativos);
+        if (!Number.isInteger(state._spotlightIdx) || state._spotlightIdx >= spotlightList.length) {
+          state._spotlightIdx = 0;
+        }
+        const heroProp = spotlightList[state._spotlightIdx] || ativos[0];
 
         let htmlOut = `
-          <section class="hero-spotlight glass ${heroMeta.aura}" data-open-prop="${escapeHtml(heroProp.id)}">
-            <div class="hero-spotlight-img">
-              <img src="${escapeHtml(heroImg)}" alt="${escapeHtml(heroProp.titulo)}">
-            </div>
-            <div class="hero-spotlight-body">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                <span class="gold-text" style="font-weight:800;font-size:1.25rem;">${formatBRL(heroProp.valor)}</span>
-                <span class="tier-label-pill">✨ Destaque ${heroMeta.label}</span>
+          <div class="spotlight-carousel-wrap" id="spotlightCarouselWrap">
+            ${buildSpotlightCardHtml(heroProp, ativos)}
+            ${spotlightList.length > 1 ? `
+              <div class="spotlight-controls" aria-label="Navegação do Destaque">
+                <button type="button" class="spotlight-nav-btn" id="btnSpotlightPrev" aria-label="Destaque anterior">‹</button>
+                <div class="spotlight-dots" id="spotlightDots">
+                  ${spotlightList.map((_, i) => `<button type="button" class="spotlight-dot ${i === state._spotlightIdx ? "active" : ""}" data-sp-idx="${i}" aria-label="Ir para destaque ${i + 1}"></button>`).join("")}
+                </div>
+                <button type="button" class="spotlight-nav-btn" id="btnSpotlightNext" aria-label="Próximo destaque">›</button>
               </div>
-              <span style="font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-300);">📍 ${escapeHtml(heroProp.bairro)} • ${escapeHtml(heroProp.codigo)}</span>
-              <h2 class="serif" style="margin:0;font-size:1.35rem;line-height:1.18;">${escapeHtml(heroProp.titulo)}</h2>
-              <div class="card-specs">
-                <span class="card-spec-item">${escapeHtml(heroProp.tipo)}</span>
-                ${heroProp.suites ? `<span class="card-spec-item">${heroProp.suites} suítes</span>` : ""}
-                ${heroProp.vagas ? `<span class="card-spec-item">${heroProp.vagas} vagas</span>` : ""}
-                <span class="card-spec-item">${heroProp.areaConstruida || heroProp.areaTerreno || 0} m²</span>
-              </div>
-              <div style="margin-top:4px;">
-                <span class="btn-gold" style="padding:9px 16px;font-size:0.82rem;">Ver Detalhes & Simular →</span>
-              </div>
-            </div>
-          </section>`;
+            ` : ""}
+          </div>`;
 
-        // 2. Fileiras Streaming (Estilo Crunchyroll: 6 cards leves por fileira + Card "Ver mais" no final)
+        // 2. Fileiras Streaming — Prioridade para Imóveis de Proprietários na 1ª tela
         const ROW_LIMIT = 6;
         const rows = [];
-        const new48h = ativos.filter(p => isPropertyNew48h(p));
-        const recentsPool = (new48h.length ? new48h : ativos.slice().reverse());
+        const ownersActive = ativos.filter(p => !p.isLaunch);
+        const launchesActive = ativos.filter(p => Boolean(p.isLaunch));
+
+        // Recém-Adicionados: prioriza proprietários + ordena por data mais recente (desempate: ordem inversa de inserção), máx. 2 lançamentos
+        const recentsPool = buildSmartRecentsList(ativos);
         if (recentsPool.length) {
-          rows.push({ title: "✨ Recém-Adicionados", sub: "Novidades na vitrine", items: recentsPool.slice(0, ROW_LIMIT), total: recentsPool.length, filter: "TODOS" });
+          rows.push({ title: "✨ Recém-Adicionados", sub: "Novidades na vitrine", items: recentsPool.slice(0, ROW_LIMIT), total: recentsPool.length, filter: "PROPRIETARIO" });
         }
 
-        const mostViewedPool = ativos.slice().sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0));
+        // Em Alta na Guild: prioriza imóveis de proprietários mais visitados
+        const mostViewedPool = (ownersActive.length >= 2 ? ownersActive : ativos)
+          .slice()
+          .sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0));
         if (mostViewedPool.length > 1) {
-          rows.push({ title: "🔥 Em Alta na Guild", sub: "Mais visitados", items: mostViewedPool.slice(0, ROW_LIMIT), total: mostViewedPool.length, filter: "TODOS", sort: "mais_vistos" });
+          rows.push({ title: "🔥 Em Alta na Guild", sub: "Mais visitados", items: mostViewedPool.slice(0, ROW_LIMIT), total: mostViewedPool.length, filter: "PROPRIETARIO", sort: "mais_vistos" });
         }
 
         if (hasTaste) {
-          const recsPool = ativos.map(p => ({ p, s: scorePropertyForUser(p) }))
+          const recsPool = (ownersActive.length ? ownersActive : ativos)
+            .map(p => ({ p, s: scorePropertyForUser(p) }))
             .filter(x => x.s > 0)
             .sort((a, b) => b.s - a.s)
             .map(x => x.p);
           if (recsPool.length) {
-            rows.push({ title: "🎯 Inspirados na Sua Busca", sub: "Curadoria pelo seu perfil", items: recsPool.slice(0, ROW_LIMIT), total: recsPool.length, filter: "TODOS" });
+            rows.push({ title: "🎯 Inspirados na Sua Busca", sub: "Curadoria pelo seu perfil", items: recsPool.slice(0, ROW_LIMIT), total: recsPool.length, filter: "PROPRIETARIO" });
           }
         }
 
@@ -5720,10 +6825,10 @@
           rows.push({ title: "🕒 Vistos Recentemente", sub: "Continue de onde parou", items: recentOpened.slice(0, ROW_LIMIT), total: recentOpened.length, filter: "TODOS" });
         }
 
-        // Segmentos
+        // Segmentos de Proprietários (com normalização de acentos para evitar seções duplicadas)
         const segMap = {};
-        ativos.forEach(p => {
-          const t = p.tipo || "Outros";
+        ownersActive.forEach(p => {
+          const t = normalizeTipoLabel(p.tipo || "Outros");
           if (!segMap[t]) segMap[t] = [];
           segMap[t].push(p);
         });
@@ -5732,6 +6837,11 @@
             rows.push({ title: "🏛️ " + seg, sub: segMap[seg].length + " opções", items: segMap[seg].slice(0, ROW_LIMIT), total: segMap[seg].length, filter: seg });
           }
         });
+
+        // Fileira dedicada de Lançamentos posicionada mais abaixo na rolagem
+        if (launchesActive.length) {
+          rows.push({ title: "🚀 Lançamentos & Condomínios", sub: launchesActive.length + " lotes disponíveis", items: launchesActive.slice(0, ROW_LIMIT), total: launchesActive.length, filter: "LANCAMENTO" });
+        }
 
         htmlOut += rows.map(r => `
           <section class="streaming-section">
@@ -5751,6 +6861,7 @@
           </section>`).join("");
 
         streamWrap.innerHTML = htmlOut;
+        initSpotlightCarouselControls(spotlightList, ativos);
 
         streamWrap.querySelectorAll("[data-view-all]").forEach(btn => {
           btn.addEventListener("click", () => {
@@ -8509,30 +9620,30 @@
             };
           }
         }
-        const b64 = CONDO_PLANTAS_B64[key];
+        const bestSrc = await getBestPlantaSrc(key);
+        const b64 = bestSrc || getHighResPlantaUrl(key) || CONDO_PLANTAS_B64[key];
         if (!b64) return;
-        const img = await new Promise((res) => {
-          const im = new Image();
-          im.onload = () => res(im);
-          im.src = b64;
-        });
-        const W = 1080, H = 1920;
+        const img = await loadHighResImage(b64, CONDO_PLANTAS_B64[key]);
+        // Ultra-HD 1440x2560 para nitidez máxima de quadra, lote e metragem
+        const W = 1440, H = 2560;
         const canvas = document.createElement("canvas");
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
         const bg = ctx.createLinearGradient(0, 0, 0, H);
         bg.addColorStop(0, "#040914"); bg.addColorStop(1, "#0b1830");
         ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
         const condoNames = { harmonis: "HARMONIS PARQUE RESIDENCIAL", guestier1: "GUESTIER BOUTIQUE I", guestier2: "GUESTIER BOUTIQUE II", guestier3: "GUESTIER BOUTIQUE III" };
-        ctx.fillStyle = "#f3e5ab"; ctx.font = "bold 34px Georgia, serif";
-        ctx.fillText(condoNames[key] || prop.bairro || "PLANTA OFICIAL", 48, 72);
-        ctx.fillStyle = "#34d399"; ctx.font = "bold 28px sans-serif";
+        ctx.fillStyle = "#f3e5ab"; ctx.font = "bold 44px Georgia, serif";
+        ctx.fillText(condoNames[key] || prop.bairro || "PLANTA OFICIAL", 58, 92);
+        ctx.fillStyle = "#34d399"; ctx.font = "bold 36px sans-serif";
         const areaShow = formatBRDecimal(prop.areaTerreno || (hit && hit.a) || 0);
-        ctx.fillText(`QUADRA ${qTxt || "-"} • LOTE ${lTxt || "-"} • ÁREA: ${areaShow} m²`, 48, 118);
+        ctx.fillText(`QUADRA ${qTxt || "-"} • LOTE ${lTxt || "-"} • ÁREA: ${areaShow} m²`, 58, 152);
 
-        // 1. Mapa Inteiro com Círculo Vermelho
-        const m1X = 44, m1Y = 150, m1W = W - 88, m1H = 650;
+        // 1. Mapa Inteiro Centralizado com Círculo Vermelho
+        const m1X = 56, m1Y = 192, m1W = W - 112, m1H = 860;
         ctx.fillStyle = "#ffffff"; ctx.fillRect(m1X, m1Y, m1W, m1H);
         const ir = img.naturalWidth / img.naturalHeight, br = m1W / m1H;
         let dw = m1W, dh = m1W / ir;
@@ -8541,47 +9652,48 @@
         ctx.drawImage(img, ox, oy, dw, dh);
         const lx = hit ? hit.x : 50, ly = hit ? hit.y : 50;
         if (hit) {
-          ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 8;
-          ctx.beginPath(); ctx.arc(ox + (lx / 100) * dw, oy + (ly / 100) * dh, 36, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 10;
+          ctx.beginPath(); ctx.arc(ox + (lx / 100) * dw, oy + (ly / 100) * dh, 46, 0, Math.PI * 2); ctx.stroke();
         }
 
-        // 2. Zoom HD no Lote Específico
-        const m2X = 44, m2Y = 825, m2W = W - 88, m2H = 665;
+        // 2. Zoom Ultra-HD Centralizado no Lote com Nitidez Aprimorada
+        const m2X = 56, m2Y = 1086, m2W = W - 112, m2H = 920;
         ctx.save(); ctx.beginPath(); ctx.rect(m2X, m2Y, m2W, m2H); ctx.clip();
         ctx.fillStyle = "#ffffff"; ctx.fillRect(m2X, m2Y, m2W, m2H);
-        const cropW = img.naturalWidth * (exactHit ? 0.16 : 0.24);
+        const cropW = img.naturalWidth * (exactHit ? 0.125 : 0.21);
         const cropH = cropW * (m2H / m2W);
         let sx = Math.max(0, Math.min(img.naturalWidth - cropW, (lx / 100) * img.naturalWidth - cropW / 2));
         let sy = Math.max(0, Math.min(img.naturalHeight - cropH, (ly / 100) * img.naturalHeight - cropH / 2));
         ctx.drawImage(img, sx, sy, cropW, cropH, m2X, m2Y, m2W, m2H);
+        try { applySubtleSharpen(ctx, m2X, m2Y, m2W, m2H, 0.32); } catch (e) {}
         if (hit) {
           const zx = m2X + (((lx / 100) * img.naturalWidth - sx) / cropW) * m2W;
           const zy = m2Y + (((ly / 100) * img.naturalHeight - sy) / cropH) * m2H;
-          ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 10;
-          ctx.beginPath(); ctx.arc(zx, zy, exactHit ? 54 : 84, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 12;
+          ctx.beginPath(); ctx.arc(zx, zy, exactHit ? 72 : 108, 0, Math.PI * 2); ctx.stroke();
         }
-        ctx.fillStyle = "rgba(15,23,42,0.9)"; ctx.fillRect(m2X + 16, m2Y + 16, 540, 48);
-        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 24px sans-serif";
-        ctx.fillText(exactHit ? `🔍 ZOOM DO LOTE ${qTxt}-${lTxt} (${areaShow} m²)` : `🔍 REGIÃO DA QUADRA ${qTxt} • LOTE ${lTxt}`, m2X + 32, m2Y + 48);
+        ctx.fillStyle = "rgba(15,23,42,0.92)"; ctx.fillRect(m2X + 20, m2Y + 20, 740, 62);
+        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 31px sans-serif";
+        ctx.fillText(exactHit ? `🔍 ZOOM HD — LOTE ${qTxt}-${lTxt} (${areaShow} m²)` : `🔍 REGIÃO DA QUADRA ${qTxt} • LOTE ${lTxt}`, m2X + 40, m2Y + 62);
         ctx.restore();
 
         // 3. Ficha Técnica & Medidas do Lote
-        const dY = 1515, dH = 355;
-        ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.fillRect(44, dY, W - 88, dH);
-        ctx.strokeStyle = "#d4af37"; ctx.lineWidth = 3; ctx.strokeRect(44, dY, W - 88, dH);
+        const dY = 2036, dH = 468;
+        ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.fillRect(56, dY, W - 112, dH);
+        ctx.strokeStyle = "#d4af37"; ctx.lineWidth = 4; ctx.strokeRect(56, dY, W - 112, dH);
         const dims = (hit && Array.isArray(hit.d) && hit.d.length >= 2)
           ? `Medidas aprox. (planta): ${hit.d.map(v => formatBRDecimal(v) + "m").join(" × ")}`
           : `Área Oficial do Terreno: ${areaShow} m² (confira cotas exatas no zoom acima)`;
-        ctx.fillStyle = "#f8fafc"; ctx.font = "bold 26px sans-serif";
-        ctx.fillText(`Tabela: ${formatBRL(prop.valor)}`, 74, dY + 70);
+        ctx.fillStyle = "#f8fafc"; ctx.font = "bold 34px sans-serif";
+        ctx.fillText(`Tabela: ${formatBRL(prop.valor)}`, 94, dY + 92);
         if (prop.valorAVista) {
           ctx.fillStyle = "#34d399";
-          ctx.fillText(`À Vista (-${prop.descontoAvistaPct || 0}%): ${formatBRL(prop.valorAVista)}`, 74, dY + 118);
+          ctx.fillText(`À Vista (-${prop.descontoAvistaPct || 0}%): ${formatBRL(prop.valorAVista)}`, 94, dY + 154);
         }
-        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 23px sans-serif";
-        ctx.fillText(dims, 74, dY + 178);
-        ctx.fillStyle = "#cbd5e1"; ctx.font = "22px sans-serif";
-        ctx.fillText("GUILD IMOB • CRECI 272251-F | J-50143 • guildimob.com", 74, dY + 305);
+        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 30px sans-serif";
+        ctx.fillText(dims, 94, dY + 234);
+        ctx.fillStyle = "#cbd5e1"; ctx.font = "28px sans-serif";
+        ctx.fillText("GUILD IMOB • CRECI 272251-F | J-50143 • guildimob.com", 94, dY + 402);
 
         const dataUrl = canvas.toDataURL("image/jpeg", 0.90);
         if (!prop._lotMapGenerated) {
@@ -9049,49 +10161,128 @@
       return CONDO_PLANTAS_B64[key] || "";
     }
 
-    function openLotPickerOnMap() {
+    async function openLotPickerOnMap() {
       const condoTxt = (document.getElementById("propCondominio")?.value || "") + " " + (document.getElementById("propBairro")?.value || "");
       const key = detectCondoKeyFromText(condoTxt) || "harmonis";
       activeLotCoord.key = key;
-      const b64 = getHighResPlantaUrl(key);
+      const bestSrc = await getBestPlantaSrc(key);
+      const b64 = bestSrc || getHighResPlantaUrl(key) || CONDO_PLANTAS_B64[key];
       if (!b64) { showToast("Planta baixa não encontrada."); return; }
       openModal("lotPickerModal");
+
       const c = document.getElementById("lotPickerCanvas");
-      const img = new Image();
-      if (/^https?:\/\//i.test(b64)) img.crossOrigin = "anonymous";
-      img.onload = () => {
-        c.width = img.naturalWidth;
-        c.height = img.naturalHeight;
-        const ctx = c.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+      const stage = document.getElementById("lotPickerStage");
+      const btnConfirm = document.getElementById("btnLotPickerConfirm");
+      const btnCenter = document.getElementById("btnLotPickerCenter");
+      const subEl = document.getElementById("lotPickerSubtitle");
+      if (subEl) subEl.textContent = "Use o Zoom HD (2x–4x) para ler quadra, lote e metragem, toque no lote e clique em Confirmar.";
+
+      let img;
+      try {
+        img = await loadHighResImage(b64, CONDO_PLANTAS_B64[key]);
+      } catch (e) {
+        showToast("Falha ao carregar planta em alta resolução.");
+        return;
+      }
+
+      // Se houver Quadra/Lote preenchidos no formulário, pré-posiciona a centralização na região do lote
+      let focusX = activeLotCoord.manual ? activeLotCoord.x : 50;
+      let focusY = activeLotCoord.manual ? activeLotCoord.y : 50;
+      if (!activeLotCoord.manual) {
+        const qVal = (document.getElementById("propQuadra")?.value || "").trim().toUpperCase();
+        const lVal = (document.getElementById("propLote")?.value || "").trim().replace(/^0+/, "");
+        const qObj = CONDO_LOTES_DB[key] && CONDO_LOTES_DB[key].quadras && CONDO_LOTES_DB[key].quadras[qVal];
+        if (qObj) {
+          const hit = qObj[lVal] || qObj[lVal.padStart(2, "0")];
+          if (hit) { focusX = hit.x; focusY = hit.y; }
+          else {
+            const vals = Object.values(qObj);
+            if (vals.length) {
+              focusX = vals.reduce((s, v) => s + v.x, 0) / vals.length;
+              focusY = vals.reduce((s, v) => s + v.y, 0) / vals.length;
+            }
+          }
+        }
+      }
+
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      let currentZoom = 2; // Abre já em 2x centralizado para leitura imediata de quadra, lote e metragem
+
+      function redrawPickerCanvas() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
         if (activeLotCoord.manual) {
           const px = (activeLotCoord.x / 100) * c.width;
           const py = (activeLotCoord.y / 100) * c.height;
+          const r = Math.max(24, c.width * 0.018);
           ctx.strokeStyle = "#ef4444";
-          ctx.lineWidth = Math.max(6, c.width * 0.005);
+          ctx.lineWidth = Math.max(6, c.width * 0.0042);
           ctx.beginPath();
-          ctx.arc(px, py, c.width * 0.025, 0, Math.PI * 2);
+          ctx.arc(px, py, r, 0, Math.PI * 2);
+          ctx.stroke();
+          // Mira central precisa
+          ctx.beginPath();
+          ctx.moveTo(px - r * 0.45, py); ctx.lineTo(px + r * 0.45, py);
+          ctx.moveTo(px, py - r * 0.45); ctx.lineTo(px, py + r * 0.45);
           ctx.stroke();
         }
-        c.onclick = (ev) => {
-          const rect = c.getBoundingClientRect();
-          const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-          const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
-          activeLotCoord.x = Number(xPct.toFixed(2));
-          activeLotCoord.y = Number(yPct.toFixed(2));
-          activeLotCoord.manual = true;
-          ctx.drawImage(img, 0, 0);
-          ctx.strokeStyle = "#ef4444";
-          ctx.lineWidth = Math.max(6, c.width * 0.005);
-          ctx.beginPath();
-          ctx.arc((xPct / 100) * c.width, (yPct / 100) * c.height, c.width * 0.025, 0, Math.PI * 2);
-          ctx.stroke();
+      }
+
+      function applyPickerZoom(z, centerOnPctX, centerOnPctY) {
+        currentZoom = z;
+        const baseW = Math.max(300, stage.clientWidth - 4);
+        const targetW = Math.round(baseW * z);
+        const targetH = Math.round(targetW * (img.naturalHeight / img.naturalWidth));
+        c.style.width = targetW + "px";
+        c.style.height = targetH + "px";
+        document.querySelectorAll("[data-lp-zoom]").forEach(b => {
+          b.classList.toggle("active", Number(b.getAttribute("data-lp-zoom")) === z);
+        });
+        requestAnimationFrame(() => {
+          const px = (typeof centerOnPctX === "number" ? centerOnPctX : focusX) / 100;
+          const py = (typeof centerOnPctY === "number" ? centerOnPctY : focusY) / 100;
+          stage.scrollLeft = Math.max(0, (targetW * px) - (stage.clientWidth / 2));
+          stage.scrollTop = Math.max(0, (targetH * py) - (stage.clientHeight / 2));
+        });
+      }
+
+      redrawPickerCanvas();
+      applyPickerZoom(currentZoom, focusX, focusY);
+      if (btnConfirm) btnConfirm.style.display = activeLotCoord.manual ? "inline-flex" : "none";
+
+      document.querySelectorAll("[data-lp-zoom]").forEach(btn => {
+        btn.onclick = () => applyPickerZoom(Number(btn.getAttribute("data-lp-zoom")) || 1, focusX, focusY);
+      });
+      if (btnCenter) {
+        btnCenter.onclick = () => applyPickerZoom(currentZoom, activeLotCoord.manual ? activeLotCoord.x : 50, activeLotCoord.manual ? activeLotCoord.y : 50);
+      }
+      if (btnConfirm) {
+        btnConfirm.onclick = () => {
           const st = document.getElementById("lotMatchStatus");
           if (st) st.innerHTML = `<span style="color:var(--emerald-400);">📍 Lote marcado na planta (${activeLotCoord.x}%, ${activeLotCoord.y}%)! Agora clique em <strong>Gerar Mapa com Círculo Vermelho</strong>.</span>`;
-          setTimeout(() => closeModal("lotPickerModal"), 450);
+          closeModal("lotPickerModal");
         };
+      }
+
+      c.onclick = (ev) => {
+        const rect = c.getBoundingClientRect();
+        const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
+        const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+        activeLotCoord.x = Number(xPct.toFixed(2));
+        activeLotCoord.y = Number(yPct.toFixed(2));
+        activeLotCoord.manual = true;
+        focusX = activeLotCoord.x;
+        focusY = activeLotCoord.y;
+        redrawPickerCanvas();
+        if (btnConfirm) btnConfirm.style.display = "inline-flex";
+        const st = document.getElementById("lotMatchStatus");
+        if (st) st.innerHTML = `<span style="color:var(--emerald-400);">📍 Lote marcado (${activeLotCoord.x}%, ${activeLotCoord.y}%)! Ajuste o zoom se desejar ou toque em <strong>Confirmar Lote</strong>.</span>`;
       };
-      img.src = b64;
     }
 
     async function generateLotMapCoverImage(silentAutoMix = false) {
@@ -9108,7 +10299,8 @@
         return;
       }
 
-      const img = await loadHighResImage(getHighResPlantaUrl(key), CONDO_PLANTAS_B64[key]);
+      const bestCoverSrc = await getBestPlantaSrc(key);
+      const img = await loadHighResImage(bestCoverSrc || getHighResPlantaUrl(key), CONDO_PLANTAS_B64[key]);
 
       const W = 1080, H = 1920;
       const canvas = document.createElement("canvas");
@@ -9207,7 +10399,7 @@
       ctx.fillStyle = "#fbbf24";
       ctx.fillText(`Área Total: ${areaTxt} m²`, 560, dY + 270);
 
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
       // Injeta como Foto 1 (Capa) na fila real de mídias (state.pendingUploads)!
       if (state && Array.isArray(state.pendingUploads)) {
         const mapName = `Mapa_${key}_Q${qTxt}_L${lTxt}.jpg`;
@@ -9241,6 +10433,7 @@
       document.getElementById("loginLogoImg").src = ASSET_LOGO;
       updateFavBadges();
       renderChecklistUI();
+      initCompactTopDrawers();
 
       // Search & Filter Events
       document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -9374,11 +10567,11 @@
       document.getElementById("dockFavoritos").addEventListener("click", () => { renderFavoritesModal(); openModal("favoritesModal"); });
       document.getElementById("dockVitrine").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       document.getElementById("dockRadar").addEventListener("click", () => openModal("radarModal"));
-      document.getElementById("btnOpenRadarHero").addEventListener("click", () => openModal("radarModal"));
-      document.getElementById("btnOpenRadarCard").addEventListener("click", () => openModal("radarModal"));
+      const _bRadHero = document.getElementById("btnOpenRadarHero"); if (_bRadHero) _bRadHero.addEventListener("click", () => openModal("radarModal"));
+      const _bRadCard = document.getElementById("btnOpenRadarCard"); if (_bRadCard) _bRadCard.addEventListener("click", () => openModal("radarModal"));
       document.getElementById("dockAnuncie").addEventListener("click", () => openModal("captacaoModal"));
       document.getElementById("btnOpenCaptacaoTop").addEventListener("click", () => openModal("captacaoModal"));
-      document.getElementById("btnOpenCaptacaoCard").addEventListener("click", () => openModal("captacaoModal"));
+      const _bCapCard = document.getElementById("btnOpenCaptacaoCard"); if (_bCapCard) _bCapCard.addEventListener("click", () => openModal("captacaoModal"));
       document.getElementById("btnTeamAccess").addEventListener("click", openTeamConsole);
 
       document.getElementById("btnViewRadarMatch").addEventListener("click", () => {
@@ -11327,7 +12520,7 @@
 
       // Exibe na primeira entrada da sessão (exceto se veio de link direto ?imovel=)
       if (!safeGetSS("guild_welcome_seen") && !new URLSearchParams(window.location.search).get("imovel")) {
-        setTimeout(openWelcomeIntentModal, 650);
+        // Modal de boas-vindas não bloqueia mais a primeira dobra 9:16 (vitrine imediata no topo)
       }
 
       
@@ -11392,18 +12585,50 @@
       });
 
 
-      // Visualizador Interativo de Planta Baixa (sem download forçado)
-      let pvZoomed = false;
+      // Visualizador Interativo de Planta Baixa Ultra-HD com Zoom Progressivo (1x / 2x / 3.5x / 5x) e Centralização
+      let pvZoomLevel = 1;
       let pvDownloadHref = "";
       let pvDownloadName = "Planta_Baixa.webp";
+      function applyPlantaViewerZoom(z) {
+        pvZoomLevel = z;
+        const imgEl = document.getElementById("plantaViewerImg");
+        const stageEl = document.getElementById("plantaViewerStage");
+        const btnPvZoom = document.getElementById("btnPlantaViewerZoom");
+        if (imgEl && stageEl) {
+          if (z > 1) {
+            stageEl.style.alignItems = "flex-start";
+            stageEl.style.justifyContent = "flex-start";
+            imgEl.style.maxWidth = "none";
+            imgEl.style.maxHeight = "none";
+            imgEl.style.width = Math.round(z * 100) + "%";
+            imgEl.style.transform = "none";
+            requestAnimationFrame(() => {
+              stageEl.scrollLeft = Math.max(0, (stageEl.scrollWidth - stageEl.clientWidth) / 2);
+              stageEl.scrollTop = Math.max(0, (stageEl.scrollHeight - stageEl.clientHeight) / 2);
+            });
+          } else {
+            stageEl.style.alignItems = "center";
+            stageEl.style.justifyContent = "center";
+            imgEl.style.maxWidth = "100%";
+            imgEl.style.maxHeight = "58vh";
+            imgEl.style.width = "auto";
+            imgEl.style.transform = "none";
+            stageEl.scrollLeft = 0;
+            stageEl.scrollTop = 0;
+          }
+        }
+        if (btnPvZoom) {
+          const nextZ = z === 1 ? "2x" : (z === 2 ? "3.5x" : (z === 3.5 ? "5x" : "1x"));
+          btnPvZoom.textContent = `🔍 Zoom ${nextZ} (atual ${z}x)`;
+        }
+      }
       window.openPlantaViewerModal = async function(prop, key, qTxt, lTxt, isLotZoom, externalUrl) {
         const imgEl = document.getElementById("plantaViewerImg");
         const titleEl = document.getElementById("plantaViewerTitle");
         const subEl = document.getElementById("plantaViewerSub");
-        pvZoomed = false;
-        if (imgEl) imgEl.style.transform = "scale(1)";
+        applyPlantaViewerZoom(1);
 
-        let src = CONDO_PLANTAS_B64[key] || "";
+        let src = (await getBestPlantaSrc(key)) || getHighResPlantaUrl(key) || CONDO_PLANTAS_B64[key] || "";
         if (isLotZoom && qTxt && lTxt) {
           if (!prop._lotMapGenerated) await generateDetailLotMap(prop, key, qTxt, lTxt, false);
           const mapSlide = (prop.midias || []).find(m => m.name && m.name.startsWith("Mapa_"));
@@ -11416,10 +12641,10 @@
         if (!src) { showToast("Planta baixa ainda não cadastrada para este condomínio."); return; }
 
         if (imgEl) imgEl.src = src;
-        if (titleEl) titleEl.textContent = isLotZoom ? `📍 Mapa do Lote — Quadra ${qTxt} Lote ${lTxt}` : `🗺️ Planta Baixa — ${prop.bairro || key}`;
-        if (subEl) subEl.textContent = "Use Zoom 2x para inspecionar os detalhes ou toque em Baixar arquivo para salvar.";
+        if (titleEl) titleEl.textContent = isLotZoom ? `📍 Mapa HD do Lote — Quadra ${qTxt} Lote ${lTxt}` : `🗺️ Planta Baixa HD — ${prop.bairro || key}`;
+        if (subEl) subEl.textContent = "Toque em Zoom (2x / 3.5x / 5x) para ler quadra, lote e metragem com nitidez.";
         pvDownloadHref = externalUrl || src;
-        pvDownloadName = isLotZoom ? `Mapa_${key}_Q${qTxt}_L${lTxt}.jpg` : `Planta_Baixa_${key}.webp`;
+        pvDownloadName = isLotZoom ? `Mapa_HD_${key}_Q${qTxt}_L${lTxt}.jpg` : `Planta_Baixa_HD_${key}.webp`;
         openModal("plantaViewerModal");
       };
 
@@ -11458,27 +12683,9 @@
 
       const btnPvZoom = document.getElementById("btnPlantaViewerZoom");
       if (btnPvZoom) btnPvZoom.addEventListener("click", () => {
-        pvZoomed = !pvZoomed;
-        const imgEl = document.getElementById("plantaViewerImg");
-        const stageEl = document.getElementById("plantaViewerStage");
-        if (imgEl && stageEl) {
-          if (pvZoomed) {
-            stageEl.style.alignItems = "flex-start";
-            stageEl.style.justifyContent = "flex-start";
-            imgEl.style.maxWidth = "none";
-            imgEl.style.maxHeight = "none";
-            imgEl.style.width = "240%";
-            imgEl.style.transform = "none";
-          } else {
-            stageEl.style.alignItems = "center";
-            stageEl.style.justifyContent = "center";
-            imgEl.style.maxWidth = "100%";
-            imgEl.style.maxHeight = "58vh";
-            imgEl.style.width = "auto";
-            imgEl.style.transform = "none";
-          }
-        }
-        btnPvZoom.textContent = pvZoomed ? "🔍 Zoom 1x" : "🔍 Zoom 2x";
+        const steps = [1, 2, 3.5, 5];
+        const nextIdx = (steps.indexOf(pvZoomLevel) + 1) % steps.length;
+        applyPlantaViewerZoom(steps[nextIdx]);
       });
       const btnPvDl = document.getElementById("btnPlantaViewerDownload");
       if (btnPvDl) btnPvDl.addEventListener("click", () => {
