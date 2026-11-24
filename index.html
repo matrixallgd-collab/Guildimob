@@ -3721,6 +3721,13 @@
       font-weight: 700;
     }
 
+
+    /* V5 Polish: garante clique perfeito nas setas < > da galeria do modal de detalhes */
+    #btnStagePrev, #btnStageNext {
+      z-index: 30 !important;
+      pointer-events: auto !important;
+    }
+
   </style>
 </head>
 <body>
@@ -6045,8 +6052,8 @@
         corretorPrincipal: "Guilherme Delfino",
         lgpdTexto: "Seus dados pessoais são protegidos conforme a LGPD (Lei nº 13.709/2018) e utilizados exclusivamente para atendimento imobiliário.",
         empreendimentos3d: [
-          { id: "emp_harmonis", nome: "Harmonis Parque Residencial", bairro: "Bauru - SP", badge: "Masterplan 3D", descricao: "Explore lotes, quadras e área de lazer em 3D interativo.", url: "https://harmonis-private.pages.dev/" },
-          { id: "emp_guestier", nome: "Residencial Guestier III", bairro: "Altos da Boa Vista • Bauru - SP", badge: "Lançamento 3D", descricao: "Tour interativo 3D com localização de lotes em tempo real.", url: "https://guestier-3-private.pages.dev/" },
+          { id: "emp_harmonis", nome: "Harmonis Parque Residencial", bairro: "Bauru - SP", badge: "Masterplan 3D", descricao: "Explore lotes, quadras e área de lazer em 3D interativo.", url: "https://harmonis.guildimob.com/" },
+          { id: "emp_guestier", nome: "Residencial Guestier III", bairro: "Altos da Boa Vista • Bauru - SP", badge: "Lançamento 3D", descricao: "Tour interativo 3D com localização de lotes em tempo real.", url: "https://guestier.guildimob.com/" },
           { id: "emp_novaquinta", nome: "Residencial Nova Quinta", bairro: "Bauru - SP", badge: "Empreendimento 3D", descricao: "Maquete digital 3D completa com 23 quadras e 715 lotes.", url: "" }
         ],
         playlistMp3: [],
@@ -6239,7 +6246,7 @@
         descontoAvistaPct: 15,
         descricaoBase: "Empreendimento de altíssimo padrão com +244 mil m² de Parque Urbano, 5 Clubes Completos, energia subterrânea, lago e campo de golfe. Valores oficiais da Tabela Nov/2026 direto com a construtora.",
         tags: ["Condomínio Fechado", "Clube / Resort", "Portaria 24h", "Piscina", "Academia", "Lago / Parque"],
-        maqueteUrl: "https://harmonis-private.pages.dev/",
+        maqueteUrl: "https://harmonis.guildimob.com/",
         ebookUrl: "",
         plantaUrl: ""
       },
@@ -6252,7 +6259,7 @@
         descontoAvistaPct: 5,
         descricaoBase: "Condomínio boutique exclusivo com lazer estilo resort: praia artificial, piscina com borda infinita, cinema, quadras de saibro e segurança 24h. Valores oficiais da Tabela Nov/2026 direto com a construtora.",
         tags: ["Condomínio Fechado", "Clube / Resort", "Portaria 24h", "Piscina", "Quadra de Tênis"],
-        maqueteUrl: "https://guestier-3-private.pages.dev/",
+        maqueteUrl: "https://guestier.guildimob.com/",
         ebookUrl: "",
         plantaUrl: ""
       }
@@ -6260,8 +6267,8 @@
 
     
     const DEFAULT_MAPA3D_URLS = {
-      harmonis: "https://harmonis-private.pages.dev/",
-      guestier3: "https://guestier-3-private.pages.dev/"
+      harmonis: "https://harmonis.guildimob.com/",
+      guestier3: "https://guestier.guildimob.com/"
     };
 
     function resolveMapa3dUrlForProperty(prop, condoKey) {
@@ -6664,9 +6671,9 @@
 
       const areaVal = p.areaConstruida || p.areaTerreno || 0;
       const specLine = [
-        p.suites ? `${p.suites} suítes` : (p.quartos ? `${p.quartos} qts` : ""),
+        p.suites ? `${p.suites} ${Number(p.suites) === 1 ? "suíte" : "suítes"}` : (p.quartos ? `${p.quartos} ${Number(p.quartos) === 1 ? "qto" : "qts"}` : ""),
         p.banheiros ? `${p.banheiros} ban` : "",
-        p.vagas ? `${p.vagas} vagas` : "",
+        p.vagas ? `${p.vagas} ${Number(p.vagas) === 1 ? "vaga" : "vagas"}` : "",
         areaVal ? `${areaVal} m²` : ""
       ].filter(Boolean).join(" • ");
 
@@ -6859,8 +6866,8 @@
             <h2 class="serif" style="margin:0;font-size:1.2rem;line-height:1.16;">${escapeHtml(heroProp.titulo)}</h2>
             <div class="card-specs">
               <span class="card-spec-item">${escapeHtml(tipoNorm)}</span>
-              ${heroProp.suites ? `<span class="card-spec-item">${heroProp.suites} suítes</span>` : (heroProp.quartos ? `<span class="card-spec-item">${heroProp.quartos} qts</span>` : "")}
-              ${heroProp.vagas ? `<span class="card-spec-item">${heroProp.vagas} vagas</span>` : ""}
+              ${heroProp.suites ? `<span class="card-spec-item">${heroProp.suites} ${Number(heroProp.suites) === 1 ? "suíte" : "suítes"}</span>` : (heroProp.quartos ? `<span class="card-spec-item">${heroProp.quartos} ${Number(heroProp.quartos) === 1 ? "quarto" : "quartos"}</span>` : "")}
+              ${heroProp.vagas ? `<span class="card-spec-item">${heroProp.vagas} ${Number(heroProp.vagas) === 1 ? "vaga" : "vagas"}</span>` : ""}
               <span class="card-spec-item">${heroProp.areaConstruida || heroProp.areaTerreno || 0} m²</span>
             </div>
             <div style="margin-top:2px;">
@@ -7995,9 +8002,12 @@
                 const a = Number(p.areaConstruida || p.areaTerreno || 0);
                 return `<td>${a > 0 ? formatBRL(Math.round((Number(p.valor) || 0) / a)) + "/m²" : "—"}</td>`;
               }).join("")}</tr>
-              <tr><td>Dorm./Suítes</td>${cmpItems.map(p => `<td>${p.suites ? p.suites + " suítes" : (p.quartos ? p.quartos + " qts" : "—")}</td>`).join("")}</tr>
-              <tr><td>Vagas</td>${cmpItems.map(p => `<td>${p.vagas || "—"}</td>`).join("")}</tr>
-              <tr><td>Bairro</td>${cmpItems.map(p => `<td>${escapeHtml((p.bairro || "").slice(0, 22))}</td>`).join("")}</tr>
+              <tr><td>Dorm./Suítes</td>${cmpItems.map(p => `<td>${p.suites ? p.suites + (Number(p.suites) === 1 ? " suíte" : " suítes") : (p.quartos ? p.quartos + (Number(p.quartos) === 1 ? " qto" : " qts") : "—")}</td>`).join("")}</tr>
+              <tr><td>Vagas</td>${cmpItems.map(p => `<td>${p.vagas ? p.vagas + (Number(p.vagas) === 1 ? " vaga" : " vagas") : "—"}</td>`).join("")}</tr>
+              <tr><td>Bairro</td>${cmpItems.map(p => {
+                const b = String(p.bairro || "").trim();
+                return `<td title="${escapeHtml(b)}">${escapeHtml(b.length > 22 ? b.slice(0, 21).trim() + "…" : b)}</td>`;
+              }).join("")}</tr>
             </tbody>
           </table>`;
         box.appendChild(cmpWrap);
@@ -8174,7 +8184,7 @@
       document.getElementById("detailTags").innerHTML = (prop.tags || []).map(t =>
         `<span class="chip-toggle selected" style="cursor:default;">✓ ${escapeHtml(t)}</span>`).join("") || `<span style="color:var(--text-muted);font-size:0.82rem;">Consulte diferenciais completos no dossiê.</span>`;
 
-      const condoKeyDet = prop.condoKey || detectCondoKeyFromText((prop.bairro || "") + " " + (prop.titulo || ""));
+      const condoKeyDet = prop.condoKey || detectCondoKeyFromText((prop.bairro || "") + " " + (prop.titulo || "") + " " + (prop.descricao || ""));
       const mapa3dWrap = document.getElementById("detailMapa3dCtaWrap");
       const mapa3dBtn = document.getElementById("btnDetailOpenMapa3d");
       if (mapa3dWrap && mapa3dBtn) {
@@ -11716,14 +11726,18 @@
       });
 
       // Property Stage Controls
-      document.getElementById("btnStagePrev").addEventListener("click", () => {
+      document.getElementById("btnStagePrev").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const m = state.selectedProperty && state.selectedProperty.midias ? state.selectedProperty.midias : [];
         if (m.length < 2) return;
         state.stageIndex = (state.stageIndex - 1 + m.length) % m.length;
         state.stageRotation = 0;
         renderStageMedia();
       });
-      document.getElementById("btnStageNext").addEventListener("click", () => {
+      document.getElementById("btnStageNext").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const m = state.selectedProperty && state.selectedProperty.midias ? state.selectedProperty.midias : [];
         if (m.length < 2) return;
         state.stageIndex = (state.stageIndex + 1) % m.length;
