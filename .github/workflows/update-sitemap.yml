@@ -1,0 +1,36 @@
+name: Atualizar Sitemap XML Automaticamente
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+
+      - name: Baixar Sitemap XML do Google Apps Script
+        run: |
+          curl -fsSL "https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec?action=sitemap" -o sitemap_tmp.xml
+          grep -q "<urlset" sitemap_tmp.xml
+          grep -q "</urlset>" sitemap_tmp.xml
+          mv sitemap_tmp.xml sitemap.xml
+          echo "Total de URLs no sitemap: $(grep -c '<url>' sitemap.xml)"
+
+      - name: Publicar sitemap.xml se houver novidades
+        run: |
+          git config user.name "GUILD IMOB Bot"
+          git config user.email "guildimob@gmail.com"
+          if ! git diff --quiet sitemap.xml 2>/dev/null || [ -n "$(git status --porcelain sitemap.xml)" ]; then
+            git add sitemap.xml
+            git commit -m "chore: atualiza sitemap.xml automaticamente com todos os imoveis"
+            git push
+          else
+            echo "Sitemap ja esta atualizado."
+          fi
