@@ -3265,6 +3265,462 @@
       image-rendering: crisp-edges;
     }
 
+
+    /* === AJUSTES FINOS V2: LOGO SEM CORTE + CRECI AO LADO, AUTOFILL ESCURO, 5 ORBES MANA RPG, FOOTER SEM SOBREPOSIÇÃO === */
+    .topbar {
+      padding-top: 2px !important;
+      padding-bottom: 2px !important;
+      overflow: visible !important;
+    }
+    .topbar-inner {
+      min-height: 62px !important;
+      padding: 4px 12px !important;
+      overflow: visible !important;
+    }
+    .brand-btn {
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 9px !important;
+      overflow: visible !important;
+    }
+    .brand-logo-wrap {
+      width: auto !important;
+      height: auto !important;
+      min-width: 56px;
+      padding: 2px 0;
+      overflow: visible !important;
+      flex-shrink: 0;
+    }
+    .brand-logo {
+      height: 58px !important;
+      width: auto !important;
+      max-width: 118px !important;
+      object-fit: contain;
+    }
+    @media (min-width: 641px) {
+      .brand-logo {
+        height: 70px !important;
+        max-width: 145px !important;
+      }
+    }
+    .brand-creci-side {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--gold-300);
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    /* Fix definitivo: impede fundo branco de autofill do Chrome/Android na barra de busca */
+    .google-search-bar {
+      color-scheme: dark;
+    }
+    .google-search-bar input[type="search"],
+    .google-search-bar input[type="search"]:focus,
+    .google-search-bar input[type="search"]:-webkit-autofill,
+    .google-search-bar input[type="search"]:-webkit-autofill:hover,
+    .google-search-bar input[type="search"]:-webkit-autofill:focus,
+    .google-search-bar input[type="search"]:-webkit-autofill:active {
+      color-scheme: dark !important;
+      -webkit-text-fill-color: #f8fafc !important;
+      color: #f8fafc !important;
+      caret-color: #f3e5ab !important;
+      -webkit-box-shadow: 0 0 0 1000px #0b162c inset !important;
+      box-shadow: 0 0 0 1000px #0b162c inset !important;
+      background-color: transparent !important;
+      transition: background-color 9999s ease-in-out 0s !important;
+      border-radius: 999px;
+    }
+
+    /* 5 Orbes Mágicas RPG Liquid Glass com anéis de mana orbitando (estilo WhatsApp) */
+    .quick-orbs-row {
+      display: flex !important;
+      align-items: flex-start !important;
+      justify-content: space-between !important;
+      gap: 6px !important;
+      max-width: 390px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 4px 4px 2px !important;
+    }
+    .quick-orb-item {
+      flex: 1 1 0;
+      min-width: 0;
+      gap: 5px !important;
+    }
+    .quick-orb-circle {
+      width: 46px !important;
+      height: 46px !important;
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      background:
+        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.06) 36%, transparent 60%),
+        radial-gradient(circle at 50% 65%, rgba(20, 38, 72, 0.72), rgba(6, 13, 26, 0.88)) !important;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+      overflow: visible !important;
+    }
+    .quick-orb-circle::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: -4px !important;
+      border-radius: 50% !important;
+      border: none !important;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(243, 229, 171, 0.85) 65deg, rgba(212, 175, 55, 0.55) 130deg, transparent 210deg, rgba(125, 211, 252, 0.6) 290deg, transparent 360deg) !important;
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      animation: manaOrbitSpin 4.2s linear infinite;
+      opacity: 0.72;
+      pointer-events: none;
+    }
+    .quick-orb-circle::after {
+      content: "";
+      position: absolute;
+      inset: -7px;
+      border-radius: 50%;
+      background: conic-gradient(from 180deg, transparent 0deg, rgba(212, 175, 55, 0.4) 70deg, transparent 160deg, rgba(255, 255, 255, 0.25) 260deg, transparent 340deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.5px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 0.5px));
+      animation: manaOrbitSpin 6.8s linear infinite reverse;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Auras elementais individuais de cada Orbe RPG */
+    .quick-orb-item.orb-ia .quick-orb-circle {
+      border-color: rgba(192, 132, 252, 0.72) !important;
+      color: #e9d5ff !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 14px rgba(168, 85, 247, 0.34), inset 0 1px 2px rgba(255, 255, 255, 0.32) !important;
+    }
+    .quick-orb-item.orb-ia .quick-orb-circle::before {
+      background: conic-gradient(from 0deg, transparent 0deg, #c084fc 75deg, #f3e5ab 150deg, transparent 230deg, #38bdf8 305deg, transparent 360deg) !important;
+    }
+
+    .quick-orb-item.orb-ranking .quick-orb-circle {
+      border-color: rgba(243, 229, 171, 0.72) !important;
+      color: #f3e5ab !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 14px rgba(212, 175, 55, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.32) !important;
+    }
+
+    .quick-orb-item.orb-filtros .quick-orb-circle {
+      border-color: rgba(96, 165, 250, 0.72) !important;
+      color: #bfdbfe !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 14px rgba(59, 130, 246, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.32) !important;
+    }
+    .quick-orb-item.orb-filtros .quick-orb-circle::before {
+      background: conic-gradient(from 40deg, transparent 0deg, #60a5fa 75deg, #e0f2fe 145deg, transparent 225deg, #d4af37 305deg, transparent 360deg) !important;
+    }
+
+    .quick-orb-item.orb-lancamentos .quick-orb-circle {
+      border-color: rgba(52, 211, 153, 0.78) !important;
+      color: #6ee7b7 !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 15px rgba(16, 185, 129, 0.34), inset 0 1px 2px rgba(255, 255, 255, 0.32) !important;
+    }
+    .quick-orb-item.orb-lancamentos .quick-orb-circle::before {
+      background: conic-gradient(from 90deg, transparent 0deg, #34d399 80deg, #a7f3d0 150deg, transparent 230deg, #f3e5ab 310deg, transparent 360deg) !important;
+    }
+
+    .quick-orb-item.orb-prontos .quick-orb-circle {
+      border-color: rgba(56, 189, 248, 0.72) !important;
+      color: #7dd3fc !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 14px rgba(14, 165, 233, 0.32), inset 0 1px 2px rgba(255, 255, 255, 0.32) !important;
+    }
+    .quick-orb-item.orb-prontos .quick-orb-circle::before {
+      background: conic-gradient(from 140deg, transparent 0deg, #38bdf8 80deg, #bae6fd 150deg, transparent 230deg, #34d399 310deg, transparent 360deg) !important;
+    }
+
+    .quick-orb-item.active .quick-orb-circle::before { opacity: 1; animation-duration: 2.2s; }
+    .quick-orb-item.active .quick-orb-circle::after { opacity: 0.85; animation-duration: 3.4s; }
+    .quick-orb-label {
+      font-size: 0.64rem !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    /* Rodapé dos cards em 2 micro-linhas: elimina 100% a sobreposição entre Classe (Diamante/Esmeralda) e Visualizações */
+    .card-footer.card-footer-stacked {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 4px !important;
+      padding-top: 7px !important;
+    }
+    .card-footer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
+    }
+    .card-views-txt {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .card-footer-rank {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      line-height: 1;
+    }
+
+
+    /* === V3: BOTÃO VOLTAR AO INÍCIO, PAINEL MASTER LIMPO, REORDENAR FOTOS, SEO & TEMA SAZONAL === */
+    .btn-back-home-float {
+      position: fixed;
+      left: 12px;
+      bottom: 74px;
+      z-index: 940;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(243, 229, 171, 0.55);
+      background: linear-gradient(135deg, rgba(14, 28, 54, 0.92), rgba(6, 13, 26, 0.96));
+      color: #f3e5ab;
+      font-size: 0.74rem;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45), 0 0 12px rgba(212, 175, 55, 0.22);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+    .btn-back-home-float.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    body.modal-open .btn-back-home-float { display: none !important; }
+    @media (min-width: 769px) {
+      .btn-back-home-float { bottom: 22px; left: 22px; }
+    }
+
+    /* Camada Sazonal Automática Ultra-Leve */
+    #seasonalFxLayer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+    }
+    .seasonal-particle {
+      position: absolute;
+      top: -28px;
+      user-select: none;
+      will-change: transform, opacity;
+      animation-name: seasonalFall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+    .seasonal-particle.rise {
+      top: auto;
+      bottom: -24px;
+      animation-name: seasonalRise;
+    }
+    @keyframes seasonalFall {
+      0% { transform: translate3d(0, -10px, 0) rotate(0deg); opacity: 0; }
+      10% { opacity: var(--sp-op, 0.55); }
+      90% { opacity: var(--sp-op, 0.55); }
+      100% { transform: translate3d(var(--sp-drift, 24px), 104vh, 0) rotate(320deg); opacity: 0; }
+    }
+    @keyframes seasonalRise {
+      0% { transform: translate3d(0, 10px, 0) scale(0.7); opacity: 0; }
+      15% { opacity: var(--sp-op, 0.55); }
+      85% { opacity: var(--sp-op, 0.55); }
+      100% { transform: translate3d(var(--sp-drift, -18px), -102vh, 0) scale(1.15); opacity: 0; }
+    }
+    .seasonal-banner-bunting {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      pointer-events: none;
+      z-index: 6;
+      background: repeating-linear-gradient(120deg, rgba(251,191,36,0.45) 0 14px, rgba(239,68,68,0.42) 14px 28px, rgba(52,211,153,0.42) 28px 42px, rgba(56,189,248,0.42) 42px 56px);
+      mask-image: linear-gradient(to bottom, #000, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #seasonalFxLayer { display: none !important; }
+    }
+
+    /* Reordenação de Fotos & Marca d'Água no Cadastro */
+    .upload-thumb {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .upload-thumb-actions {
+      position: absolute;
+      left: 3px;
+      right: 3px;
+      bottom: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+      z-index: 4;
+    }
+    .upload-mini-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(6, 13, 26, 0.86);
+      color: #f8fafc;
+      font-size: 0.66rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .upload-mini-btn:hover { border-color: var(--gold-400); color: var(--gold-300); }
+    .upload-cover-badge {
+      position: absolute;
+      bottom: 44px;
+      left: 4px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.92);
+      color: #060d1a;
+      font-size: 0.58rem;
+      font-weight: 800;
+      z-index: 4;
+    }
+
+    /* Painel Master: Lista Limpa com Miniatura + Status + Ações Compactas */
+    .admin-row-clean {
+      display: flex !important;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px !important;
+    }
+    .admin-row-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #081226;
+      border: 1px solid rgba(212, 175, 55, 0.24);
+      flex-shrink: 0;
+    }
+    .admin-row-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .admin-row-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .admin-row-actions .btn-glass {
+      padding: 5px 9px;
+      font-size: 0.72rem;
+      border-radius: 9px;
+    }
+    @media (max-width: 640px) {
+      .admin-row-clean { flex-direction: column; align-items: stretch; }
+      .admin-row-actions { justify-content: flex-start; }
+    }
+
+    /* SEO Google Counter Pill */
+    .seo-meter {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+    }
+    .seo-meter.ok { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .seo-meter.warn { background: rgba(245, 158, 11, 0.22); color: #fcd34d; }
+    .seo-meter.over { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
+
+
+    /* === V4: CRM EM SUB-ABAS, COMPARADOR LADO A LADO E ALERTA +60 DIAS === */
+    .crm-subtabs-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      scrollbar-width: none;
+    }
+    .crm-subtabs-bar::-webkit-scrollbar { display: none; }
+    .crm-subtab-btn {
+      flex-shrink: 0;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .crm-subtab-btn.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.28), rgba(212, 175, 55, 0.12));
+      border-color: rgba(243, 229, 171, 0.65);
+      color: #f3e5ab;
+    }
+    .crm-pane { display: none; }
+    .crm-pane.active { display: block; }
+    .stale-60d-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.48);
+      color: #fcd34d;
+      margin-left: 5px;
+    }
+    .fav-compare-wrap {
+      margin-top: 12px;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      background: rgba(6, 13, 26, 0.85);
+    }
+    .fav-compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      color: #e2e8f0;
+    }
+    .fav-compare-table th, .fav-compare-table td {
+      padding: 7px 9px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+      white-space: nowrap;
+    }
+    .fav-compare-table th {
+      color: var(--gold-300);
+      background: rgba(212, 175, 55, 0.08);
+      font-weight: 700;
+    }
+
   </style>
 </head>
 <body>
@@ -3272,9 +3728,9 @@
   <!-- TOP NAVIGATION -->
   <header class="topbar">
     <div class="topbar-inner">
-      <button class="brand-btn" id="btnBrandHome" type="button" aria-label="GUILD IMOB Início" style="flex-direction:column;align-items:center;gap:2px;">
+      <button class="brand-btn" id="btnBrandHome" type="button" aria-label="GUILD IMOB Início">
         <span class="brand-logo-wrap"><img class="brand-logo" id="headerLogoImg" src="" alt="Brasão GUILD IMOB"></span>
-        <div style="font-size:0.56rem;letter-spacing:0.16em;font-weight:600;color:var(--gold-300);opacity:0.86;text-align:center;" id="headerCreciLabel">CRECI J-50143</div>
+        <span class="brand-creci-side" id="headerCreciLabel">CRECI J-50143</span>
       </button>
 
       <div class="nav-actions">
@@ -3327,27 +3783,41 @@
       </div>
 
       <div class="quick-orbs-row" role="toolbar" aria-label="Atalhos rápidos">
-        <button type="button" class="quick-orb-item" id="btnOrbRanking" data-drawer="ranking" aria-expanded="false" aria-controls="drawerRanking">
+        <button type="button" class="quick-orb-item orb-ia" id="btnOrbBuscaIA" title="Concierge IA — Busca Inteligente">
           <span class="quick-orb-circle">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+          </span>
+          <span class="quick-orb-label">Busca IA</span>
+        </button>
+
+        <button type="button" class="quick-orb-item orb-ranking" id="btnOrbRanking" data-drawer="ranking" aria-expanded="false" aria-controls="drawerRanking">
+          <span class="quick-orb-circle">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
             <span class="quick-orb-badge" id="orbRankingBadge"></span>
           </span>
           <span class="quick-orb-label">Ranking</span>
         </button>
 
-        <button type="button" class="quick-orb-item" id="btnOrbFiltros" data-drawer="filtros" aria-expanded="false" aria-controls="drawerFiltros">
+        <button type="button" class="quick-orb-item orb-filtros" id="btnOrbFiltros" data-drawer="filtros" aria-expanded="false" aria-controls="drawerFiltros">
           <span class="quick-orb-circle">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor"/></svg>
             <span class="quick-orb-badge" id="orbFiltrosBadge"></span>
           </span>
           <span class="quick-orb-label">Filtros</span>
         </button>
 
-        <button type="button" class="quick-orb-item" id="btnOrbLancamentos" data-drawer="lancamentos" aria-expanded="false" aria-controls="drawerLancamentos">
+        <button type="button" class="quick-orb-item orb-lancamentos" id="btnOrbLancamentos" data-drawer="lancamentos" aria-expanded="false" aria-controls="drawerLancamentos">
           <span class="quick-orb-circle">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
           </span>
           <span class="quick-orb-label">Lançamentos</span>
+        </button>
+
+        <button type="button" class="quick-orb-item orb-prontos" id="btnOrbProntos" title="Filtrar imóveis prontos de proprietários">
+          <span class="quick-orb-circle">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9 21v-6h6v6"/></svg>
+          </span>
+          <span class="quick-orb-label">Prontos</span>
         </button>
       </div>
 
@@ -3528,6 +3998,14 @@
   </main>
 
 
+
+  <!-- CAMADA TEMÁTICA SAZONAL AUTOMÁTICA (NATAL, CARNAVAL, HALLOWEEN, ETC.) -->
+  <div id="seasonalFxLayer" aria-hidden="true"></div>
+
+  <!-- BOTÃO FLUTUANTE CLARO PARA VOLTAR AO INÍCIO DA VITRINE -->
+  <button type="button" class="btn-back-home-float" id="btnBackHomeFloat" aria-label="Voltar ao início do site">
+    <span>🏠</span><span>Início</span>
+  </button>
 
   <!-- FLOATING MOBILE DOCK -->
   <nav class="mobile-dock" aria-label="Navegação rápida">
@@ -4140,16 +4618,31 @@
             <button type="button" class="btn-gold" id="btnAdminAiSearch" style="white-space:nowrap;">✨ Perguntar IA</button>
           </div>
           <div class="filter-pills" id="adminImoveisFilterPills" style="margin-bottom:4px;">
-            <button type="button" class="pill active" data-admin-filter="MANUAIS">👤 Manuais</button>
+            <button type="button" class="pill active" data-admin-filter="MANUAIS">👤 Proprietários</button>
+            <button type="button" class="pill" data-admin-filter="ATIVOS">✅ Ativos</button>
+            <button type="button" class="pill" data-admin-filter="INATIVOS">⏸️ Inativos</button>
             <button type="button" class="pill" data-admin-filter="LANCAMENTOS">🚀 Lançamentos</button>
-            <button type="button" class="pill" data-admin-filter="VENDIDOS">🔴 Vendidos (Reativar)</button>
-            <button type="button" class="pill" data-admin-filter="TODOS">🌐 Todos</button>
+            <button type="button" class="pill" data-admin-filter="VENDIDOS">🔴 Vendidos</button>
+            <button type="button" class="pill" data-admin-filter="TODOS">🌐 Lista Completa</button>
           </div>
           <div id="adminAiSearchAnswer" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(6,13,26,0.8);border:1px solid rgba(212,175,55,0.35);font-size:0.82rem;color:#f8fafc;line-height:1.45;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-          <span style="font-size:0.84rem;color:var(--text-secondary);" id="adminImoveisSummary"></span>
-          <button class="btn-gold" id="btnGoToNewProp" type="button">+ Novo Imóvel (Modo Visita)</button>
+          <span style="font-size:0.8rem;color:var(--text-secondary);" id="adminImoveisSummary"></span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select id="seasonalThemeOverride" class="select-field master-only" style="padding:6px 10px;font-size:0.74rem;width:auto;" title="Tema Sazonal Automático do Site">
+              <option value="auto">🎉 Tema Sazonal: Automático</option>
+              <option value="natal">❄️ Testar Natal</option>
+              <option value="anonovo">🥂 Testar Ano Novo</option>
+              <option value="carnaval">🎭 Testar Carnaval</option>
+              <option value="junina">🎏 Testar Festa Junina</option>
+              <option value="halloween">🎃 Testar Halloween</option>
+              <option value="off">🚫 Desativar Efeitos</option>
+            </select>
+            <button class="btn-glass master-only" id="btnBatchAutoSeo" type="button" style="padding:7px 11px;font-size:0.76rem;border-color:rgba(52,211,153,0.45);color:#6ee7b7;" title="Gera Título e Meta Descrição Google SEO para todos os imóveis">📈 SEO em Lote</button>
+            <button class="btn-glass master-only" id="btnQuickGoTabelaPdf" type="button" style="padding:7px 11px;font-size:0.76rem;border-color:rgba(212,175,55,0.45);color:var(--gold-300);" title="Ir direto para o Leitor de Tabela de Preços PDF">📄 Tabela PDF</button>
+            <button class="btn-gold" id="btnGoToNewProp" type="button">+ Novo Imóvel</button>
+          </div>
         </div>
         <div class="admin-list" id="adminImoveisList"></div>
       </div>
@@ -4371,8 +4864,43 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="propDescricao">Descrição Comercial</label>
-            <textarea id="propDescricao" class="textarea-field" rows="5" placeholder="Use o ditado por voz acima e clique em 'Lapidar Descrição com IA' ou escreva os detalhes aqui..."></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+              <label class="form-label" for="propDescricao" style="margin:0;">Descrição Comercial</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                <select id="aiTextToneSelect" class="select-field" style="padding:5px 9px;font-size:0.74rem;width:auto;" aria-label="Tom de voz da IA">
+                  <option value="profissional">🏛️ Profissional / Alto Padrão</option>
+                  <option value="quente">🔥 Quente / Persuasivo</option>
+                  <option value="frio">🧊 Frio / Objetivo</option>
+                  <option value="animado">🎉 Animado / Vibrante</option>
+                  <option value="simpatico">😊 Simpático / Acolhedor</option>
+                  <option value="google_seo">📈 Cientificamente Vendável (Google)</option>
+                </select>
+                <button type="button" class="btn-gold" id="btnAiImproveDesc" style="padding:6px 11px;font-size:0.74rem;">✨ Melhorar Texto com IA</button>
+              </div>
+            </div>
+            <textarea id="propDescricao" class="textarea-field" rows="5" placeholder="Use o ditado por voz acima, escreva os detalhes ou clique em 'Melhorar Texto com IA' para organizar e resumir de forma envolvente..."></textarea>
+          </div>
+
+          <!-- SEO AUTOMÁTICO GOOGLE (PADRÃO IMOBIBRASIL / GOOGLE ADS) -->
+          <div class="glass-soft" style="padding:12px 14px;border-radius:var(--radius-lg);margin-bottom:14px;border-color:rgba(52,211,153,0.34);">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <strong style="font-size:0.84rem;color:#6ee7b7;">📈 SEO Automático Google (Título 50–60 chars • Descrição 145–160 chars)</strong>
+              <button type="button" class="btn-glass" id="btnGenPropSeo" style="padding:5px 10px;font-size:0.72rem;border-color:rgba(52,211,153,0.5);color:#a7f3d0;">🔄 Gerar SEO Automático</button>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <label class="form-label" for="propSeoTitle" style="margin:0;font-size:0.74rem;">Título SEO Google (Meta Title)</label>
+                <span class="seo-meter" id="seoTitleCounter">0 / 60</span>
+              </div>
+              <input type="text" id="propSeoTitle" class="input-field" maxlength="80" placeholder="Gerado automaticamente (ex: Casa 3 Suítes c/ Piscina no Villa de León | Bauru)">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <label class="form-label" for="propSeoDesc" style="margin:0;font-size:0.74rem;">Descrição SEO Google (Meta Description)</label>
+                <span class="seo-meter" id="seoDescCounter">0 / 160</span>
+              </div>
+              <textarea id="propSeoDesc" class="textarea-field" rows="2" maxlength="200" placeholder="Gerada automaticamente para ranqueamento e cliques no Google..."></textarea>
+            </div>
           </div>
 
 
@@ -4421,7 +4949,19 @@
           <div class="glass-soft" style="padding:14px;border-radius:var(--radius-lg);margin-bottom:16px;">
             <label class="form-label" for="mediaFileInput">📸 Fotos e Vídeos do Imóvel (Compressão Automática 1600px JPEG 85%)</label>
             <input type="file" id="mediaFileInput" class="input-field" multiple accept="image/*,.heic,.heif,video/*" style="margin-top:6px;">
-            <div style="font-size:0.76rem;color:var(--text-muted);margin-top:6px;" id="uploadStatsText">Selecione fotos da galeria ou câmera. Imagens são otimizadas no aparelho antes do envio ao Google Drive.</div>
+            <div style="font-size:0.76rem;color:var(--text-muted);margin-top:6px;" id="uploadStatsText">Selecione fotos da galeria ou câmera. Use ◀ ▶ para trocar a ordem, ⭐ para definir Capa e 💧 para Marca d'Água.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(212,175,55,0.2);">
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;color:#f3e5ab;cursor:pointer;">
+                <input type="checkbox" id="chkAutoWatermark"> 💧 Marca d'água automática
+              </label>
+              <select id="watermarkPosSelect" class="select-field" style="padding:4px 8px;font-size:0.72rem;width:auto;">
+                <option value="bottom-right">Canto Inferior Direito</option>
+                <option value="center">Centro Discreto</option>
+                <option value="bottom-left">Canto Inferior Esquerdo</option>
+                <option value="top-right">Canto Superior Direito</option>
+              </select>
+              <button type="button" class="btn-glass" id="btnApplyWatermarkAll" style="padding:5px 10px;font-size:0.72rem;border-color:rgba(212,175,55,0.45);color:var(--gold-300);">💧 Aplicar em Todas</button>
+            </div>
             <div id="cepSuggestionsBox" style="display:none;margin-bottom:10px;" class="chips-wrap"></div>
             <div class="upload-preview-grid" id="uploadPreviewGrid"></div>
             <div style="font-size:0.75rem;color:var(--gold-300);margin-top:8px;">🍌 Dica Nano Banana: toque em <strong>IA</strong> em qualquer foto acima para mobiliar cômodos vazios, apagar objetos/bagunça ou melhorar a iluminação!</div>
@@ -4434,25 +4974,41 @@
         </form>
       </div>
 
-      <!-- TAB 3: CRM (LEADS, CAPTAÇÕES & RADAR) -->
+      <!-- TAB 3: CRM ORGANIZADO EM SUB-ABAS -->
       <div class="admin-tab-panel" id="tabCRM" style="display:none;">
-        <h3 class="serif gold-text" style="margin:0 0 8px;">💲 Solicitações de Alteração de Preço (Proprietários)</h3>
-        <div class="admin-list" id="adminPrecoRequestsList" style="margin-bottom:20px;"></div>
+        <div class="crm-subtabs-bar" id="crmSubtabsBar" role="tablist">
+          <button type="button" class="crm-subtab-btn active" data-crm-pane="crmPanePropostas">💼 Propostas</button>
+          <button type="button" class="crm-subtab-btn" data-crm-pane="crmPaneVisitas">📅 Visitas</button>
+          <button type="button" class="crm-subtab-btn" data-crm-pane="crmPaneLeads">📩 Leads</button>
+          <button type="button" class="crm-subtab-btn" data-crm-pane="crmPaneRadar">🎯 Radar</button>
+          <button type="button" class="crm-subtab-btn" data-crm-pane="crmPaneCaptacoes">🏠 Captações</button>
+          <button type="button" class="crm-subtab-btn" data-crm-pane="crmPanePrecos">💲 Preços</button>
+        </div>
 
-        <h3 class="serif gold-text" style="margin:0 0 8px;">💼 Propostas de Compra Recebidas</h3>
-        <div class="admin-list" id="adminPropostasList" style="margin-bottom:20px;"></div>
-
-        <h3 class="serif gold-text" style="margin:0 0 8px;">📅 Visitas Agendadas (Google Agenda + Ficha PDF)</h3>
-        <div class="admin-list" id="adminVisitasList" style="margin-bottom:20px;"></div>
-
-        <h3 class="serif gold-text" style="margin:0 0 8px;">Leads & Dossiês Solicitados</h3>
-        <div class="admin-list" id="adminLeadsList" style="margin-bottom:20px;"></div>
-
-        <h3 class="serif gold-text" style="margin:0 0 8px;">Captações de Proprietários (PENDENTE_CAPTACAO)</h3>
-        <div class="admin-list" id="adminCaptacoesList" style="margin-bottom:20px;"></div>
-
-        <h3 class="serif gold-text" style="margin:0 0 8px;">Radar de Desejos dos Clientes</h3>
-        <div class="admin-list" id="adminRadarList"></div>
+        <div class="crm-pane active" id="crmPanePropostas">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">💼 Propostas de Compra Recebidas</h3>
+          <div class="admin-list" id="adminPropostasList"></div>
+        </div>
+        <div class="crm-pane" id="crmPaneVisitas">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">📅 Visitas Agendadas (Google Agenda + Ficha PDF)</h3>
+          <div class="admin-list" id="adminVisitasList"></div>
+        </div>
+        <div class="crm-pane" id="crmPaneLeads">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">📩 Leads &amp; Dossiês Solicitados</h3>
+          <div class="admin-list" id="adminLeadsList"></div>
+        </div>
+        <div class="crm-pane" id="crmPaneRadar">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">🎯 Radar de Desejos dos Clientes</h3>
+          <div class="admin-list" id="adminRadarList"></div>
+        </div>
+        <div class="crm-pane" id="crmPaneCaptacoes">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">🏠 Captações de Proprietários (PENDENTE_CAPTACAO)</h3>
+          <div class="admin-list" id="adminCaptacoesList"></div>
+        </div>
+        <div class="crm-pane" id="crmPanePrecos">
+          <h3 class="serif gold-text" style="margin:0 0 8px;">💲 Solicitações de Alteração de Preço (Proprietários)</h3>
+          <div class="admin-list" id="adminPrecoRequestsList"></div>
+        </div>
       </div>
 
       <!-- TAB 4: CORRETORES (MASTER ONLY) -->
@@ -4610,8 +5166,8 @@
 
         
         <div class="glass-soft" style="padding:16px;border-radius:var(--radius-lg);margin-bottom:16px;border-color:rgba(239,68,68,0.38);">
-          <h3 class="serif gold-text" style="margin:0 0 6px;">📄 Atualizar Tabela de Lançamento (PDF ou CSV → Planilha + Regra 48h)</h3>
-          <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:0;">Envie o PDF ou CSV novo da construtora. A IA lê qualquer layout novo, atualiza a planilha no Drive, exibe <strong>🔴 LOTE VENDIDO por 48h</strong> nos lotes que saíram da tabela e depois oculta automaticamente mantendo as medidas internas para futuras revendas.</p>
+          <h3 class="serif gold-text" style="margin:0 0 6px;">📄 Leitor Inteligente de Tabela de Preços PDF (Desativação Temporária &amp; Reativação)</h3>
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:0;">Envie a tabela PDF/CSV do mês ou quinzena. A IA interpreta mudanças de <strong>entrada, parcelas, plano facilitado (com/sem juros)</strong> e preços: lotes ausentes são <strong>desativados temporariamente (nunca deletados)</strong> e lotes que voltarem na próxima tabela por desistência são <strong>reativados automaticamente</strong>.</p>
           <div class="form-grid" style="margin-bottom:10px;">
             <div class="form-group">
               <label class="form-label" for="devUploadTabelaCondo">Empreendimento</label>
@@ -6139,12 +6695,14 @@
             <div style="font-size:0.74rem;color:var(--gold-300);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${escapeHtml(p.bairro)}</div>
             <h3 class="card-title">${escapeHtml(p.titulo)}</h3>
             <div style="font-size:0.75rem;color:var(--text-secondary);line-height:1.35;">${escapeHtml(specLine || p.tipo)}</div>
-            <div class="card-footer">
-              <div style="display:flex;align-items:center;gap:5px;min-width:0;">
-                <span>${escapeHtml(p.codigo)}</span>
+            <div class="card-footer card-footer-stacked">
+              <div class="card-footer-top">
+                <span class="card-code-txt">${escapeHtml(p.codigo)}</span>
+                <span class="card-views-txt">👁️ ${p.visualizacoes || 0}</span>
+              </div>
+              <div class="card-footer-rank">
                 <span class="card-rank-pips" title="Curadoria ${meta.label}">${pipsHtml}<span class="rank-tier-micro ${meta.tier}">${escapeHtml(meta.label)}</span></span>
               </div>
-              <span>👁️ ${p.visualizacoes || 0}</span>
             </div>
           </div>
         </article>`;
@@ -6461,6 +7019,32 @@
         b.addEventListener("click", closeAllCompactDrawers);
       });
 
+      // Orbe 1: Busca IA (abre direto o Concierge IA em 1 toque)
+      const btnOrbIA = document.getElementById("btnOrbBuscaIA");
+      if (btnOrbIA) {
+        btnOrbIA.addEventListener("click", () => {
+          closeAllCompactDrawers();
+          openModal("conciergeModal");
+        });
+      }
+
+      // Orbe 5: Imóveis Prontos de Proprietários (alternância em 1 toque)
+      const btnOrbProntos = document.getElementById("btnOrbProntos");
+      if (btnOrbProntos) {
+        btnOrbProntos.addEventListener("click", () => {
+          closeAllCompactDrawers();
+          const alreadyActive = state.activeFilter === "PROPRIETARIO";
+          state.activeFilter = alreadyActive ? "TODOS" : "PROPRIETARIO";
+          state.forceGridMode = !alreadyActive;
+          btnOrbProntos.classList.toggle("active", !alreadyActive);
+          document.querySelectorAll("#filterPills .pill").forEach(p => {
+            p.classList.toggle("active", p.getAttribute("data-filter") === state.activeFilter);
+          });
+          applyFiltersAndRender();
+          if (typeof updateOrbBadges === "function") updateOrbBadges();
+        });
+      }
+
       // Abas internas da gaveta Filtros
       document.querySelectorAll(".drawer-tab-btn[data-ftab]").forEach(tabBtn => {
         tabBtn.addEventListener("click", () => {
@@ -6577,6 +7161,362 @@
         const el = document.getElementById(id);
         if (el) el.addEventListener("click", () => setTimeout(updateOrbBadges, 40));
       });
+    }
+
+
+    // === V3 ENGINE: VOLTAR AO INÍCIO, TEMA SAZONAL AUTOMÁTICO, PATCH WEBM 15s, IA MELHORAR TEXTO & SEO GOOGLE ===
+    async function patchWebmDurationBlob(blob, durationMs) {
+      const buf = await blob.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      // Localiza Elemento Info (0x15 0x49 0xA9 0x66) e insere/atualiza Duration (0x44 0x89, float64)
+      let infoIdx = -1;
+      for (let i = 0; i < Math.min(bytes.length - 12, 4096); i++) {
+        if (bytes[i] === 0x15 && bytes[i + 1] === 0x49 && bytes[i + 2] === 0xA9 && bytes[i + 3] === 0x66) {
+          infoIdx = i;
+          break;
+        }
+      }
+      if (infoIdx < 0) return blob;
+      // Verifica se já existe tag Duration (0x44 0x89) dentro dos próximos 120 bytes
+      for (let j = infoIdx; j < Math.min(bytes.length - 12, infoIdx + 140); j++) {
+        if (bytes[j] === 0x44 && bytes[j + 1] === 0x89 && bytes[j + 2] === 0x88) {
+          const dv = new DataView(buf, j + 3, 8);
+          dv.setFloat64(0, Number(durationMs), false);
+          return new Blob([buf], { type: blob.type || "video/webm" });
+        }
+      }
+      return blob;
+    }
+
+    function computeEasterDate(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day);
+    }
+
+    function detectAutoSeasonalTheme(now = new Date()) {
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      // Natal: 01/12 a 26/12
+      if (m === 12 && d <= 26) return "natal";
+      // Ano Novo: 27/12 a 05/01
+      if ((m === 12 && d >= 27) || (m === 1 && d <= 5)) return "anonovo";
+      // Halloween: 25/10 a 02/11
+      if ((m === 10 && d >= 25) || (m === 11 && d <= 2)) return "halloween";
+      // Festa Junina: junho inteiro
+      if (m === 6) return "junina";
+      // Carnaval (data móvel: 52 dias antes até 45 dias antes da Páscoa)
+      const easter = computeEasterDate(y);
+      const diffDays = Math.round((now - easter) / 86400000);
+      if (diffDays >= -52 && diffDays <= -45) return "carnaval";
+      if (diffDays >= -4 && diffDays <= 1) return "pascoa";
+      return "off";
+    }
+
+    function applySeasonalTheme(modeOverride) {
+      const layer = document.getElementById("seasonalFxLayer");
+      if (!layer) return;
+      const saved = modeOverride || localStorage.getItem("guild_seasonal_mode") || "auto";
+      const active = saved === "auto" ? detectAutoSeasonalTheme(new Date()) : saved;
+      layer.innerHTML = "";
+      if (!active || active === "off") return;
+
+      const configs = {
+        natal:     { glyphs: ["❄", "❅", "✦"], colors: ["#e0f2fe", "#ffffff", "#bae6fd"], count: 16, rise: false, size: [11, 18], dur: [9, 16], op: 0.45 },
+        anonovo:   { glyphs: ["✦", "✧", "•"], colors: ["#f3e5ab", "#fbbf24", "#ffffff"], count: 16, rise: true,  size: [10, 16], dur: [8, 14], op: 0.50 },
+        carnaval:  { glyphs: ["◆", "●", "▲"], colors: ["#34d399", "#fbbf24", "#c084fc", "#38bdf8", "#f472b6"], count: 18, rise: false, size: [8, 13], dur: [7, 13], op: 0.42 },
+        junina:    { glyphs: ["✦", "•"],      colors: ["#fbbf24", "#f97316", "#fde68a"], count: 12, rise: true,  size: [8, 13], dur: [8, 14], op: 0.42, bunting: true },
+        halloween: { glyphs: ["🦇", "✦", "•"], colors: ["#c084fc", "#f97316", "#a855f7"], count: 12, rise: false, size: [12, 17], dur: [10, 17], op: 0.38 },
+        pascoa:    { glyphs: ["✦", "❀"],      colors: ["#f3e5ab", "#a7f3d0", "#fbcfe8"], count: 12, rise: false, size: [10, 15], dur: [10, 16], op: 0.38 }
+      };
+      const cfg = configs[active];
+      if (!cfg) return;
+      if (cfg.bunting) {
+        const b = document.createElement("div");
+        b.className = "seasonal-banner-bunting";
+        layer.appendChild(b);
+      }
+      for (let i = 0; i < cfg.count; i++) {
+        const el = document.createElement("span");
+        el.className = "seasonal-particle" + (cfg.rise ? " rise" : "");
+        el.textContent = cfg.glyphs[i % cfg.glyphs.length];
+        const sz = cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0]);
+        const dur = cfg.dur[0] + Math.random() * (cfg.dur[1] - cfg.dur[0]);
+        el.style.left = (Math.random() * 98).toFixed(1) + "vw";
+        el.style.fontSize = sz.toFixed(0) + "px";
+        el.style.color = cfg.colors[i % cfg.colors.length];
+        el.style.animationDuration = dur.toFixed(1) + "s";
+        el.style.animationDelay = (-Math.random() * dur).toFixed(1) + "s";
+        el.style.setProperty("--sp-drift", ((Math.random() - 0.5) * 60).toFixed(0) + "px");
+        el.style.setProperty("--sp-op", String(cfg.op));
+        layer.appendChild(el);
+      }
+    }
+
+    function returnToSiteHomeClean() {
+      state.activeFilter = "TODOS";
+      state.activeTier = "TODAS";
+      state.activeLocationScope = "";
+      state.activeLaunchCondo = "";
+      state.activeQuadra = "";
+      state.activeLote = "";
+      state.advAreaMin = 0;
+      state.searchQuery = "";
+      state.sortBy = "destaque";
+      state.forceGridMode = false;
+      state.refined = { quartos: 0, banheiros: 0, vagas: 0, minPrice: 0, maxPrice: 0, entradaMax: 0, parcelaMax: 0, primeiroImovel: false, tags: [] };
+      const sInp = document.getElementById("searchInput"); if (sInp) sInp.value = "";
+      const bTipo = document.getElementById("basicTipoSelect"); if (bTipo) bTipo.value = "TODOS";
+      const bQ = document.getElementById("basicQuartosSelect"); if (bQ) bQ.value = "0";
+      const bP = document.getElementById("basicMaxPriceSelect"); if (bP) bP.value = "0";
+      document.querySelectorAll("#filterPills .pill").forEach(x => x.classList.toggle("active", x.getAttribute("data-filter") === "TODOS"));
+      document.querySelectorAll("#tierPillsBar .pill").forEach(x => x.classList.toggle("active", x.getAttribute("data-tier") === "TODAS"));
+      const bPr = document.getElementById("btnOrbProntos"); if (bPr) bPr.classList.remove("active");
+      if (typeof closeAllCompactDrawers === "function") closeAllCompactDrawers();
+      applyFiltersAndRender();
+      if (typeof updateOrbBadges === "function") updateOrbBadges();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Motor SEO Automático Google (50–60 chars Title / 145–160 chars Description)
+    function buildAutoGoogleSeo(data) {
+      const tipo = normalizeTipoLabel(data.tipo || "Imóvel");
+      const bairro = (data.bairro || "Bauru").split("—")[0].trim();
+      const cidade = (data.cidade || "Bauru").split("-")[0].trim();
+      const qts = Number(data.suites) ? `${data.suites} Suítes` : (Number(data.quartos) ? `${data.quartos} Quartos` : "");
+      const area = Number(data.areaConstruida) || Number(data.areaTerreno) || 0;
+      const valStr = Number(data.valor) ? formatBRL(Number(data.valor)) : "";
+
+      let title = [tipo, qts, bairro ? `no ${bairro}` : "", cidade].filter(Boolean).join(" ");
+      if (title.length > 58) title = [tipo, qts, bairro].filter(Boolean).join(" ");
+      if (title.length < 44) title = `${title} | GUILD IMOB`;
+      title = title.slice(0, 60).trim();
+
+      const tagsTxt = (data.tags || []).slice(0, 3).join(", ");
+      let desc = `${tipo} à venda ${bairro ? "em " + bairro : ""} (${cidade})${qts ? " com " + qts.toLowerCase() : ""}${area ? ` e ${area}m²` : ""}${valStr ? ` por ${valStr}` : ""}. ${tagsTxt ? "Destaques: " + tagsTxt + ". " : ""}Agende sua visita na GUILD IMOB.`;
+      if (desc.length > 160) desc = desc.slice(0, 157).trim() + "...";
+      return { title, desc };
+    }
+
+    function updateSeoCountersUI() {
+      const tEl = document.getElementById("propSeoTitle");
+      const dEl = document.getElementById("propSeoDesc");
+      const tc = document.getElementById("seoTitleCounter");
+      const dc = document.getElementById("seoDescCounter");
+      if (tEl && tc) {
+        const len = tEl.value.trim().length;
+        tc.textContent = `${len} / 60`;
+        tc.className = "seo-meter " + (len >= 45 && len <= 60 ? "ok" : (len > 60 ? "over" : "warn"));
+      }
+      if (dEl && dc) {
+        const len = dEl.value.trim().length;
+        dc.textContent = `${len} / 160`;
+        dc.className = "seo-meter " + (len >= 120 && len <= 160 ? "ok" : (len > 160 ? "over" : "warn"));
+      }
+    }
+
+    function rewriteDescriptionSmart(tone, formData) {
+      const tipo = normalizeTipoLabel(formData.tipo || "Imóvel");
+      const titulo = formData.titulo || tipo;
+      const bairro = formData.bairro || "localização privilegiada";
+      const areaC = Number(formData.areaConstruida) || 0;
+      const areaT = Number(formData.areaTerreno) || 0;
+      const qts = Number(formData.quartos) || 0;
+      const suites = Number(formData.suites) || 0;
+      const vagas = Number(formData.vagas) || 0;
+      const val = Number(formData.valor) ? formatBRL(Number(formData.valor)) : "";
+      const raw = (formData.descricao || "").trim();
+      const highlights = [
+        suites ? `${suites} suíte(s)` : (qts ? `${qts} dormitório(s)` : ""),
+        vagas ? `${vagas} vaga(s) de garagem` : "",
+        areaC ? `${areaC} m² de área construída` : "",
+        areaT ? `${areaT} m² de terreno` : ""
+      ].filter(Boolean);
+      const bullets = highlights.map(h => `• ${h}`).join("\n");
+      const cleanSummary = raw ? raw.replace(/\s+/g, " ").slice(0, 260).trim() : "";
+
+      if (tone === "frio") {
+        return `${titulo} — ${bairro}.\n\nFicha objetiva:\n${bullets || "• Imóvel pronto para visita"}${val ? `\n• Valor: ${val}` : ""}${cleanSummary ? `\n\nResumo técnico: ${cleanSummary}` : ""}\n\nAgende uma visita técnica com a GUILD IMOB.`;
+      }
+      if (tone === "quente") {
+        return `🔥 Oportunidade imperdível em ${bairro}!\n\n${titulo} reunindo conforto, localização estratégica e excelente potencial de valorização.${val ? ` Investimento de ${val}.` : ""}\n\nDestaques que fazem a diferença:\n${bullets || "• Acabamento diferenciado e planta inteligente"}${cleanSummary ? `\n\n${cleanSummary}` : ""}\n\nImóveis com esse perfil saem rápido — fale agora com a GUILD IMOB e garanta sua visita!`;
+      }
+      if (tone === "animado") {
+        return `✨ Imagine morar ou investir aqui em ${bairro}!\n\nApresentamos este(a) incrível ${tipo} que combina praticidade, estilo e bem-estar no dia a dia:\n${bullets || "• Espaços amplos e iluminados"}${cleanSummary ? `\n\nPor que você vai amar: ${cleanSummary}` : ""}\n\nVamos conhecer de perto? Chama a equipe GUILD IMOB no WhatsApp! 🚀`;
+      }
+      if (tone === "simpatico") {
+        return `Olá! Se você procura um lugar gostoso e bem localizado em ${bairro}, vale muito a pena conhecer este(a) ${tipo}.\n\nO que ele oferece:\n${bullets || "• Ambientes bem distribuídos e acolhedores"}${cleanSummary ? `\n\nDetalhes: ${cleanSummary}` : ""}\n\nFicou com vontade de visitar? Será um prazer te receber pela GUILD IMOB!`;
+      }
+      if (tone === "google_seo") {
+        return `${tipo} à venda em ${bairro}${val ? ` por ${val}` : ""} — ${titulo}.\n\nPrincipais características:\n${bullets || "• Excelente padrão construtivo e localização valorizada"}${cleanSummary ? `\n\nSobre o imóvel: ${cleanSummary}` : ""}\n\nCompre com segurança jurídica e curadoria especializada da GUILD IMOB (CRECI J-50143). Simule seu financiamento e agende sua visita hoje.`;
+      }
+      // profissional (default)
+      return `${titulo} — Curadoria exclusiva em ${bairro}.\n\nAtributos principais:\n${bullets || "• Projeto arquitetônico contemporâneo e planta funcional"}${val ? `\n• Valor: ${val}` : ""}${cleanSummary ? `\n\nMemorial descritivo resumido: ${cleanSummary}` : ""}\n\nAtendimento consultivo e sigiloso com a GUILD IMOB. Solicite o dossiê completo e agende sua visita privativa.`;
+    }
+
+    function initV3Features() {
+      // 1. Tema Sazonal Automático
+      applySeasonalTheme();
+      const sSel = document.getElementById("seasonalThemeOverride");
+      if (sSel) {
+        sSel.value = localStorage.getItem("guild_seasonal_mode") || "auto";
+        sSel.addEventListener("change", () => {
+          localStorage.setItem("guild_seasonal_mode", sSel.value);
+          applySeasonalTheme(sSel.value);
+          showToast("🎉 Tema sazonal atualizado!");
+        });
+      }
+
+      // 2. Botão Claro "🏠 Início" + Dock Vitrine + Logo resetando para início limpo
+      const btnHomeFloat = document.getElementById("btnBackHomeFloat");
+      const syncHomeFloat = () => {
+        if (!btnHomeFloat) return;
+        const hasFilter = state.activeFilter !== "TODOS" || state.activeTier !== "TODAS" || Boolean(state.searchQuery.trim()) || state.forceGridMode;
+        const scrolled = window.scrollY > 260;
+        btnHomeFloat.classList.toggle("visible", hasFilter || scrolled);
+      };
+      window.addEventListener("scroll", syncHomeFloat, { passive: true });
+      if (btnHomeFloat) btnHomeFloat.addEventListener("click", returnToSiteHomeClean);
+      const dockVit = document.getElementById("dockVitrine");
+      if (dockVit) dockVit.addEventListener("click", returnToSiteHomeClean);
+      const brandBtn = document.getElementById("btnBrandHome");
+      if (brandBtn) brandBtn.addEventListener("click", returnToSiteHomeClean);
+      setInterval(syncHomeFloat, 800);
+
+      // 3. SEO Automático no formulário + Botão Melhorar Texto com IA (6 tons)
+      const genSeoNow = () => {
+        const seo = buildAutoGoogleSeo({
+          tipo: document.getElementById("propTipo")?.value,
+          bairro: document.getElementById("propBairro")?.value,
+          cidade: document.getElementById("propCidade")?.value,
+          quartos: document.getElementById("propQuartos")?.value,
+          suites: document.getElementById("propSuites")?.value,
+          areaConstruida: document.getElementById("propAreaC")?.value,
+          areaTerreno: document.getElementById("propTerreno")?.value,
+          valor: document.getElementById("propValor")?.value,
+          tags: Array.from(state.selectedTags || [])
+        });
+        const tEl = document.getElementById("propSeoTitle");
+        const dEl = document.getElementById("propSeoDesc");
+        if (tEl) tEl.value = seo.title;
+        if (dEl) dEl.value = seo.desc;
+        updateSeoCountersUI();
+      };
+      const btnGenSeo = document.getElementById("btnGenPropSeo");
+      if (btnGenSeo) btnGenSeo.addEventListener("click", () => { genSeoNow(); showToast("📈 Título e Descrição SEO Google gerados!"); });
+      ["propSeoTitle", "propSeoDesc"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", updateSeoCountersUI);
+      });
+      ["propTitulo", "propBairro", "propDescricao"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("blur", () => {
+          const tEl = document.getElementById("propSeoTitle");
+          if (tEl && !tEl.value.trim()) genSeoNow();
+        });
+      });
+
+      const btnAiImp = document.getElementById("btnAiImproveDesc");
+      if (btnAiImp) {
+        btnAiImp.addEventListener("click", () => {
+          const tone = document.getElementById("aiTextToneSelect")?.value || "profissional";
+          const descEl = document.getElementById("propDescricao");
+          if (!descEl) return;
+          const rewritten = rewriteDescriptionSmart(tone, {
+            tipo: document.getElementById("propTipo")?.value,
+            titulo: document.getElementById("propTitulo")?.value,
+            bairro: document.getElementById("propBairro")?.value,
+            quartos: document.getElementById("propQuartos")?.value,
+            suites: document.getElementById("propSuites")?.value,
+            vagas: document.getElementById("propVagas")?.value,
+            areaConstruida: document.getElementById("propAreaC")?.value,
+            areaTerreno: document.getElementById("propTerreno")?.value,
+            valor: document.getElementById("propValor")?.value,
+            descricao: descEl.value
+          });
+          descEl.value = rewritten;
+          genSeoNow();
+          showToast("✨ Descrição reorganizada e SEO Google atualizado!");
+        });
+      }
+
+      // 4. Botão SEO em Lote no Painel Master
+      const btnBatchSeo = document.getElementById("btnBatchAutoSeo");
+      if (btnBatchSeo) {
+        btnBatchSeo.addEventListener("click", () => {
+          let count = 0;
+          (state.properties || []).forEach(p => {
+            const seo = buildAutoGoogleSeo(p);
+            p.seoTitle = seo.title;
+            p.seoDesc = seo.desc;
+            count++;
+          });
+          showToast(`📈 SEO Google otimizado automaticamente para ${count} imóveis na sessão!`);
+        });
+      }
+
+      // 5. Botão Aplicar Marca d'Água em Todas as Fotos da Fila
+      const btnWmAll = document.getElementById("btnApplyWatermarkAll");
+      if (btnWmAll) {
+        btnWmAll.addEventListener("click", async () => {
+          const pos = document.getElementById("watermarkPosSelect")?.value || "bottom-right";
+          if (!state.pendingUploads.length) {
+            showToast("Selecione novas fotos ou clique no ícone 💧 em cada foto salva.");
+            return;
+          }
+          btnWmAll.disabled = true;
+          btnWmAll.textContent = "⏳ Aplicando...";
+          let done = 0;
+          for (const u of state.pendingUploads) {
+            if ((u.mimeType || "").startsWith("image/")) {
+              try {
+                const wmUrl = await applyGuildWatermarkToDataUrl(u.base64 || u.preview, pos);
+                u.base64 = wmUrl;
+                u.preview = wmUrl;
+                u.compSize = Math.round((wmUrl.length * 3) / 4);
+                done++;
+              } catch (e) {}
+            }
+          }
+          renderUploadPreviews();
+          btnWmAll.disabled = false;
+          btnWmAll.textContent = "💧 Aplicar em Todas";
+          showToast(`💧 Marca d'água aplicada em ${done} foto(s)!`);
+        });
+      }
+
+      // 6. CRM em Sub-abas + Atalho rápido "📄 Tabela PDF"
+      document.querySelectorAll("#crmSubtabsBar .crm-subtab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const paneId = btn.getAttribute("data-crm-pane");
+          document.querySelectorAll("#crmSubtabsBar .crm-subtab-btn").forEach(b => b.classList.toggle("active", b === btn));
+          document.querySelectorAll("#tabCRM .crm-pane").forEach(p => p.classList.toggle("active", p.id === paneId));
+        });
+      });
+      const btnQuickPdf = document.getElementById("btnQuickGoTabelaPdf");
+      if (btnQuickPdf) {
+        btnQuickPdf.addEventListener("click", () => {
+          const devTab = document.querySelector('#adminTabsBar [data-tab="tabDevConfig"]');
+          if (devTab) devTab.click();
+          setTimeout(() => {
+            const target = document.getElementById("devUploadTabelaCondo");
+            if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 120);
+        });
+      }
     }
 
     /* FILTERS & FEED RENDER */
@@ -7033,6 +7973,35 @@
       box.querySelectorAll("[data-fav-del]").forEach(b => b.addEventListener("click", () => {
         toggleFavorite(b.getAttribute("data-fav-del"));
       }));
+
+      // Comparador lado a lado automático quando o cliente salva 2 ou mais imóveis na Lista
+      if (savedProps.length >= 2) {
+        const cmpItems = savedProps.slice(0, 3);
+        const cmpWrap = document.createElement("div");
+        cmpWrap.className = "fav-compare-wrap";
+        cmpWrap.innerHTML = `
+          <div style="padding:8px 10px;font-size:0.76rem;font-weight:700;color:var(--gold-300);border-bottom:1px solid rgba(212,175,55,0.2);">⚖️ Comparador Lado a Lado (${cmpItems.length} imóveis)</div>
+          <table class="fav-compare-table">
+            <thead>
+              <tr>
+                <th>Atributo</th>
+                ${cmpItems.map(p => `<th>${escapeHtml(p.codigo)}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Valor</td>${cmpItems.map(p => `<td><strong style="color:var(--gold-300);">${formatBRL(p.valor)}</strong></td>`).join("")}</tr>
+              <tr><td>Área</td>${cmpItems.map(p => `<td>${p.areaConstruida || p.areaTerreno || 0} m²</td>`).join("")}</tr>
+              <tr><td>Valor / m²</td>${cmpItems.map(p => {
+                const a = Number(p.areaConstruida || p.areaTerreno || 0);
+                return `<td>${a > 0 ? formatBRL(Math.round((Number(p.valor) || 0) / a)) + "/m²" : "—"}</td>`;
+              }).join("")}</tr>
+              <tr><td>Dorm./Suítes</td>${cmpItems.map(p => `<td>${p.suites ? p.suites + " suítes" : (p.quartos ? p.quartos + " qts" : "—")}</td>`).join("")}</tr>
+              <tr><td>Vagas</td>${cmpItems.map(p => `<td>${p.vagas || "—"}</td>`).join("")}</tr>
+              <tr><td>Bairro</td>${cmpItems.map(p => `<td>${escapeHtml((p.bairro || "").slice(0, 22))}</td>`).join("")}</tr>
+            </tbody>
+          </table>`;
+        box.appendChild(cmpWrap);
+      }
     }
 
     function shareFavoritesWhatsApp() {
@@ -7143,6 +8112,13 @@
 
       document.getElementById("detailCodeBadge").textContent = `${prop.codigo} • ${prop.finalidade || "Venda"}`;
       document.getElementById("detailTitle").textContent = prop.titulo;
+      try {
+        const autoSeo = buildAutoGoogleSeo(prop);
+        document.title = (prop.seoTitle || autoSeo.title) + " | GUILD IMOB";
+        let md = document.querySelector('meta[name="description"]');
+        if (!md) { md = document.createElement("meta"); md.name = "description"; document.head.appendChild(md); }
+        md.content = prop.seoDesc || autoSeo.desc;
+      } catch (e) {}
       document.getElementById("detailLocation").textContent = `📍 ${prop.bairro} — ${prop.cidade || "Bauru - SP"}`;
       document.getElementById("detailPrice").textContent = formatBRL(prop.valor);
       const tarjaEl = document.getElementById("detailTarjaBadge");
@@ -7917,21 +8893,84 @@
       });
     }
 
+    async function applyGuildWatermarkToDataUrl(srcUrl, pos = "bottom-right") {
+      const img = await new Promise((resolve, reject) => {
+        const im = new Image();
+        if (/^https?:\/\//i.test(srcUrl)) im.crossOrigin = "anonymous";
+        im.onload = () => resolve(im);
+        im.onerror = () => reject(new Error("Não foi possível carregar imagem para marca d'água."));
+        im.src = srcUrl;
+      });
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      // Carrega brasão oficial ASSET_LOGO
+      const logoImg = await new Promise((resolve) => {
+        const l = new Image();
+        l.onload = () => resolve(l);
+        l.onerror = () => resolve(null);
+        l.src = ASSET_LOGO;
+      });
+
+      const minDim = Math.min(c.width, c.height);
+      const pad = Math.round(minDim * 0.035);
+      const logoH = Math.round(minDim * (pos === "center" ? 0.24 : 0.13));
+      const logoW = logoImg ? Math.round(logoH * (logoImg.naturalWidth / Math.max(1, logoImg.naturalHeight))) : logoH;
+      let lx = c.width - logoW - pad;
+      let ly = c.height - logoH - pad;
+      if (pos === "center") {
+        lx = Math.round((c.width - logoW) / 2);
+        ly = Math.round((c.height - logoH) / 2);
+      } else if (pos === "bottom-left") {
+        lx = pad;
+        ly = c.height - logoH - pad;
+      } else if (pos === "top-right") {
+        lx = c.width - logoW - pad;
+        ly = pad;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = pos === "center" ? 0.26 : 0.62;
+      if (logoImg) ctx.drawImage(logoImg, lx, ly, logoW, logoH);
+      ctx.font = `700 ${Math.max(14, Math.round(minDim * 0.022))}px sans-serif`;
+      ctx.fillStyle = "#f3e5ab";
+      ctx.textAlign = "center";
+      ctx.shadowColor = "rgba(0,0,0,0.75)";
+      ctx.shadowBlur = 6;
+      ctx.fillText("GUILD IMOB • guildimob.com", lx + logoW / 2, Math.min(c.height - 10, ly + logoH + Math.max(16, Math.round(minDim * 0.026))));
+      ctx.restore();
+      return c.toDataURL("image/jpeg", 0.90);
+    }
+
     function renderUploadPreviews() {
       const grid = document.getElementById("uploadPreviewGrid");
+      const exCount = state.existingMidiasEdit.length;
       const all = [
-        ...state.existingMidiasEdit.map((m, i) => ({ isExisting: true, idx: i, preview: m.thumb || m.full, label: "Salva", type: m.type })),
-        ...state.pendingUploads.map((u, i) => ({ isExisting: false, idx: i, preview: u.preview, label: Math.round(u.compSize / 1024) + " KB", type: u.mimeType.startsWith("video/") ? "video" : "image" }))
+        ...state.existingMidiasEdit.map((m, i) => ({ isExisting: true, idx: i, globalIdx: i, preview: m.thumb || m.full, label: "Salva", type: m.type })),
+        ...state.pendingUploads.map((u, i) => ({ isExisting: false, idx: i, globalIdx: exCount + i, preview: u.preview, label: Math.round((u.compSize || 0) / 1024) + " KB", type: (u.mimeType || "").startsWith("video/") ? "video" : "image" }))
       ];
-      grid.innerHTML = all.map(item => `
+      grid.innerHTML = all.map((item, gi) => {
+        const arrLen = item.isExisting ? state.existingMidiasEdit.length : state.pendingUploads.length;
+        return `
         <div class="upload-thumb">
           ${item.type === "video"
             ? `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gold-300);font-size:0.75rem;">▶ Vídeo</div>`
             : `<img src="${escapeHtml(item.preview)}" alt="Prévia">`}
-          <button type="button" class="upload-thumb-remove" data-rm-existing="${item.isExisting ? item.idx : ""}" data-rm-pending="${!item.isExisting ? item.idx : ""}">✕</button>
-          ${!item.isExisting && item.type === "image" ? `<button type="button" data-nb-open="${item.idx}" style="position:absolute;top:4px;left:4px;padding:2px 6px;border-radius:999px;border:none;background:linear-gradient(135deg,#F3E5AB,#D4AF37);color:#060D1A;font-size:0.66rem;font-weight:800;cursor:pointer;">🍌 IA</button>` : ""}
+          ${gi === 0 ? `<span class="upload-cover-badge">⭐ CAPA</span>` : ""}
+          <button type="button" class="upload-thumb-remove" data-rm-existing="${item.isExisting ? item.idx : ""}" data-rm-pending="${!item.isExisting ? item.idx : ""}" title="Remover">✕</button>
+          ${!item.isExisting && item.type === "image" ? `<button type="button" data-nb-open="${item.idx}" style="position:absolute;top:4px;left:4px;padding:2px 6px;border-radius:999px;border:none;background:linear-gradient(135deg,#F3E5AB,#D4AF37);color:#060D1A;font-size:0.64rem;font-weight:800;cursor:pointer;">🍌 IA</button>` : ""}
+          <div class="upload-thumb-actions">
+            ${item.idx > 0 ? `<button type="button" class="upload-mini-btn" data-mv-dir="-1" data-mv-ex="${item.isExisting ? "1" : "0"}" data-mv-idx="${item.idx}" title="Mover para esquerda">◀</button>` : ""}
+            ${item.idx > 0 ? `<button type="button" class="upload-mini-btn" data-mv-cover="1" data-mv-ex="${item.isExisting ? "1" : "0"}" data-mv-idx="${item.idx}" title="Definir como Capa">⭐</button>` : ""}
+            ${item.idx < arrLen - 1 ? `<button type="button" class="upload-mini-btn" data-mv-dir="1" data-mv-ex="${item.isExisting ? "1" : "0"}" data-mv-idx="${item.idx}" title="Mover para direita">▶</button>` : ""}
+            ${item.type === "image" ? `<button type="button" class="upload-mini-btn" data-wm-ex="${item.isExisting ? "1" : "0"}" data-wm-idx="${item.idx}" title="Aplicar Marca d'Água GUILD IMOB">💧</button>` : ""}
+          </div>
           <div class="upload-thumb-meta">${escapeHtml(item.label)}</div>
-        </div>`).join("");
+        </div>`;
+      }).join("");
 
       grid.querySelectorAll(".upload-thumb-remove").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -7940,6 +8979,69 @@
           if (ex !== "") state.existingMidiasEdit.splice(Number(ex), 1);
           if (pe !== "") state.pendingUploads.splice(Number(pe), 1);
           renderUploadPreviews();
+        });
+      });
+
+      grid.querySelectorAll("[data-mv-dir]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const isEx = btn.getAttribute("data-mv-ex") === "1";
+          const idx = Number(btn.getAttribute("data-mv-idx"));
+          const dir = Number(btn.getAttribute("data-mv-dir"));
+          const arr = isEx ? state.existingMidiasEdit : state.pendingUploads;
+          const target = idx + dir;
+          if (target >= 0 && target < arr.length) {
+            [arr[idx], arr[target]] = [arr[target], arr[idx]];
+            renderUploadPreviews();
+          }
+        });
+      });
+
+      grid.querySelectorAll("[data-mv-cover]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const isEx = btn.getAttribute("data-mv-ex") === "1";
+          const idx = Number(btn.getAttribute("data-mv-idx"));
+          const arr = isEx ? state.existingMidiasEdit : state.pendingUploads;
+          if (idx > 0 && idx < arr.length) {
+            const [moved] = arr.splice(idx, 1);
+            arr.unshift(moved);
+            renderUploadPreviews();
+            showToast("⭐ Foto definida como Capa!");
+          }
+        });
+      });
+
+      grid.querySelectorAll("[data-wm-idx]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const isEx = btn.getAttribute("data-wm-ex") === "1";
+          const idx = Number(btn.getAttribute("data-wm-idx"));
+          const pos = document.getElementById("watermarkPosSelect")?.value || "bottom-right";
+          try {
+            if (!isEx) {
+              const u = state.pendingUploads[idx];
+              const wmUrl = await applyGuildWatermarkToDataUrl(u.base64 || u.preview, pos);
+              u.base64 = wmUrl;
+              u.preview = wmUrl;
+              u.compSize = Math.round((wmUrl.length * 3) / 4);
+              renderUploadPreviews();
+              showToast("💧 Marca d'água aplicada na foto!");
+            } else {
+              const m = state.existingMidiasEdit[idx];
+              const wmUrl = await applyGuildWatermarkToDataUrl(m.full || m.thumb, pos);
+              state.existingMidiasEdit.splice(idx, 1);
+              state.pendingUploads.unshift({
+                name: "WM_" + (m.name || ("foto_" + Date.now() + ".jpg")),
+                mimeType: "image/jpeg",
+                base64: wmUrl,
+                preview: wmUrl,
+                origSize: Math.round((wmUrl.length * 3) / 4),
+                compSize: Math.round((wmUrl.length * 3) / 4)
+              });
+              renderUploadPreviews();
+              showToast("💧 Marca d'água aplicada! Salve o imóvel para atualizar no Drive.");
+            }
+          } catch (err) {
+            showToast("Erro ao aplicar marca d'água: " + (err.message || err));
+          }
         });
       });
 
@@ -8095,12 +9197,15 @@
 
       let pool = [];
       if (q) {
-        // When user types a query, search across BOTH manual + launches automatically!
         pool = filter === "VENDIDOS"
           ? [...manuais, ...lancs].filter(x => x.status === "VENDIDO")
-          : [...manuais, ...lancs];
+          : (filter === "INATIVOS" ? [...manuais, ...lancs].filter(x => x.status === "INATIVO" || x.status === "PAUSADO") : [...manuais, ...lancs]);
       } else if (filter === "MANUAIS") {
         pool = manuais;
+      } else if (filter === "ATIVOS") {
+        pool = [...manuais, ...lancs].filter(x => String(x.status || "ATIVO").toUpperCase() === "ATIVO");
+      } else if (filter === "INATIVOS") {
+        pool = [...manuais, ...lancs].filter(x => ["INATIVO", "PAUSADO", "PENDENTE_APROVACAO"].includes(String(x.status || "").toUpperCase()));
       } else if (filter === "LANCAMENTOS") {
         pool = lancs.filter(x => x.status !== "VENDIDO");
       } else if (filter === "VENDIDOS") {
@@ -8111,58 +9216,78 @@
 
       const filtered = q ? pool.filter(x => matchesAdminSearchQuery(x, q)) : pool;
       const pendentes = manuais.filter(i => i.status === "PENDENTE_APROVACAO").length;
+      const inativosCount = manuais.filter(i => i.status === "INATIVO" || i.status === "PAUSADO").length;
       const vendidosLanc = lancs.filter(x => x.status === "VENDIDO").length;
+      state.adminListLimit = state.adminListLimit || 25;
+      const limit = state.adminListLimit;
+
       const summaryEl = document.getElementById("adminImoveisSummary");
       if (summaryEl) {
-        summaryEl.textContent = `${manuais.length} manuais (${pendentes} pend.) • ${lancs.length - vendidosLanc} lotes livres • ${vendidosLanc} lotes vendidos • Exibindo ${Math.min(filtered.length, 30)} de ${filtered.length}`;
+        summaryEl.textContent = `${manuais.length} proprietários (${pendentes} pend., ${inativosCount} inat.) • ${lancs.length - vendidosLanc} lotes livres • Exibindo ${Math.min(filtered.length, limit)} de ${filtered.length}`;
       }
 
-      const slice = filtered.slice(0, 30);
+      const slice = filtered.slice(0, limit);
       const listEl = document.getElementById("adminImoveisList");
       if (!listEl) return;
 
-      const moreNote = filtered.length > 30
-        ? `<div style="padding:10px;text-align:center;font-size:0.78rem;color:var(--gold-300);background:rgba(212,175,55,0.08);border-radius:10px;margin-top:8px;">Mostrando os 30 primeiros de ${filtered.length} resultados para manter o painel rápido. Digite a quadra/lote (ex: <strong>Harmonis O 10</strong>) para ir direto ao alvo.</div>`
+      const moreNote = filtered.length > limit
+        ? `<div style="padding:10px;text-align:center;margin-top:8px;"><button type="button" class="btn-glass" id="btnAdminLoadMore" style="border-color:var(--gold-400);color:var(--gold-300);font-size:0.78rem;">Carregar +30 imóveis (${filtered.length - limit} restantes)</button></div>`
         : "";
 
       listEl.innerHTML = (slice.map(p => {
+        const thumbUrl = (p.midias && p.midias[0]) ? (p.midias[0].thumb || p.midias[0].full) : ASSET_DEMO_1;
         if (p.isLaunch) {
           const isSold = p.status === "VENDIDO";
           return `
-            <div class="admin-row" style="border-color:${isSold ? "rgba(239,68,68,0.45)" : "rgba(16,185,129,0.3)"};">
-              <div>
-                <span class="status-pill ${isSold ? "VENDIDO" : "ATIVO"}" style="${isSold ? "background:rgba(220,38,38,0.25);color:#fca5a5;border-color:rgba(239,68,68,0.5);" : ""}">${isSold ? "🔴 LOTE VENDIDO" : "🚀 DISPONÍVEL"}</span>
-                <strong style="margin-left:6px;">${escapeHtml(p.codigo)} — ${escapeHtml(p.titulo)}</strong>
-                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:3px;">
+            <div class="admin-row admin-row-clean" style="border-color:${isSold ? "rgba(239,68,68,0.45)" : "rgba(16,185,129,0.3)"};">
+              <img class="admin-row-thumb" src="${escapeHtml(thumbUrl)}" alt="" loading="lazy">
+              <div class="admin-row-main">
+                <span class="status-pill ${isSold ? "VENDIDO" : "ATIVO"}" style="${isSold ? "background:rgba(220,38,38,0.25);color:#fca5a5;border-color:rgba(239,68,68,0.5);" : ""}">${isSold ? "🔴 INATIVO / VENDIDO" : "🚀 DISPONÍVEL"}</span>
+                <strong style="margin-left:6px;font-size:0.84rem;">${escapeHtml(p.codigo)} — ${escapeHtml(p.titulo)}</strong>
+                <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">
                   ${formatBRDecimal(p.areaTerreno)} m² • Tabela: ${formatBRL(p.valor)} ${p.valorAVista ? `• À vista: <strong style="color:#6ee7b7;">${formatBRL(p.valorAVista)}</strong>` : ""}
                 </div>
               </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                ${isMaster && !isSold ? `<button type="button" class="btn-glass btn-danger" data-launch-status="VENDIDO" data-launch-condo="${escapeHtml(p.condoKey)}" data-launch-q="${escapeHtml(p.quadra)}" data-launch-l="${escapeHtml(p.lote)}">🔴 Marcar Vendido</button>` : ""}
-                ${isMaster && isSold ? `<button type="button" class="btn-glass btn-emerald" data-launch-status="DISPONIVEL" data-launch-condo="${escapeHtml(p.condoKey)}" data-launch-q="${escapeHtml(p.quadra)}" data-launch-l="${escapeHtml(p.lote)}">🟢 Reativar Lote</button>` : ""}
-                <button type="button" class="btn-glass" data-mkt-prop="${escapeHtml(p.id)}">🎨 Card/Vídeo</button>
+              <div class="admin-row-actions">
+                ${isMaster && !isSold ? `<button type="button" class="btn-glass btn-danger" data-launch-status="VENDIDO" data-launch-condo="${escapeHtml(p.condoKey)}" data-launch-q="${escapeHtml(p.quadra)}" data-launch-l="${escapeHtml(p.lote)}">⏸️ Desativar</button>` : ""}
+                ${isMaster && isSold ? `<button type="button" class="btn-glass btn-emerald" data-launch-status="DISPONIVEL" data-launch-condo="${escapeHtml(p.condoKey)}" data-launch-q="${escapeHtml(p.quadra)}" data-launch-l="${escapeHtml(p.lote)}">▶️ Reativar</button>` : ""}
+                <button type="button" class="btn-glass" data-mkt-prop="${escapeHtml(p.id)}">🎬 Vídeo/Card</button>
               </div>
             </div>`;
         }
+        const stUp = String(p.status || "ATIVO").toUpperCase();
+        const isAtivo = stUp === "ATIVO";
+        const rawDt = p.dataAtualizacao || p.dataCadastro || p.createdAt || "";
+        const parsedDt = rawDt ? Date.parse(rawDt) : NaN;
+        const isStale60d = isAtivo && !isNaN(parsedDt) && ((Date.now() - parsedDt) > (60 * 86400 * 1000));
         return `
-          <div class="admin-row">
-            <div>
-              <span class="status-pill ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span>
-              <strong style="margin-left:6px;">${escapeHtml(p.codigo)} — ${escapeHtml(p.titulo)}</strong>
-              <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:3px;">
-                ${escapeHtml(p.bairro)} • ${formatBRL(p.valor)} • 👁️ ${p.visualizacoes || 0} • Corretor: ${escapeHtml(p.corretorNome || "")}
+          <div class="admin-row admin-row-clean" style="${!isAtivo ? "opacity:0.84;border-color:rgba(148,163,184,0.35);" : ""}">
+            <img class="admin-row-thumb" src="${escapeHtml(thumbUrl)}" alt="" loading="lazy">
+            <div class="admin-row-main">
+              <span class="status-pill ${escapeHtml(stUp)}">${escapeHtml(stUp)}</span>${isStale60d ? `<span class="stale-60d-pill" title="Mais de 60 dias sem atualização — confirme disponibilidade com o proprietário">⏰ Revisar (+60d)</span>` : ""}
+              <strong style="margin-left:6px;font-size:0.84rem;">${escapeHtml(p.codigo)} — ${escapeHtml(p.titulo)}</strong>
+              <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">
+                ${escapeHtml(p.bairro)} • ${formatBRL(p.valor)} • 👁️ ${p.visualizacoes || 0}
               </div>
             </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              ${isMaster && p.status !== "ATIVO" ? `<button type="button" class="btn-glass btn-emerald" data-approve-id="${escapeHtml(p.id)}" data-new-status="ATIVO">✓ Reativar / Aprovar</button>` : ""}
-              ${isMaster && p.status === "ATIVO" ? `<button type="button" class="btn-glass" data-approve-id="${escapeHtml(p.id)}" data-new-status="VENDIDO">Vendido</button>` : ""}
-              <button type="button" class="btn-glass" data-mkt-prop="${escapeHtml(p.id)}" title="Gerar Card PNG ou Vídeo Slide para Redes Sociais">🎨 Card/Vídeo</button>
-              <button type="button" class="btn-glass" data-gps-prop="${escapeHtml(p.id)}" title="Abrir rota GPS no Google Maps">🧭 GPS</button>
+            <div class="admin-row-actions">
+              ${isMaster && !isAtivo ? `<button type="button" class="btn-glass btn-emerald" data-approve-id="${escapeHtml(p.id)}" data-new-status="ATIVO">▶️ Ativar</button>` : ""}
+              ${isMaster && isAtivo ? `<button type="button" class="btn-glass" data-approve-id="${escapeHtml(p.id)}" data-new-status="INATIVO" title="Desativar temporariamente sem apagar">⏸️ Desativar</button>` : ""}
               <button type="button" class="btn-glass" data-edit-prop="${escapeHtml(p.id)}">✎ Editar</button>
-              <button type="button" class="btn-glass btn-danger" data-del-prop="${escapeHtml(p.id)}">🗑️ Excluir</button>
+              <button type="button" class="btn-glass" data-mkt-prop="${escapeHtml(p.id)}">🎬 Vídeo/Card</button>
+              <button type="button" class="btn-glass" data-gps-prop="${escapeHtml(p.id)}" title="Rota GPS">🧭</button>
+              <button type="button" class="btn-glass btn-danger" data-del-prop="${escapeHtml(p.id)}" title="Excluir">🗑️</button>
             </div>
           </div>`;
       }).join("") || `<div style="color:var(--text-muted);font-size:0.85rem;">Nenhum imóvel ou lote encontrado para essa busca.</div>`) + moreNote;
+
+      const btnMoreAdmin = document.getElementById("btnAdminLoadMore");
+      if (btnMoreAdmin) {
+        btnMoreAdmin.addEventListener("click", () => {
+          state.adminListLimit = (state.adminListLimit || 25) + 30;
+          renderAdminImoveisFilteredList();
+        });
+      }
 
       // Bind launch status buttons
       listEl.querySelectorAll("[data-launch-status]").forEach(btn => {
@@ -10434,6 +11559,7 @@
       updateFavBadges();
       renderChecklistUI();
       initCompactTopDrawers();
+      initV3Features();
 
       // Search & Filter Events
       document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -11761,43 +12887,89 @@
 
           await Promise.all(mktState.selectedIndices.map(i => loadCorsImage(mktState.photos[i])));
 
-          const mimeCandidates = ["video/mp4", "video/webm;codecs=vp9", "video/webm"];
+          // Fix definitivo 15s -> 4s: prefere MP4 H.264 ou WebM VP8 + trilha de áudio silenciosa sincronizada + patch binário EBML Duration
+          const mimeCandidates = [
+            "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+            "video/mp4;codecs=avc1",
+            "video/mp4",
+            "video/webm;codecs=vp8,opus",
+            "video/webm;codecs=vp8",
+            "video/webm;codecs=vp9",
+            "video/webm"
+          ];
           const mime = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
-          const stream = c.captureStream(30);
-          const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+          const videoStream = c.captureStream(30);
+          const combinedTracks = [...videoStream.getVideoTracks()];
+
+          // Trilha de áudio silenciosa garante relógio mestre exato (15.0s) na Galeria Android, Instagram e WhatsApp
+          let silentAudioCtx = null;
+          try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) {
+              silentAudioCtx = new AC();
+              const osc = silentAudioCtx.createOscillator();
+              const gain = silentAudioCtx.createGain();
+              gain.gain.value = 0.00001; // inaudível, mas mantém relógio de amostras ativo
+              const dest = silentAudioCtx.createMediaStreamDestination();
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start();
+              dest.stream.getAudioTracks().forEach(t => combinedTracks.push(t));
+            }
+          } catch (e) {}
+
+          const combinedStream = new MediaStream(combinedTracks);
+          const recOpts = mime ? { mimeType: mime, videoBitsPerSecond: 4500000 } : { videoBitsPerSecond: 4500000 };
+          let recorder;
+          try { recorder = new MediaRecorder(combinedStream, recOpts); }
+          catch (e) { recorder = mime ? new MediaRecorder(videoStream, { mimeType: mime }) : new MediaRecorder(videoStream); }
+
           const chunks = [];
+          const totalMs = durSec * 1000;
+          let actualDurationMs = totalMs;
           recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
-          recorder.onstop = () => {
-            const ext = (recorder.mimeType || "").includes("mp4") ? "mp4" : "webm";
-            const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+          recorder.onstop = async () => {
+            if (silentAudioCtx) { try { silentAudioCtx.close(); } catch (e) {} }
+            const recMime = recorder.mimeType || mime || "video/webm";
+            const isMp4 = recMime.includes("mp4");
+            const ext = isMp4 ? "mp4" : "webm";
+            let blob = new Blob(chunks, { type: recMime });
+            if (!isMp4) {
+              try { blob = await patchWebmDurationBlob(blob, actualDurationMs); } catch (e) {}
+            }
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `Video_${mktState.prop.codigo}_GUILD_IMOB.${ext}`;
+            a.download = `Video_${mktState.prop.codigo}_${durSec}s_GUILD_IMOB.${ext}`;
             a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            setTimeout(() => URL.revokeObjectURL(url), 8000);
             mktState.recording = false;
             btnMktVid.disabled = false;
-            pText.textContent = "✅ Vídeo pronto e baixado!";
-            showToast("🎬 Vídeo Slide Liquid Glass baixado!");
+            pText.textContent = `✅ Vídeo de ${durSec}s pronto e baixado (${ext.toUpperCase()})!`;
+            showToast(`🎬 Vídeo de ${durSec}s baixado com duração corrigida!`);
           };
 
-          recorder.start(250);
+          // Sem timeslice (gravação contínua) evita fragmentação de cabeçalho na Galeria do celular
+          recorder.start();
           const t0 = performance.now();
-          const totalMs = durSec * 1000;
           const selCount = Math.max(1, mktState.selectedIndices.length);
+          const vTrack = videoStream.getVideoTracks()[0];
 
           function step(now) {
             const elapsed = now - t0;
             const prog = Math.min(1, elapsed / totalMs);
             const slidePos = prog * selCount;
             drawMarketingFrame(c, (prog * 2) % 1, slidePos);
+            if (vTrack && typeof vTrack.requestFrame === "function") {
+              try { vTrack.requestFrame(); } catch (e) {}
+            }
             pBar.style.width = Math.round(prog * 100) + "%";
-            pText.textContent = `Gerando vídeo (${Math.ceil((totalMs - elapsed) / 1000)}s restantes)...`;
+            pText.textContent = `Gerando vídeo ${durSec}s (${Math.max(0, Math.ceil((totalMs - elapsed) / 1000))}s restantes)...`;
             if (elapsed < totalMs) {
               requestAnimationFrame(step);
             } else {
-              recorder.stop();
+              actualDurationMs = Math.max(totalMs, Math.round(performance.now() - t0));
+              setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, 180);
             }
           }
           requestAnimationFrame(step);
