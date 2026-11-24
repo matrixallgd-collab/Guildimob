@@ -15,22 +15,22 @@ jobs:
       - name: Baixar repositorio
         uses: actions/checkout@v4
 
-      - name: Baixar Sitemap XML do Google Apps Script
-        run: |
-          curl -fsSL "https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec?action=sitemap" -o sitemap_tmp.xml
-          grep -q "<urlset" sitemap_tmp.xml
-          grep -q "</urlset>" sitemap_tmp.xml
-          mv sitemap_tmp.xml sitemap.xml
-          echo "Total de URLs no sitemap: $(grep -c '<url>' sitemap.xml)"
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Publicar sitemap.xml se houver novidades
+      - name: Gerar paginas SEO estaticas + sitemap.xml
+        run: python3 .github/scripts/build_seo_pages.py
+
+      - name: Publicar paginas SEO e sitemap.xml
         run: |
           git config user.name "GUILD IMOB Bot"
           git config user.email "guildimob@gmail.com"
-          if ! git diff --quiet sitemap.xml 2>/dev/null || [ -n "$(git status --porcelain sitemap.xml)" ]; then
-            git add sitemap.xml
-            git commit -m "chore: atualiza sitemap.xml automaticamente com todos os imoveis"
+          git add sitemap.xml imovel/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: atualiza paginas SEO estaticas e sitemap.xml automaticamente"
             git push
           else
-            echo "Sitemap ja esta atualizado."
+            echo "Paginas SEO e sitemap ja estao atualizados."
           fi
