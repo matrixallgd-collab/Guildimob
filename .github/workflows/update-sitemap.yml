@@ -1,196 +1,36 @@
-#!/usr/bin/env python3
-import html, json, os, re, shutil, urllib.request, urllib.parse
-from datetime import datetime, timezone, timedelta
+name: Atualizar Sitemap XML Automaticamente
 
-API_URL = "https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec"
-SITE_URL = "https://guildimob.com"
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
-CONDO_META = {
-    "harmonis": ("Harmonis Parque Residencial", "Bauru - SP", "Condominio fechado de alto padrao com 5 clubes, parque urbano, lago e seguranca 24h."),
-    "guestier3": ("Guestier Residencial Boutique III", "Piratininga - SP", "Condominio boutique estilo resort com praia artificial, piscina borda infinita e portaria 24h.")
-}
+permissions:
+  contents: write
 
-def brl(val):
-    try:
-        n = float(val or 0)
-        return ("R$ " + f"{n:,.0f}".replace(",", ".")) if n > 0 else ""
-    except Exception:
-        return ""
+jobs:
+  update-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
 
-def clean_txt(s):
-    s = str(s or "").strip()
-    for a, b in [("TÃ©rrea","Térrea"),("ChÃ¡cara","Chácara"),("CondomÃ­nio","Condomínio"),
-                 ("Ã¡","á"),("Ã©","é"),("Ã­","í"),("Ã³","ó"),("Ãº","ú"),("Ã£","ã"),("Ãµ","õ"),("Ã§","ç")]:
-        s = s.replace(a, b)
-    return re.sub(r"\s+", " ", s).strip()
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-def safe_slug(s):
-    return re.sub(r"[^a-zA-Z0-9_-]+", "-", str(s or "").strip().lower()).strip("-")[:90]
+      - name: Gerar paginas SEO estaticas + sitemap.xml
+        run: python3 .github/scripts/build_seo_pages.py
 
-def read_default_lots_from_index():
-    if not os.path.exists("index.html"):
-        return {}
-    with open("index.html", "r", encoding="utf-8", errors="ignore") as f:
-        txt = f.read()
-    m = re.search(r"LANCAMENTOS_LOTES_DB\s*=\s*(\{.*?\})\s*;", txt, flags=re.S)
-    if not m:
-        return {}
-    raw = m.group(1)
-    try:
-        return json.loads(raw)
-    except Exception:
-        fixed = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)\s*:', r'\1"\2":', raw)
-        try:
-            return json.loads(fixed)
-        except Exception:
-            return {}
-
-def make_title(it):
-    if it.get("seoTitle"):
-        return clean_txt(it["seoTitle"])[:62]
-    tipo = clean_txt(it.get("tipo") or "Imóvel")
-    bairro = clean_txt(it.get("bairro") or "Bauru").split("—")[0].strip()
-    su = int(it.get("suites") or 0)
-    qt = int(it.get("quartos") or 0)
-    qts = f"{su} Suítes" if su else (f"{qt} Quartos" if qt else "")
-    t = " ".join([x for x in [tipo, qts, f"no {bairro}" if bairro else ""] if x])
-    suf = " - Guild Imob Bauru"
-    return (t + suf)[:62] if len(t) + len(suf) <= 62 else t[:62]
-
-def make_desc(it):
-    if it.get("seoDesc"):
-        return clean_txt(it["seoDesc"])[:160]
-    tipo = clean_txt(it.get("tipo") or "Imóvel")
-    bairro = clean_txt(it.get("bairro") or "Bauru")
-    cidade = clean_txt(it.get("cidade") or "Bauru - SP")
-    area = it.get("areaConstruida") or it.get("areaTerreno") or 0
-    v = brl(it.get("valor"))
-    d = f"{tipo} à venda em {bairro} ({cidade})"
-    if area: d += f" com {area}m²"
-    if v: d += f" por {v}"
-    extra = clean_txt(it.get("descricao") or "")
-    d += f". {extra}" if extra else ". Curadoria exclusiva GUILD IMOB (CRECI J-50143)."
-    return (d[:157].rstrip() + "...") if len(d) > 160 else d
-
-def render_html(it, slug):
-    title = make_title(it)
-    desc = make_desc(it)
-    page_url = f"{SITE_URL}/imovel/{slug}/"
-    target_url = f"{SITE_URL}/?imovel={urllib.parse.quote(slug)}"
-    img = it.get("cover") or f"{SITE_URL}/favicon.png"
-    val_num = float(it.get("valor") or 0)
-    val_str = brl(val_num)
-    h1 = clean_txt(it.get("titulo") or title)
-    bairro = clean_txt(it.get("bairro") or "")
-    cidade = clean_txt(it.get("cidade") or "Bauru - SP")
-    body_desc = clean_txt(it.get("descricao") or desc)[:600]
-    ld = {"@context":"https://schema.org","@type":"RealEstateListing","name":h1,"description":desc,"url":page_url,"image":img}
-    if val_num > 0:
-        ld["offers"] = {"@type":"Offer","price":val_num,"priceCurrency":"BRL","availability":"https://schema.org/InStock"}
-    return f"""<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{html.escape(title)}</title>
-  <meta name="description" content="{html.escape(desc)}">
-  <link rel="canonical" href="{html.escape(page_url)}">
-  <link rel="icon" type="image/png" href="{SITE_URL}/favicon.png">
-  <link rel="shortcut icon" href="{SITE_URL}/favicon.ico">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="GUILD IMOB — Imobiliária em Bauru">
-  <meta property="og:title" content="{html.escape(title)}">
-  <meta property="og:description" content="{html.escape(desc)}">
-  <meta property="og:url" content="{html.escape(page_url)}">
-  <meta property="og:image" content="{html.escape(img)}">
-  <meta name="twitter:card" content="summary_large_image">
-  <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
-  <script>
-    if (!/bot|googlebot|crawler|spider|bingbot|whatsapp|facebookexternalhit|twitterbot/i.test(navigator.userAgent||"")) {{
-      window.location.replace({json.dumps(target_url)});
-    }}
-  </script>
-</head>
-<body style="margin:0;padding:24px;font-family:system-ui,sans-serif;background:#060d1a;color:#f8fafc">
-  <main style="max-width:700px;margin:0 auto;background:#0c172c;border:1px solid #d4af37;border-radius:16px;padding:20px">
-    <h1 style="color:#f3e5ab;margin-top:0">{html.escape(h1)}</h1>
-    {f'<p style="color:#34d399;font-size:1.25rem;font-weight:800">{html.escape(val_str)}</p>' if val_str else ''}
-    <p><strong>Localização:</strong> {html.escape(bairro)} — {html.escape(cidade)}</p>
-    <p>{html.escape(body_desc)}</p>
-    <p><a href="{html.escape(target_url)}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#d4af37;color:#060d1a;font-weight:800;text-decoration:none">Ver Imóvel na GUILD IMOB →</a></p>
-  </main>
-</body>
-</html>
-"""
-
-def main():
-    req = urllib.request.Request(f"{API_URL}?action=getImoveis", headers={"User-Agent": "GUILD-IMOB-SEO/2.0"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        payload = json.loads(resp.read().decode("utf-8"))
-    if not payload.get("ok"):
-        raise RuntimeError("API getImoveis retornou erro")
-
-    today = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d")
-    items, seen = [], set()
-
-    for p in (payload.get("imoveis") or []):
-        if str(p.get("status") or "ATIVO").upper() != "ATIVO":
-            continue
-        slug = safe_slug(p.get("slug") or p.get("codigo") or p.get("id"))
-        if not slug or slug in seen:
-            continue
-        seen.add(slug)
-        m = p.get("midias") or []
-        p["cover"] = (m[0].get("full") or m[0].get("thumb") or "") if (isinstance(m, list) and m and isinstance(m[0], dict)) else ""
-        items.append((slug, p, str(p.get("atualizadoEm") or p.get("criadoEm") or today)[:10], "0.90"))
-
-    live = payload.get("lancamentosLive") or {}
-    defaults = read_default_lots_from_index()
-    for k in list(dict.fromkeys(list(defaults.keys()) + list(live.keys()))):
-        entry = live.get(k) or {}
-        lots = entry.get("activeLots") if (isinstance(entry.get("activeLots"), list) and entry.get("activeLots")) else defaults.get(k, [])
-        nome, cidade, cdesc = CONDO_META.get(k, (k.title(), "Bauru - SP", "Condomínio fechado com lazer completo."))
-        for lot in lots:
-            q = str(lot.get("q") or "").strip().upper()
-            l = re.sub(r"\D", "", str(lot.get("l") or "")).zfill(2)
-            if not q or not l:
-                continue
-            slug = safe_slug(f"{k}-q{q}-l{l}")
-            if slug in seen:
-                continue
-            seen.add(slug)
-            area, val, va = lot.get("m") or 0, lot.get("v") or 0, lot.get("va") or lot.get("v") or 0
-            it = {
-                "tipo": "Terreno",
-                "titulo": f"{nome} — Quadra {q} Lote {l} ({lot.get('t') or 'Lote'})",
-                "seoTitle": f"Lote {q}-{l} ({area}m²) no {nome} | Guild Imob",
-                "bairro": nome, "cidade": cidade, "valor": val, "areaTerreno": area,
-                "descricao": f"Lote Quadra {q} Lote {l} com {area}m² no {nome}. Tabela {brl(val)} (à vista {brl(va)}). {cdesc}"
-            }
-            items.append((slug, it, today, "0.80"))
-
-    if os.path.exists("imovel"):
-        shutil.rmtree("imovel")
-    os.makedirs("imovel", exist_ok=True)
-
-    xml = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        f'  <url><loc>{SITE_URL}/</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>'
-    ]
-    for slug, it, lastmod, prio in items:
-        d = os.path.join("imovel", slug)
-        os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as f:
-            f.write(render_html(it, slug))
-        if not re.match(r"^\d{4}-\d{2}-\d{2}$", lastmod):
-            lastmod = today
-        xml.append(f'  <url><loc>{SITE_URL}/imovel/{slug}/</loc><lastmod>{lastmod}</lastmod><changefreq>weekly</changefreq><priority>{prio}</priority></url>')
-    xml.append("</urlset>")
-
-    with open("sitemap.xml", "w", encoding="utf-8") as f:
-        f.write("\n".join(xml) + "\n")
-    print(f"OK: {len(items)} paginas SEO + sitemap.xml gerados!")
-
-if __name__ == "__main__":
-    main()
+      - name: Publicar paginas SEO e sitemap.xml
+        run: |
+          git config user.name "GUILD IMOB Bot"
+          git config user.email "guildimob@gmail.com"
+          git add sitemap.xml imovel/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: atualiza paginas SEO estaticas e sitemap.xml automaticamente"
+            git push
+          else
+            echo "Paginas SEO e sitemap ja estao atualizados."
+          fi
