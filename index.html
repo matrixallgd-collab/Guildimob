@@ -16804,5 +16804,369 @@
 </script>
 <!-- V7_CAPTACAO_MATCH_END -->
 
+
+
+<!-- V8_MAPA_M2_START -->
+<style id="guildimob-v8-mapa-m2-css">
+  .quick-orb-item.orb-mapa-m2 .quick-orb-circle {
+    background: radial-gradient(circle at 30% 25%, rgba(16,185,129,0.52), rgba(14,116,144,0.38) 65%, rgba(9,15,30,0.92));
+    border-color: rgba(52,211,153,0.72) !important;
+    box-shadow: 0 0 18px rgba(16,185,129,0.38), inset 0 1px 0 rgba(255,255,255,0.3);
+    color: #a7f3d0 !important;
+  }
+  #v8MapaRegionModal {
+    position: fixed;
+    inset: 0;
+    z-index: 100060;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(2, 6, 23, 0.84);
+    backdrop-filter: blur(12px);
+  }
+  #v8MapaRegionModal.open { display: flex; }
+  .v8-mapa-sheet {
+    width: 100%;
+    max-width: 780px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: linear-gradient(155deg, rgba(13, 22, 42, 0.98), rgba(7, 12, 24, 0.99));
+    border: 1px solid rgba(52,211,153,0.48);
+    border-radius: 22px;
+    padding: 16px;
+    color: #f8fafc;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.72), 0 0 36px rgba(16,185,129,0.18);
+  }
+  #v8LeafletMapBox {
+    width: 100%;
+    height: 300px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(212,175,55,0.38);
+    background: #0b1324;
+    margin: 10px 0 12px;
+  }
+  .v8-m2-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .v8-m2-kpi {
+    background: rgba(15,23,42,0.85);
+    border: 1px solid rgba(212,175,55,0.28);
+    border-radius: 12px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .v8-m2-kpi strong { display:block; font-size:0.86rem; color:#fef08a; }
+  .v8-m2-kpi span { font-size:0.64rem; color:#94a3b8; }
+  .v8-region-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(15,23,42,0.78);
+    border: 1px solid rgba(255,255,255,0.10);
+    margin-bottom: 7px;
+    cursor: pointer;
+    transition: border-color 0.16s ease, background 0.16s ease;
+  }
+  .v8-region-row:hover {
+    border-color: rgba(212,175,55,0.55);
+    background: rgba(212,175,55,0.10);
+  }
+</style>
+
+<!-- MODAL MAPA INTERATIVO & PREÇO MÉDIO POR m² -->
+<div id="v8MapaRegionModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="v8-mapa-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+      <div>
+        <h3 style="margin:0;color:#6ee7b7;font-size:1.05rem;">🗺️ Mapa de Bauru &amp; Região • Preço Médio / m²</h3>
+        <div style="font-size:0.72rem;color:#94a3b8;">Localização aproximada por bairro/condomínio (endereço exato protegido) • Cálculo ao vivo pelo estoque ativo.</div>
+      </div>
+      <button type="button" onclick="document.getElementById('v8MapaRegionModal').classList.remove('open')" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:999px;padding:6px 12px;font-size:0.76rem;cursor:pointer;">✕ Fechar</button>
+    </div>
+
+    <div class="v7-pill-row" id="v8MapaFilterPills">
+      <button type="button" class="v7-choice-pill active" data-mcat="all">Todos</button>
+      <button type="button" class="v7-choice-pill" data-mcat="casa">🏠 Casas</button>
+      <button type="button" class="v7-choice-pill" data-mcat="apto">🏢 Aptos</button>
+      <button type="button" class="v7-choice-pill" data-mcat="terreno">🌳 Terrenos/Lotes</button>
+      <button type="button" class="v7-choice-pill" data-mcat="chacara">🌾 Chácaras</button>
+    </div>
+
+    <div class="v8-m2-kpis">
+      <div class="v8-m2-kpi"><strong id="v8KpiAvgM2">—</strong><span>Média Geral / m²</span></div>
+      <div class="v8-m2-kpi"><strong id="v8KpiTopReg">—</strong><span>Maior m²</span></div>
+      <div class="v8-m2-kpi"><strong id="v8KpiBestReg">—</strong><span>Melhor Custo / m²</span></div>
+    </div>
+
+    <div id="v8LeafletMapBox"></div>
+
+    <div style="font-size:0.75rem;font-weight:800;color:#f3e5ab;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">📊 Regiões &amp; Preço Médio por m² (toque para filtrar no site)</div>
+    <div id="v8RegionsRankingList"></div>
+  </div>
+</div>
+
+<script id="guildimob-v8-mapa-m2-engine">
+(function() {
+  'use strict';
+  if (window.__guildImobV8Active) return;
+  window.__guildImobV8Active = true;
+
+  // Coordenadas aproximadas (centro do bairro/condomínio — zero exposição de endereço exato)
+  const REGION_COORDS = {
+    'harmonis': [-22.4005, -49.1092],
+    'guestier': [-22.3935, -49.1180],
+    'estoril': [-22.3455, -49.0510],
+    'higienopolis': [-22.3335, -49.0645],
+    'altos da cidade': [-22.3270, -49.0695],
+    'centro': [-22.3218, -49.0712],
+    'vila universitaria': [-22.3410, -49.0585],
+    'vila pacifico': [-22.3185, -49.0850],
+    'parque das nacoes': [-22.3388, -49.0422],
+    'mary dota': [-22.2975, -49.0265],
+    'geisel': [-22.3360, -49.0215],
+    'quinta ranieri': [-22.3572, -49.0445],
+    'nova quinta': [-22.3610, -49.0410],
+    'villagio': [-22.3560, -49.0560],
+    'tambore': [-22.3655, -49.0620],
+    'samambaia': [-22.3530, -49.0355],
+    'shangri': [-22.3490, -49.0390],
+    'lago sul': [-22.3690, -49.0490],
+    'vila cardia': [-22.3295, -49.0555],
+    'vila falcao': [-22.3130, -49.0890],
+    'america': [-22.3375, -49.0620],
+    'europa': [-22.3480, -49.0470],
+    'infante': [-22.3402, -49.0530],
+    'piratininga': [-22.4140, -49.1365],
+    'agudos': [-22.4730, -48.9875],
+    'avai': [-22.1480, -49.3330]
+  };
+
+  function normV8(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function resolveCoordV8(bairro) {
+    const nb = normV8(bairro);
+    for (const k in REGION_COORDS) {
+      if (nb.includes(k)) return REGION_COORDS[k];
+    }
+    // Hash determinístico suave ao redor do centro de Bauru para bairros não listados
+    let h = 0;
+    for (let i = 0; i < nb.length; i++) h = ((h << 5) - h) + nb.charCodeAt(i);
+    const lat = -22.324 + ((h % 35) / 1000);
+    const lng = -49.068 + (((h >> 4) % 35) / 1000);
+    return [lat, lng];
+  }
+
+  let v8MapCat = 'all';
+  let v8LeafletMap = null;
+  let v8MarkersLayer = null;
+  let v8LeafletLoading = false;
+
+  function ensureLeafletLoaded(cb) {
+    if (window.L) { cb(); return; }
+    if (v8LeafletLoading) { setTimeout(() => ensureLeafletLoaded(cb), 250); return; }
+    v8LeafletLoading = true;
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const sc = document.createElement('script');
+    sc.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    sc.onload = () => { v8LeafletLoading = false; cb(); };
+    sc.onerror = () => { v8LeafletLoading = false; cb(); };
+    document.head.appendChild(sc);
+  }
+
+  function computeRegionStatsV8() {
+    const props = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+    const map = {};
+    props.forEach(p => {
+      const t = normV8(p.tipo || '');
+      if (v8MapCat === 'casa' && !(t.includes('casa') || t.includes('sobrad'))) return;
+      if (v8MapCat === 'apto' && !t.includes('apart')) return;
+      if (v8MapCat === 'terreno' && !(t.includes('terren') || t.includes('lote'))) return;
+      if (v8MapCat === 'chacara' && !(t.includes('chac') || t.includes('sitio'))) return;
+
+      const b = (window.fixMojibakeV6 ? window.fixMojibakeV6(p.bairro || 'Bauru') : (p.bairro || 'Bauru')).trim() || 'Bauru';
+      const val = Number(p.valor) || 0;
+      const area = (t.includes('terren') || t.includes('lote'))
+        ? (Number(p.areaTerreno) || Number(p.areaConstruida) || 0)
+        : (Number(p.areaConstruida) || Number(p.areaTerreno) || 0);
+      const pm2 = (val > 10000 && area > 12) ? (val / area) : 0;
+
+      if (!map[b]) map[b] = { bairro: b, count: 0, pm2Sum: 0, pm2Count: 0, minVal: Infinity, maxVal: 0, coord: resolveCoordV8(b) };
+      map[b].count++;
+      if (val > 0) {
+        if (val < map[b].minVal) map[b].minVal = val;
+        if (val > map[b].maxVal) map[b].maxVal = val;
+      }
+      if (pm2 > 0) { map[b].pm2Sum += pm2; map[b].pm2Count++; }
+    });
+
+    return Object.values(map).map(r => ({
+      bairro: r.bairro,
+      count: r.count,
+      avgM2: r.pm2Count > 0 ? Math.round(r.pm2Sum / r.pm2Count) : 0,
+      minVal: r.minVal === Infinity ? 0 : r.minVal,
+      maxVal: r.maxVal,
+      coord: r.coord
+    })).sort((a, b) => (b.avgM2 || 0) - (a.avgM2 || 0));
+  }
+
+  function renderMapaAndStatsV8() {
+    const regions = computeRegionStatsV8();
+    const withM2 = regions.filter(r => r.avgM2 > 0);
+    const avgAll = withM2.length ? Math.round(withM2.reduce((a, r) => a + r.avgM2, 0) / withM2.length) : 0;
+    const topReg = withM2[0];
+    const bestReg = withM2[withM2.length - 1];
+
+    document.getElementById('v8KpiAvgM2').textContent = avgAll ? ('R$ ' + avgAll.toLocaleString('pt-BR') + '/m²') : '—';
+    document.getElementById('v8KpiTopReg').textContent = topReg ? (topReg.bairro.slice(0, 14) + ' • R$ ' + topReg.avgM2.toLocaleString('pt-BR')) : '—';
+    document.getElementById('v8KpiBestReg').textContent = bestReg ? (bestReg.bairro.slice(0, 14) + ' • R$ ' + bestReg.avgM2.toLocaleString('pt-BR')) : '—';
+
+    const listEl = document.getElementById('v8RegionsRankingList');
+    listEl.innerHTML = regions.map(r => `
+      <div class="v8-region-row" data-bairro="${r.bairro.replace(/"/g,'&quot;')}">
+        <div>
+          <strong style="font-size:0.84rem;color:#f8fafc;">📍 ${r.bairro}</strong>
+          <div style="font-size:0.72rem;color:#94a3b8;">${r.count} ${r.count === 1 ? 'opção ativa' : 'opções ativas'}${r.minVal ? ' • a partir de R$ ' + Math.round(r.minVal).toLocaleString('pt-BR') : ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <strong style="font-size:0.86rem;color:#6ee7b7;">${r.avgM2 ? 'R$ ' + r.avgM2.toLocaleString('pt-BR') + '/m²' : 'Sob consulta'}</strong>
+          <div style="font-size:0.66rem;color:#fef08a;">Filtrar →</div>
+        </div>
+      </div>`).join('') || '<div style="text-align:center;color:#94a3b8;padding:12px;">Nenhum imóvel encontrado nessa categoria.</div>';
+
+    listEl.querySelectorAll('.v8-region-row').forEach(row => {
+      row.onclick = () => {
+        const b = row.getAttribute('data-bairro');
+        document.getElementById('v8MapaRegionModal').classList.remove('open');
+        const searchInp = document.getElementById('searchInput') || document.querySelector('input[type="search"], input[placeholder*="Buscar"]');
+        if (searchInp) {
+          searchInp.value = b;
+          searchInp.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        if (typeof showToast === 'function') showToast('📍 Filtrando imóveis em ' + b);
+      };
+    });
+
+    ensureLeafletLoaded(() => {
+      const box = document.getElementById('v8LeafletMapBox');
+      if (!box) return;
+      if (!window.L) {
+        box.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:0.82rem;padding:16px;text-align:center;">Mapa offline — use a lista de regiões e preço médio/m² abaixo.</div>';
+        return;
+      }
+      if (!v8LeafletMap) {
+        v8LeafletMap = L.map(box, { zoomControl: true }).setView([-22.345, -49.068], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 17
+        }).addTo(v8LeafletMap);
+        v8MarkersLayer = L.layerGroup().addTo(v8LeafletMap);
+      } else {
+        setTimeout(() => v8LeafletMap.invalidateSize(), 120);
+      }
+      v8MarkersLayer.clearLayers();
+      regions.forEach(r => {
+        const label = r.avgM2 ? `R$ ${r.avgM2.toLocaleString('pt-BR')}/m²` : `${r.count} imv`;
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="background:rgba(9,15,30,0.92);border:1.5px solid #34d399;color:#fef08a;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.55);">${label}</div>`,
+          iconSize: [90, 24],
+          iconAnchor: [45, 12]
+        });
+        const mk = L.marker(r.coord, { icon }).addTo(v8MarkersLayer);
+        mk.bindPopup(`<strong>${r.bairro}</strong><br>${r.count} opções ativas<br>Média: <strong>${r.avgM2 ? 'R$ ' + r.avgM2.toLocaleString('pt-BR') + '/m²' : 'Sob consulta'}</strong>`);
+      });
+    });
+  }
+
+  function injectTopMapOrbV8() {
+    const rankOrb = document.getElementById('btnOrbRanking');
+    if (!rankOrb || document.getElementById('btnOrbMapaM2')) return;
+    const orb = document.createElement('button');
+    orb.type = 'button';
+    orb.id = 'btnOrbMapaM2';
+    orb.className = 'quick-orb-item orb-mapa-m2';
+    orb.innerHTML = `
+      <span class="quick-orb-circle">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      </span>
+      <span class="quick-orb-label">Mapa m²</span>`;
+    orb.onclick = () => {
+      if (window.playOrbClickSfxV6) window.playOrbClickSfxV6(587.33);
+      document.getElementById('v8MapaRegionModal').classList.add('open');
+      renderMapaAndStatsV8();
+    };
+    rankOrb.parentElement.appendChild(orb);
+
+    document.querySelectorAll('#v8MapaFilterPills .v7-choice-pill').forEach(p => {
+      p.onclick = () => {
+        v8MapCat = p.getAttribute('data-mcat');
+        document.querySelectorAll('#v8MapaFilterPills .v7-choice-pill').forEach(x => x.classList.toggle('active', x === p));
+        renderMapaAndStatsV8();
+      };
+    });
+  }
+
+  function injectEmail30dBtnInCrmV8() {
+    const ownersView = document.getElementById('v6CrmViewOwners');
+    if (!ownersView || document.getElementById('v8BtnDispararEmail30d')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'v8BtnDispararEmail30d';
+    btn.className = 'btn-gold';
+    btn.style.cssText = 'width:100%;padding:10px;margin-bottom:10px;font-size:0.80rem;';
+    btn.textContent = '📧 Disparar Checkup 30 Dias por E-mail (Botões Sim / Remover)';
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.textContent = '⏳ Enviando e-mails de checagem...';
+      try {
+        const s = (window.state && window.state.session) || JSON.parse(localStorage.getItem('guildimob_session') || '{}');
+        const gasUrl = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+        const res = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'dispararChecagem30DiasEmail', login: s.login || '', senha: s.senha || '' })
+        });
+        const d = await res.json();
+        if (typeof showToast === 'function') {
+          showToast(d && d.ok ? `📧 ${d.enviados} e-mail(s) de checkup enviados! (Cota restante hoje: ${d.cotaRestante})` : ('⚠️ ' + ((d && d.error) || 'Atualize o Code.gs para V5.2.')));
+        }
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('⚠️ Erro ao disparar e-mails.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📧 Disparar Checkup 30 Dias por E-mail (Botões Sim / Remover)';
+      }
+    };
+    ownersView.prepend(btn);
+  }
+
+  function bootV8() {
+    injectTopMapOrbV8();
+    injectEmail30dBtnInCrmV8();
+    setInterval(() => {
+      injectTopMapOrbV8();
+      injectEmail30dBtnInCrmV8();
+    }, 1500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootV8);
+  else bootV8();
+})();
+</script>
+<!-- V8_MAPA_M2_END -->
+
 </body>
 </html>
