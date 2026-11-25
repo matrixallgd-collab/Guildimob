@@ -14283,9 +14283,13 @@
   /* === FIX MICRO-BUGS MOBILE NOS PRINTS === */
   #adminModal button, #adminModal .btn-ghost, #adminModal .btn-gold {
     max-width: 100%;
+    white-space: nowrap;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    line-height: 1.25;
+  }
+  #adminModal #btnToggleAutoStudy, #adminModal .v6-master-orb, #adminModal .v6-wrap-btn {
     white-space: normal !important;
-    word-break: break-word;
-    line-height: 1.28;
   }
 
   /* === PAINEL MASTER HUB DE ORBES VIVOS (LIQUID GLASS RPG) === */
@@ -14622,15 +14626,21 @@
   };
 
   function getGasUrlV6() {
+    if (window.state && window.state.apiUrl) return window.state.apiUrl;
     if (typeof APPS_SCRIPT_URL !== 'undefined' && APPS_SCRIPT_URL) return APPS_SCRIPT_URL;
     return 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
   }
 
   function getAuthCredsV6() {
     try {
-      const s = (window.state && window.state.session) || JSON.parse(localStorage.getItem('guildimob_session') || '{}');
-      return { login: s.login || '', senha: s.senha || '' };
-    } catch (e) { return { login: '', senha: '' }; }
+      let u = (window.state && window.state.authUser) || null;
+      if (!u) {
+        const raw = JSON.parse(localStorage.getItem('guild_auth_session_v1') || 'null');
+        if (raw && raw.user) u = raw.user;
+      }
+      u = u || {};
+      return { login: u.login || '', senha: u.senha || '', role: u.role || '', nome: u.nome || '' };
+    } catch (e) { return { login: '', senha: '', role: '', nome: '' }; }
   }
 
   async function postApiV6(payload) {
@@ -15452,78 +15462,131 @@
   // 7. MÓDULOS INTERNOS: CRM PRO + CONTRATOS IA + MONITOR 3D + ÁUDIO
   // =========================================================================
   function renderCrmProV6() {
-    const leads = ((window.state && window.state.adminData && window.state.adminData.leads) || []).slice().reverse();
+    const rawLeads = ((window.state && window.state.adminData && window.state.adminData.leads) || []).slice().reverse();
     const stFilter = (document.getElementById('v6CrmFilterStage') || {}).value || 'all';
     const orFilter = (document.getElementById('v6CrmFilterOrigin') || {}).value || 'all';
     const cont = document.getElementById('v6CrmKanbanList');
     if (!cont) return;
 
-    const stageLabels = { novo:'🆕 Novo', atendimento:'📞 Atendimento', visita:'📅 Visita', proposta:'📝 Proposta', fechado:'🏆 Fechado', frio:'❄️ Frio' };
-    const filtered = leads.filter(l => {
-      const key = String(l.id || l.whatsapp || l.telefone || l.nome || '');
-      const meta = (v6CrmPipeline.leads && v6CrmPipeline.leads[key]) || { stage: 'novo', temp: 'morno', notas: '' };
-      const origRaw = String(l.origem || l.fonte || l.imovel || '').toLowerCase();
-      const orig = origRaw.includes('harmonis') ? 'harmonis' : (origRaw.includes('guestier') ? 'guestier' : 'site');
+    const stageLabels = { novo:'🆕 Novo Lead', atendimento:'📞 Atendimento', visita:'📅 Visita', proposta:'📝 Proposta', fechado:'🏆 Fechado', frio:'❄️ Frio' };
+    const normLeads = rawLeads.map((l, idx) => {
+      const id = String(l.ID || l.id || '').trim();
+      const nome = String(l.NOME || l.nome || 'Cliente').trim();
+      const fone = String(l.WHATSAPP || l.whatsapp || l.TELEFONE || l.telefone || '').replace(/\D/g, '');
+      const cod = String(l.IMOVEL_CODIGO || l.imovelCodigo || l.codigo || '').trim();
+      const tit = String(l.IMOVEL_TITULO || l.imovelTitulo || l.imovel || l.OBSERVACOES || l.mensagem || '').trim();
+      const orig = String(l.ORIGEM || l.origem || l.fonte || 'Site Guild').trim();
+      const acao = String(l.TIPO_ACAO || l.tipoAcao || '').trim();
+      const key = id || (fone ? ('TEL_' + fone) : ('LEAD_' + idx + '_' + nome));
+      return { raw: l, id, key, nome, fone, cod, tit, orig, acao };
+    });
+
+    const filtered = normLeads.filter(x => {
+      const meta = (v6CrmPipeline.leads && v6CrmPipeline.leads[x.key]) || { stage: 'novo', notas: '' };
+      if (meta.deleted) return false;
+      const origLow = (x.orig + ' ' + x.cod + ' ' + x.tit).toLowerCase();
+      const origBucket = origLow.includes('harmonis') ? 'harmonis' : (origLow.includes('guestier') ? 'guestier' : 'site');
       if (stFilter !== 'all' && meta.stage !== stFilter) return false;
-      if (orFilter !== 'all' && orig !== orFilter) return false;
+      if (orFilter !== 'all' && origBucket !== orFilter) return false;
       return true;
     });
 
     if (!filtered.length) {
       cont.innerHTML = '<div class="v6-card" style="text-align:center;color:#94a3b8;font-size:0.82rem;">Nenhum lead encontrado neste filtro.</div>';
-      return;
-    }
-
-    cont.innerHTML = filtered.slice(0, 60).map(l => {
-      const key = String(l.id || l.whatsapp || l.telefone || l.nome || '');
-      const meta = (v6CrmPipeline.leads && v6CrmPipeline.leads[key]) || { stage: 'novo', temp: 'morno', notas: '' };
-      const nome = l.nome || 'Cliente';
-      const fone = String(l.whatsapp || l.telefone || '').replace(/\D/g, '');
-      const origRaw = String(l.origem || l.fonte || l.imovel || '').toLowerCase();
-      const origTag = origRaw.includes('harmonis') ? '🌳 Harmonis 3D' : (origRaw.includes('guestier') ? '🏞️ Guestier 3D' : '🌐 Site Guild');
-      const interesse = l.imovel || l.codigo || l.mensagem || 'Consulta Geral';
-      const waMsg = encodeURIComponent(`Olá ${nome}! Aqui é o Guilherme Delfino da GUILD IMOB. Vi seu interesse em ${interesse} — posso te passar os detalhes e condições?`);
-      return `
-        <div class="v6-card" data-lead-key="${key.replace(/"/g,'&quot;')}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
-            <div>
-              <strong style="color:#f8fafc;font-size:0.88rem;">${nome}</strong>
-              <div style="font-size:0.74rem;color:#94a3b8;">${interesse}</div>
+    } else {
+      cont.innerHTML = filtered.slice(0, 80).map(x => {
+        const meta = (v6CrmPipeline.leads && v6CrmPipeline.leads[x.key]) || { stage: 'novo', notas: '' };
+        const origLow = (x.orig + ' ' + x.cod + ' ' + x.tit).toLowerCase();
+        const origTag = origLow.includes('harmonis') ? '🌳 Harmonis 3D' : (origLow.includes('guestier') ? '🏞️ Guestier 3D' : '🌐 ' + x.orig.slice(0, 18));
+        const interesse = [x.cod, x.tit, x.acao].filter(Boolean).join(' • ') || 'Consulta Geral';
+        const waMsg = encodeURIComponent(`Olá ${x.nome}! Aqui é o Guilherme Delfino da GUILD IMOB. Vi seu interesse em ${interesse} — posso te passar os detalhes?`);
+        const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+        return `
+          <div class="v6-card" data-lead-key="${esc(x.key)}" data-lead-id="${esc(x.id)}" data-lead-phone="${esc(x.fone)}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+              <div>
+                <strong style="color:#f8fafc;font-size:0.90rem;">${esc(x.nome)}</strong>
+                ${x.fone ? `<div style="font-size:0.74rem;color:#6ee7b7;">📱 ${esc(x.fone)}</div>` : ''}
+                <div style="font-size:0.74rem;color:#94a3b8;margin-top:2px;">${esc(interesse)}</div>
+              </div>
+              <span class="v6-pill">${esc(origTag)}</span>
             </div>
-            <span class="v6-pill">${origTag}</span>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-            <select class="v6-select v6-lead-stage" style="width:auto;padding:5px 8px;font-size:0.74rem;margin:0;">
-              ${Object.keys(stageLabels).map(k => `<option value="${k}" ${meta.stage===k?'selected':''}>${stageLabels[k]}</option>`).join('')}
-            </select>
-            ${fone ? `<a href="https://wa.me/${fone.startsWith('55')?fone:'55'+fone}?text=${waMsg}" target="_blank" rel="noopener" class="v6-pill" style="background:rgba(16,185,129,0.22);border-color:rgba(52,211,153,0.6);color:#6ee7b7;text-decoration:none;padding:5px 10px;">📲 WhatsApp</a>` : ''}
-            <button type="button" class="v6-pill v6-lead-agendar" style="cursor:pointer;background:rgba(59,130,246,0.2);border-color:rgba(96,165,250,0.5);color:#93c5fd;padding:5px 10px;">📅 Agendar</button>
-          </div>
-          <input type="text" class="v6-input v6-lead-nota" placeholder="Anotação rápida de atendimento..." value="${(meta.notas||'').replace(/"/g,'&quot;')}" style="padding:6px 9px;font-size:0.75rem;">
-        </div>`;
-    }).join('');
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+              <select class="v6-select v6-lead-stage" style="width:auto;padding:6px 9px;font-size:0.75rem;margin:0;">
+                ${Object.keys(stageLabels).map(k => `<option value="${k}" ${meta.stage===k?'selected':''}>${stageLabels[k]}</option>`).join('')}
+              </select>
+              ${x.fone ? `<a href="https://wa.me/${x.fone.startsWith('55')?x.fone:'55'+x.fone}?text=${waMsg}" target="_blank" rel="noopener" class="v6-pill" style="background:rgba(16,185,129,0.22);border-color:rgba(52,211,153,0.6);color:#6ee7b7;text-decoration:none;padding:6px 10px;">📲 WhatsApp</a>` : ''}
+              <button type="button" class="v6-pill v6-lead-agendar" style="cursor:pointer;background:rgba(59,130,246,0.2);border-color:rgba(96,165,250,0.5);color:#93c5fd;padding:6px 10px;">📅 Agendar</button>
+            </div>
+            <input type="text" class="v6-input v6-lead-nota" placeholder="Anotação de atendimento..." value="${esc(meta.notas || '')}" style="padding:7px 10px;font-size:0.76rem;margin-bottom:8px;">
+            <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+              <button type="button" class="btn-gold v6-lead-save-btn" style="flex:1;padding:7px 12px;font-size:0.76rem;">💾 Salvar Alterações</button>
+              <button type="button" class="btn-ghost v6-lead-del-btn" style="padding:7px 12px;font-size:0.76rem;border-color:rgba(248,113,113,0.55);color:#fca5a5;">🗑️ Excluir</button>
+            </div>
+          </div>`;
+      }).join('');
 
-    cont.querySelectorAll('.v6-card[data-lead-key]').forEach(card => {
-      const key = card.getAttribute('data-lead-key');
-      const stSel = card.querySelector('.v6-lead-stage');
-      const notaInp = card.querySelector('.v6-lead-nota');
-      const saveLead = () => {
-        if (!v6CrmPipeline.leads) v6CrmPipeline.leads = {};
-        v6CrmPipeline.leads[key] = { stage: stSel.value, notas: notaInp.value, updatedAt: new Date().toISOString() };
-        saveCrmLocalV6();
-        postApiV6({ action: 'salvarCrmLeadEstado', leadKey: key, leadState: v6CrmPipeline.leads[key] }).catch(() => {});
-      };
-      stSel.onchange = saveLead;
-      notaInp.onchange = saveLead;
-      const agBtn = card.querySelector('.v6-lead-agendar');
-      if (agBtn) {
-        agBtn.onclick = () => {
-          document.querySelector('#v6CrmSubtabs [data-crm-view="agenda"]').click();
-          document.getElementById('v6AgNome').value = card.querySelector('strong').textContent;
-          document.getElementById('v6AgImovel').value = card.querySelector('strong + div').textContent;
+      cont.querySelectorAll('.v6-card[data-lead-key]').forEach(card => {
+        const key = card.getAttribute('data-lead-key');
+        const leadId = card.getAttribute('data-lead-id');
+        const leadPhone = card.getAttribute('data-lead-phone');
+        const stSel = card.querySelector('.v6-lead-stage');
+        const notaInp = card.querySelector('.v6-lead-nota');
+        const saveBtn = card.querySelector('.v6-lead-save-btn');
+        const delBtn = card.querySelector('.v6-lead-del-btn');
+
+        const doSave = async () => {
+          if (!v6CrmPipeline.leads) v6CrmPipeline.leads = {};
+          v6CrmPipeline.leads[key] = { stage: stSel.value, notas: notaInp.value, updatedAt: new Date().toISOString() };
+          saveCrmLocalV6();
+          if (saveBtn) { saveBtn.textContent = '⏳ Salvando...'; saveBtn.disabled = true; }
+          try {
+            await postApiV6({ action: 'salvarCrmLeadEstado', leadKey: key, leadState: v6CrmPipeline.leads[key] });
+            if (typeof showToast === 'function') showToast('✅ Lead salvo no CRM e na nuvem!');
+          } catch (e) {
+            if (typeof showToast === 'function') showToast('✅ Salvo localmente!');
+          } finally {
+            if (saveBtn) { saveBtn.textContent = '✅ Salvo!'; saveBtn.disabled = false; setTimeout(() => { saveBtn.textContent = '💾 Salvar Alterações'; }, 1800); }
+          }
         };
-      }
-    });
+
+        if (saveBtn) saveBtn.onclick = doSave;
+        stSel.onchange = doSave;
+
+        if (delBtn) delBtn.onclick = async () => {
+          if (!delBtn.__armed) {
+            delBtn.__armed = true;
+            delBtn.textContent = '⚠️ Confirmar?';
+            delBtn.style.background = 'rgba(239,68,68,0.28)';
+            setTimeout(() => { delBtn.__armed = false; delBtn.textContent = '🗑️ Excluir'; delBtn.style.background = ''; }, 4000);
+            return;
+          }
+          delBtn.disabled = true;
+          delBtn.textContent = '⏳...';
+          if (!v6CrmPipeline.leads) v6CrmPipeline.leads = {};
+          v6CrmPipeline.leads[key] = Object.assign({}, v6CrmPipeline.leads[key] || {}, { deleted: true });
+          saveCrmLocalV6();
+          try {
+            await postApiV6({ action: 'excluirLead', leadId: leadId, whatsapp: leadPhone });
+          } catch (e) {}
+          if (window.state && window.state.adminData && Array.isArray(window.state.adminData.leads)) {
+            window.state.adminData.leads = window.state.adminData.leads.filter(l => String(l.ID || l.id || '') !== leadId);
+          }
+          card.remove();
+          updateHubKpisV6();
+          if (typeof showToast === 'function') showToast('🗑️ Lead excluído com sucesso.');
+        };
+
+        const agBtn = card.querySelector('.v6-lead-agendar');
+        if (agBtn) {
+          agBtn.onclick = () => {
+            document.querySelector('#v6CrmSubtabs [data-crm-view="agenda"]').click();
+            document.getElementById('v6AgNome').value = card.querySelector('strong').textContent;
+            document.getElementById('v6AgFone').value = leadPhone || '';
+          };
+        }
+      });
+    }
 
     // Proprietários (Alerta 30 dias)
     const ownersEl = document.getElementById('v6OwnersList');
@@ -15531,7 +15594,7 @@
       const ims = ((window.state && window.state.adminData && window.state.adminData.imoveis) || []).filter(i => i.status === 'ATIVO');
       const now = Date.now();
       ownersEl.innerHTML = ims.slice(0, 40).map(p => {
-        const meta = (v6CrmPipeline.proprietarios && v6CrmPipeline.proprietarios[p.id]) || {};
+        const meta = (v6CrmPipeline.proprietarios && (v6CrmPipeline.proprietarios[p.id] || v6CrmPipeline.proprietarios[p.codigo])) || {};
         const lastCheck = meta.lastCheck ? Date.parse(meta.lastCheck) : Date.parse(p.updatedAt || p.createdAt || '2026-01-01');
         const days = Math.max(0, Math.floor((now - (lastCheck || now)) / 86400000));
         const alert30 = days >= 30;
@@ -15579,7 +15642,7 @@
       const res = await fetch(getGasUrlV6() + '?action=getMonitor3D&t=' + Date.now());
       const d = await res.json();
       if (!d || !d.ok) {
-        box.innerHTML = '⚠️ Ative o <strong>Code.gs V5 Master</strong> no Apps Script para liberar a telemetria ao vivo dos mapas 3D.';
+        box.innerHTML = '⚠️ ' + ((d && d.error) ? ('Erro no servidor: ' + d.error) : 'Publique o <strong>Code.gs V5.3</strong> via <em>Gerenciar Implantações → Editar → Nova versão</em> para liberar o Monitor 3D.');
         return;
       }
       const mkCard = (nome, obj) => `
@@ -16704,7 +16767,7 @@
   // 5. TRAVA PARA CORRETOR INTERNO (NUNCA EXCLUI — SÓ SOLICITA REMOÇÃO) + RADAR DE PERMUTAS NO MASTER
   // =========================================================================
   function enforceBrokerNoDeleteV7() {
-    const sess = (window.state && window.state.session) || {};
+    const sess = (window.state && window.state.authUser) || (JSON.parse(localStorage.getItem('guild_auth_session_v1') || '{}').user) || {};
     const isMaster = String(sess.role || '').toUpperCase() === 'MASTER';
     if (isMaster) return;
     document.querySelectorAll('#adminImoveisList .v6-more-actions-btn').forEach(btn => {
@@ -17138,7 +17201,7 @@
       btn.disabled = true;
       btn.textContent = '⏳ Enviando e-mails de checagem...';
       try {
-        const s = (window.state && window.state.session) || JSON.parse(localStorage.getItem('guildimob_session') || '{}');
+        const s = (window.state && window.state.authUser) || (JSON.parse(localStorage.getItem('guild_auth_session_v1') || '{}').user) || {};
         const gasUrl = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
         const res = await fetch(gasUrl, {
           method: 'POST',
