@@ -16524,6 +16524,26 @@
             <input type="checkbox" id="v7ChkParticiparMatch" checked> 🔥 Mostrar imóveis compatíveis (Match Guild Imob) após cadastrar
           </label>
         </div>`;
+      const difBox = document.createElement('div');
+      difBox.id = 'v7CapDiferenciaisBox';
+      difBox.className = 'glass-soft';
+      difBox.style.cssText = 'padding:12px;border-radius:14px;margin:12px 0;border:1px solid rgba(212,175,55,0.30);';
+      const difList = [
+        '🏊 Piscina', '🔥 Área Gourmet', '🥩 Churrasqueira', '☀️ Energia Solar',
+        '🚪 Portão Eletrônico', '🛋️ Mobiliado', '❄️ Ar-Condicionado', '📦 Armários Planejados',
+        '🔐 Condomínio Fechado', '🏦 Aceita Financiamento', '📹 Câmeras / Alarme', '🌿 Quintal Amplo'
+      ];
+      difBox.innerHTML = '<div style="font-size:0.82rem;font-weight:800;color:#f3e5ab;margin-bottom:6px;">✨ Diferenciais do Imóvel (Toque para marcar — Opcional)</div>'
+        + '<div class="v7-pill-row" id="v7DifPills">'
+        + difList.map(lbl => '<button type="button" class="v7-choice-pill" data-dif="' + lbl + '">' + lbl + '</button>').join('')
+        + '</div>';
+      submitBtn.insertAdjacentElement('beforebegin', difBox);
+      difBox.querySelectorAll('.v7-choice-pill').forEach(p => {
+        p.onclick = () => {
+          p.classList.toggle('active');
+          if (window.playOrbClickSfxV6) window.playOrbClickSfxV6(587.33);
+        };
+      });
       submitBtn.insertAdjacentElement('beforebegin', permBox);
     }
 
@@ -16566,18 +16586,19 @@
       const cepInp = document.getElementById('v7CapCep');
       const endInp = document.getElementById('v7CapEndereco');
 
+      const addrSec = document.getElementById('v7AddrSection');
       if (isParceiro) {
         if (creciPill) creciPill.style.display = 'inline-flex';
         if (rgPill) rgPill.style.display = 'inline-flex';
-        if (cepLbl) cepLbl.textContent = 'CEP (Opcional p/ Parceiro)';
-        if (endLbl) endLbl.textContent = 'Endereço / Referência (Opcional p/ Parceiro)';
-        if (cepInp) cepInp.required = false;
-        if (endInp) endInp.required = false;
-        if (notice) notice.innerHTML = '🤝 <strong>Parceria Protegida:</strong> informe apenas o <strong>Bairro/Condomínio</strong> (endereço e CEP não são obrigatórios). Todos os leads no site vão 100% para o Master, que qualifica o cliente e aciona você.';
+        if (addrSec) addrSec.style.display = 'none';
+        if (cepInp) { cepInp.required = false; cepInp.value = ''; }
+        if (endInp) { endInp.required = false; endInp.value = ''; }
+        if (notice) notice.innerHTML = '🤝 <strong>Parceria Protegida:</strong> informe apenas seu documento (CRECI, CPF ou RG) e o <strong>Bairro/Condomínio</strong> — sem precisar informar endereço ou CEP. Todos os leads vão 100% para o Master.';
         setDocTypeV7('creci');
       } else {
         if (creciPill) creciPill.style.display = 'none';
         if (rgPill) rgPill.style.display = 'none';
+        if (addrSec) addrSec.style.display = '';
         if (cepLbl) cepLbl.textContent = 'CEP *';
         if (endLbl) endLbl.textContent = 'Endereço Completo (Rua e nº — Privado) *';
         if (cepInp) cepInp.required = true;
@@ -16691,7 +16712,9 @@
         const permStr = v7Objetivo === 'vender'
           ? 'Só Venda'
           : `${v7Objetivo === 'permuta' ? 'Aceita Permuta' : 'Vender p/ Comprar'} (${v7PermutaTipos.join(', ') || 'A combinar'} • até ${v7PermutaPct}%)`;
-        const metaLine = `\n\n[PERFIL_CADASTRO: ${perfilTag} | DOC(${v7DocType.toUpperCase()}): ${docVal.trim()}${cepVal ? ' | CEP: ' + cepVal : ''}${endVal ? ' | END_PRIVADO: ' + endVal : ''} | OBJETIVO: ${permStr}]`;
+        const difsSel = Array.from(document.querySelectorAll('#v7DifPills .v7-choice-pill.active')).map(x => x.getAttribute('data-dif'));
+        const difLine = difsSel.length ? ('\nDiferenciais: ' + difsSel.join(', ') + '.') : '';
+        const metaLine = difLine + `\n\n[PERFIL_CADASTRO: ${perfilTag} | DOC(${v7DocType.toUpperCase()}): ${docVal.trim()}${cepVal ? ' | CEP: ' + cepVal : ''}${endVal ? ' | END_PRIVADO: ' + endVal : ''} | OBJETIVO: ${permStr}]`;
         descEl.value = (descEl.value || '').trim() + metaLine;
       }
 
