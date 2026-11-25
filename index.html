@@ -14361,7 +14361,7 @@
     background: radial-gradient(circle at 25% 20%, var(--orb-glow, rgba(212,175,55,0.28)), rgba(10, 17, 34, 0.92) 72%);
     box-shadow: 0 8px 24px rgba(0,0,0,0.38), 0 0 18px var(--orb-shadow, rgba(212,175,55,0.16)), inset 0 1px 0 rgba(255,255,255,0.18);
     transition: transform 0.22s cubic-bezier(.22,1,.36,1), box-shadow 0.22s ease, border-color 0.22s ease;
-    animation: v6OrbFloat 4.2s ease-in-out infinite;
+    animation: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -14374,7 +14374,7 @@
     background: linear-gradient(125deg, transparent 25%, rgba(255,255,255,0.14) 50%, transparent 75%);
     background-size: 220% 220%;
     opacity: 0.55;
-    animation: v6OrbShimmer 5.5s linear infinite;
+    animation: none;
     pointer-events: none;
   }
   .v6-master-orb:hover, .v6-master-orb:active {
@@ -15081,7 +15081,7 @@
     btn.onclick = () => window.openRankExplainerModalV6(pid);
     titleEl.insertAdjacentElement('afterend', btn);
   });
-  if (document.body) detailObserver.observe(document.body, { childList: true, subtree: true });
+  const _dm = document.getElementById('detailModal') || document.getElementById('propertyDetailModal'); if (_dm) detailObserver.observe(_dm, { attributes: true, attributeFilter: ['class', 'style'] });
 
   // =========================================================================
   // 4. ZOOM DE PINÇA / BOTÕES NO MODAL DE PLANTA BAIXA 3K
@@ -16029,7 +16029,7 @@
     injectMasterHubV6();
     bindWatermarkSlidersV6();
     attachPlantaZoomControlsV6();
-    if (document.body) adminOpenObs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class', 'style'] });
+    const _am = document.getElementById('adminModal'); if (_am) adminOpenObs.observe(_am, { attributes: true, attributeFilter: ['class', 'style'] });
     if (typeof window.renderAdminImoveisFilteredList === 'function') {
       const _origList = window.renderAdminImoveisFilteredList;
       window.renderAdminImoveisFilteredList = function() {
@@ -16975,12 +16975,12 @@
     enhanceCaptacaoFormV7();
     injectOwnerRemovalRequestV7();
     injectRadarPermutasTabV7();
-    setInterval(() => {
-      enhanceCaptacaoFormV7();
-      injectOwnerRemovalRequestV7();
-      injectRadarPermutasTabV7();
-      enforceBrokerNoDeleteV7();
-    }, 1500);
+    setTimeout(() => { enhanceCaptacaoFormV7(); injectOwnerRemovalRequestV7(); injectRadarPermutasTabV7(); enforceBrokerNoDeleteV7(); }, 900);
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.closest && e.target.closest('#dockAnuncie, #btnOpenCaptacaoFooter, #btnOpenCaptacaoTop, #adminModal, [data-v6-target]')) {
+        setTimeout(() => { enhanceCaptacaoFormV7(); injectOwnerRemovalRequestV7(); injectRadarPermutasTabV7(); enforceBrokerNoDeleteV7(); }, 180);
+      }
+    }, { passive: true });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootV7);
@@ -17347,10 +17347,7 @@
   function bootV8() {
     injectTopMapOrbV8();
     injectEmail30dBtnInCrmV8();
-    setInterval(() => {
-      injectTopMapOrbV8();
-      injectEmail30dBtnInCrmV8();
-    }, 1500);
+    setTimeout(() => { injectTopMapOrbV8(); injectEmail30dBtnInCrmV8(); }, 900);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootV8);
@@ -17358,6 +17355,97 @@
 })();
 </script>
 <!-- V8_MAPA_M2_END -->
+
+
+
+<!-- V8_6_THERMAL_TURBO_START -->
+<style id="guildimob-v86-thermal-turbo-css">
+  /* === GOVERNADOR TÉRMICO & 60 FPS MOBILE (ELIMINA AQUECIMENTO E TRAVAMENTO) === */
+  /* 1. Desliga backdrop-filter pesado em cards, botões, barras e pills (mantém o visual Dark Glass elegante sem fritar a GPU) */
+  .glass, .glass-soft, .glass-card, .glass-badge, .btn-glass,
+  .property-card, .spotlight-card, .quick-orb-circle, .quick-orb-item,
+  .mobile-dock, .bottom-dock, .floating-wa, .btn-back-home-float,
+  header, nav, .top-bar, .search-bar-wrap, .v6-card, .v6-back-hub-bar {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .glass, .glass-card, .property-card, .spotlight-card {
+    background-color: rgba(11, 19, 36, 0.94) !important;
+  }
+  .glass-soft {
+    background-color: rgba(14, 24, 44, 0.92) !important;
+  }
+  .modal-backdrop, #v6RankExplainerModal, #v7CelebrateMatchModal, #v8MapaRegionModal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(3, 8, 20, 0.88) !important;
+  }
+
+  /* 2. Mata animações CSS infinitas de box-shadow / filter / background-position (causa #1 de celular fervendo!) */
+  .property-card, .spotlight-card, .property-card *, .spotlight-card *,
+  .quick-orb-item, .quick-orb-circle, .quick-orb-circle::before, .quick-orb-circle::after,
+  .floating-wa, .wa-orb, .wa-fab, .tier-pill, .glass-badge, .v6-master-orb, .v6-master-orb::before {
+    animation: none !important;
+    will-change: auto !important;
+  }
+  /* Remove filtros drop-shadow pesados em ícones repetidos */
+  .v6-orb-icon { filter: none !important; }
+
+  /* 3. Virtualização nativa de cards fora da tela (rolagem lisa 60fps até em celulares básicos como Poco C) */
+  .property-card, .v6-card, .admin-row {
+    content-visibility: auto;
+    contain-intrinsic-size: 380px;
+    contain: layout style paint;
+  }
+
+  /* 4. Otimização de imagens e rolagem suave no Android/iOS */
+  .property-card img, .spotlight-card img {
+    decoding: async;
+    transform: translateZ(0);
+  }
+</style>
+<script id="guildimob-v86-thermal-turbo-js">
+(function() {
+  'use strict';
+  if (window.__guildImobThermalTurboV86) return;
+  window.__guildImobThermalTurboV86 = true;
+
+  // Ativa classe perf-lite automaticamente em celulares móveis para economizar bateria e CPU
+  try {
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || window.innerWidth <= 900;
+    const lowMem = (navigator.deviceMemory && navigator.deviceMemory <= 6) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 6);
+    if (isMobile || lowMem) {
+      document.documentElement.classList.add('perf-lite');
+      if (document.body) document.body.classList.add('perf-lite');
+    }
+  } catch (e) {}
+
+  // Garante loading="lazy" e decoding="async" em todas as imagens de cards para não travar a rolagem
+  function optimizeImagesLazyV86() {
+    document.querySelectorAll('img').forEach(img => {
+      if (!img.getAttribute('loading') && !img.closest('header')) {
+        img.setAttribute('loading', 'lazy');
+      }
+      if (!img.getAttribute('decoding')) {
+        img.setAttribute('decoding', 'async');
+      }
+    });
+  }
+
+  // Pausa carrossel quando a aba vai para segundo plano
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && window.state && window.state._spotlightTimer) {
+      clearInterval(window.state._spotlightTimer);
+      window.state._spotlightTimer = null;
+    }
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', optimizeImagesLazyV86);
+  else optimizeImagesLazyV86();
+  setTimeout(optimizeImagesLazyV86, 2500);
+})();
+</script>
+<!-- V8_6_THERMAL_TURBO_END -->
 
 </body>
 </html>
