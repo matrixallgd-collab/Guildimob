@@ -14777,26 +14777,43 @@
     if (lbl) lbl.textContent = 'Som Off';
   };
 
-  window.startGuildAudioV6 = function() {
+  window.__v6AudioDataCache = window.__v6AudioDataCache || {};
+  window.startGuildAudioV6 = async function() {
     window.stopGuildAudioV6();
-    const vol = Math.max(0.05, Math.min(1, Number(v6AudioCfg.volume) || 0.30));
+    const vol = Math.max(0.05, Math.min(1, Number(v6AudioCfg.volume) || 0.65));
     if (typeof ambientEngine !== 'undefined') ambientEngine.isPlaying = true;
     const icon = document.getElementById('ambientAudioIcon');
     const lbl = document.getElementById('ambientAudioLabel');
 
-    if (v6AudioCfg.theme === 'custom' && v6AudioCfg.customUrl) {
+    if (v6AudioCfg.theme === 'custom' && (v6AudioCfg.customFileId || v6AudioCfg.customUrl)) {
       if (!v6CustomAudioEl) {
         v6CustomAudioEl = new Audio();
         v6CustomAudioEl.loop = true;
-        v6CustomAudioEl.crossOrigin = 'anonymous';
       }
-      if (v6CustomAudioEl.src !== v6AudioCfg.customUrl) v6CustomAudioEl.src = v6AudioCfg.customUrl;
       v6CustomAudioEl.volume = vol;
+      let playSrc = v6AudioCfg.customUrl || '';
+      const fid = v6AudioCfg.customFileId || '';
+      if (fid) {
+        if (window.__v6AudioDataCache[fid]) {
+          playSrc = window.__v6AudioDataCache[fid];
+        } else {
+          if (lbl) lbl.textContent = 'Carregando...';
+          try {
+            const r = await fetch(getGasUrlV6() + '?action=getAudioDataUrl&id=' + encodeURIComponent(fid));
+            const d = await r.json();
+            if (d && d.ok && d.dataUrl) {
+              window.__v6AudioDataCache[fid] = d.dataUrl;
+              playSrc = d.dataUrl;
+            }
+          } catch (eLoad) {}
+        }
+      }
+      if (playSrc && v6CustomAudioEl.src !== playSrc) v6CustomAudioEl.src = playSrc;
       v6CustomAudioEl.play().catch(() => {
         if (typeof showToast === 'function') showToast('🎵 Toque novamente para liberar o áudio MP3.');
       });
       if (icon) icon.textContent = '🎵';
-      if (lbl) lbl.textContent = 'Trilha MP3';
+      if (lbl) lbl.textContent = (v6AudioCfg.customName || 'MP3').slice(0, 12);
       return;
     }
 
@@ -14805,22 +14822,24 @@
     if (!Ctx) return;
     if (!v6AudioCtx) {
       v6AudioCtx = new Ctx();
+      const comp = v6AudioCtx.createDynamicsCompressor();
       v6AudioGain = v6AudioCtx.createGain();
-      v6AudioGain.connect(v6AudioCtx.destination);
+      v6AudioGain.connect(comp);
+      comp.connect(v6AudioCtx.destination);
     }
     if (v6AudioCtx.state === 'suspended') v6AudioCtx.resume();
-    v6AudioGain.gain.setValueAtTime(vol * 0.48, v6AudioCtx.currentTime);
+    v6AudioGain.gain.setValueAtTime(vol * 1.45, v6AudioCtx.currentTime);
 
     const tick = () => {
       const idx = v6AudioStep % theme.notes.length;
       if (v6AudioStep % 4 === 0) {
-        playPluckedWarmNoteV6(theme.drone[0], 5.2, 0.14, 'sine', 420);
-        playPluckedWarmNoteV6(theme.drone[1], 4.8, 0.08, 'sine', 520);
+        playPluckedWarmNoteV6(theme.drone[0], 5.2, 0.34, 'sine', 520);
+        playPluckedWarmNoteV6(theme.drone[1], 4.8, 0.22, 'sine', 640);
       }
-      playPluckedWarmNoteV6(theme.notes[idx], 2.4, 0.22, theme.wave, theme.cutoff);
+      playPluckedWarmNoteV6(theme.notes[idx], 2.5, 0.56, theme.wave, theme.cutoff + 400);
       if (v6AudioStep % 2 === 1) {
         const harmony = theme.notes[(idx + 2) % theme.notes.length];
-        setTimeout(() => playPluckedWarmNoteV6(harmony, 1.9, 0.12, theme.wave, theme.cutoff), 340);
+        setTimeout(() => playPluckedWarmNoteV6(harmony, 2.0, 0.32, theme.wave, theme.cutoff + 300), 320);
       }
       v6AudioStep++;
     };
@@ -15335,6 +15354,13 @@
           <button type="button" id="v6BtnUploadMp3" class="btn-gold" style="width:100%;padding:10px;">☁️ Enviar MP3 para o Drive e Ativar</button>
           <div id="v6AudioUploadStatus" style="font-size:0.75rem;color:#34d399;margin-top:6px;"></div>
         </div>
+        <div class="v6-card" style="border-color:rgba(52,211,153,0.35);">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
+            <strong style="color:#6ee7b7;font-size:0.84rem;">🎶 Músicas Enviadas no Drive (Biblioteca)</strong>
+            <button type="button" id="v6BtnRefreshTracks" class="btn-ghost" style="padding:5px 10px;font-size:0.72rem;">🔄 Atualizar</button>
+          </div>
+          <div id="v6AudioLibraryList" style="font-size:0.78rem;color:#94a3b8;">Carregando suas músicas...</div>
+        </div>
       </div>
     `;
     hub.insertAdjacentElement('afterend', extraPanels);
@@ -15662,7 +15688,80 @@
     }
   }
 
+  window.loadAudioLibraryV6 = async function() {
+    const box = document.getElementById('v6AudioLibraryList');
+    if (!box) return;
+    box.innerHTML = '⏳ Buscando músicas salvas no Drive...';
+    try {
+      const r = await fetch(getGasUrlV6() + '?action=listarTrilhasAudio&t=' + Date.now());
+      const d = await r.json();
+      if (!d || !d.ok) {
+        box.innerHTML = '⚠️ Atualize o Code.gs para V5.5 para listar sua biblioteca de músicas do Drive.';
+        return;
+      }
+      if (d.audioConfig) v6AudioCfg = Object.assign(v6AudioCfg, d.audioConfig);
+      const tracks = d.tracks || [];
+      if (!tracks.length) {
+        box.innerHTML = 'Nenhuma música MP3 enviada ainda. Suba um arquivo acima para aparecer aqui!';
+        return;
+      }
+      box.innerHTML = tracks.map(tr => {
+        const isActive = v6AudioCfg.theme === 'custom' && v6AudioCfg.customFileId === tr.id;
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;background:${isActive?'rgba(16,185,129,0.16)':'rgba(15,23,42,0.75)'};border:1px solid ${isActive?'rgba(52,211,153,0.6)':'rgba(255,255,255,0.10)'};margin-bottom:7px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <strong style="color:${isActive?'#6ee7b7':'#f8fafc'};font-size:0.80rem;">${isActive ? '⭐ ' : '🎵 '}${tr.name}</strong>
+              <div style="font-size:0.68rem;color:#94a3b8;">${tr.sizeKB} KB ${isActive ? '• ATIVA NO SITE' : ''}</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="v6-pill v6-trk-play" data-fid="${tr.id}" data-fname="${tr.name.replace(/"/g,'&quot;')}" style="cursor:pointer;color:#fef08a;">▶️ Tocar</button>
+              <button type="button" class="v6-pill v6-trk-use" data-fid="${tr.id}" data-fname="${tr.name.replace(/"/g,'&quot;')}" style="cursor:pointer;color:#6ee7b7;border-color:rgba(52,211,153,0.5);">⭐ Ativar</button>
+              <button type="button" class="v6-pill v6-trk-del" data-fid="${tr.id}" style="cursor:pointer;color:#fca5a5;border-color:rgba(248,113,113,0.45);">🗑️</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      box.querySelectorAll('.v6-trk-play').forEach(b => {
+        b.onclick = () => {
+          v6AudioCfg.theme = 'custom';
+          v6AudioCfg.customFileId = b.getAttribute('data-fid');
+          v6AudioCfg.customName = b.getAttribute('data-fname');
+          window.startGuildAudioV6();
+        };
+      });
+      box.querySelectorAll('.v6-trk-use').forEach(b => {
+        b.onclick = async () => {
+          const fid = b.getAttribute('data-fid');
+          const fname = b.getAttribute('data-fname');
+          v6AudioCfg.theme = 'custom';
+          v6AudioCfg.customFileId = fid;
+          v6AudioCfg.customName = fname;
+          try { localStorage.setItem(AUDIO_CFG_KEY, JSON.stringify(v6AudioCfg)); } catch (e) {}
+          const res = await postApiV6({ action: 'salvarTrilhaAudio', theme: 'custom', customFileId: fid, customName: fname, volume: v6AudioCfg.volume }).catch(() => null);
+          if (typeof showToast === 'function') showToast(res && res.ok ? ('⭐ Música "' + fname + '" ativada para todos os visitantes!') : '⚠️ Erro ao salvar seleção.');
+          window.startGuildAudioV6();
+          window.loadAudioLibraryV6();
+        };
+      });
+      box.querySelectorAll('.v6-trk-del').forEach(b => {
+        b.onclick = async () => {
+          if (!b.__armed) { b.__armed = true; b.textContent = 'Confirmar?'; setTimeout(() => { b.__armed = false; b.textContent = '🗑️'; }, 3500); return; }
+          await postApiV6({ action: 'excluirTrilhaAudio', fileId: b.getAttribute('data-fid') }).catch(() => null);
+          if (typeof showToast === 'function') showToast('🗑️ Música removida do Drive.');
+          window.loadAudioLibraryV6();
+        };
+      });
+    } catch (e) {
+      box.innerHTML = '⚠️ Não foi possível listar as músicas agora.';
+    }
+  };
+
   function syncAudioStudioUiV6() {
+    setTimeout(() => {
+      window.loadAudioLibraryV6();
+      const refBtn = document.getElementById('v6BtnRefreshTracks');
+      if (refBtn && !refBtn.__bound) { refBtn.__bound = true; refBtn.onclick = window.loadAudioLibraryV6; }
+    }, 80);
     const sel = document.getElementById('v6AudioThemeSelect');
     const vol = document.getElementById('v6AudioVolRange');
     const lbl = document.getElementById('v6AudioVolLbl');
@@ -15867,7 +15966,7 @@
       document.getElementById('v6AudioVolLbl').textContent = volRange.value + '%';
       v6AudioCfg.volume = Number(volRange.value) / 100;
       if (v6CustomAudioEl) v6CustomAudioEl.volume = v6AudioCfg.volume;
-      if (v6AudioGain && v6AudioCtx) v6AudioGain.gain.setValueAtTime(v6AudioCfg.volume * 0.48, v6AudioCtx.currentTime);
+      if (v6AudioGain && v6AudioCtx) v6AudioGain.gain.setValueAtTime(v6AudioCfg.volume * 1.45, v6AudioCtx.currentTime);
     };
     const themeSel = document.getElementById('v6AudioThemeSelect');
     if (themeSel) themeSel.onchange = () => { v6AudioCfg.theme = themeSel.value; };
@@ -15898,7 +15997,7 @@
           try { localStorage.setItem(AUDIO_CFG_KEY, JSON.stringify(v6AudioCfg)); } catch (e) {}
           syncAudioStudioUiV6();
           window.startGuildAudioV6();
-          st.textContent = '✅ Música ativada para todo o site (' + f.name + ')!';
+          st.textContent = '✅ Música ativada para todo o site (' + f.name + ')!'; window.loadAudioLibraryV6();
         } else {
           st.textContent = '⚠️ ' + ((res && res.error) || 'Atualize o Code.gs para V5 Master para subir MP3 ao Drive.');
         }
