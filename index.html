@@ -15885,5 +15885,924 @@
 </script>
 <!-- V6_MASTER_PRO_END -->
 
+
+
+<!-- V7_CAPTACAO_MATCH_START -->
+<style id="guildimob-v7-captacao-match-css">
+  /* === SELETOR PROPRIETÁRIO vs CORRETOR PARCEIRO === */
+  .v7-role-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .v7-role-card {
+    padding: 11px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(10, 17, 34, 0.85);
+    color: #cbd5e1;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  .v7-role-card.active {
+    border-color: #d4af37;
+    background: linear-gradient(145deg, rgba(212,175,55,0.26), rgba(14,22,42,0.92));
+    color: #fef08a;
+    box-shadow: 0 0 18px rgba(212,175,55,0.28);
+  }
+  .v7-role-card strong { display:block; font-size:0.84rem; margin-top:2px; }
+  .v7-role-card span { font-size:0.68rem; opacity:0.85; }
+
+  /* Seletor de Documento Único (CRECI | CPF | RG) */
+  .v7-pill-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 6px 0 8px;
+  }
+  .v7-choice-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(15,23,42,0.8);
+    color: #cbd5e1;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+  .v7-choice-pill.active {
+    background: linear-gradient(135deg, rgba(212,175,55,0.32), rgba(243,229,171,0.18));
+    border-color: #f3e5ab;
+    color: #fef08a;
+    box-shadow: 0 0 12px rgba(212,175,55,0.25);
+  }
+
+  /* Autocomplete de Bairros */
+  .v7-ac-wrap { position: relative; }
+  .v7-ac-list {
+    position: absolute;
+    left: 0; right: 0; top: calc(100% + 4px);
+    z-index: 999;
+    max-height: 210px;
+    overflow-y: auto;
+    background: rgba(9, 15, 30, 0.98);
+    border: 1px solid rgba(212,175,55,0.5);
+    border-radius: 12px;
+    box-shadow: 0 14px 32px rgba(0,0,0,0.65);
+    display: none;
+  }
+  .v7-ac-list.open { display: block; }
+  .v7-ac-item {
+    padding: 9px 12px;
+    font-size: 0.80rem;
+    color: #e2e8f0;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .v7-ac-item:hover { background: rgba(212,175,55,0.18); color: #fef08a; }
+  .v7-ac-tag { font-size: 0.65rem; color: #94a3b8; }
+
+  /* Brilho Dourado Guiado no Campo Obrigatório Ativo + Pulso Vermelho */
+  @keyframes v7GoldPulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(212,175,55,0.55), 0 0 14px rgba(212,175,55,0.30); border-color: #f3e5ab; }
+    50% { box-shadow: 0 0 0 3px rgba(243,229,171,0.85), 0 0 22px rgba(212,175,55,0.55); border-color: #fef08a; }
+  }
+  @keyframes v7RedShake {
+    0%, 100% { transform: translateX(0); box-shadow: 0 0 0 3px rgba(239,68,68,0.8), 0 0 18px rgba(239,68,68,0.5); border-color: #ef4444; }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .v7-field-gold-active {
+    animation: v7GoldPulse 1.8s ease-in-out infinite !important;
+  }
+  .v7-field-ok {
+    border-color: rgba(52,211,153,0.65) !important;
+  }
+  .v7-field-error {
+    animation: v7RedShake 0.45s ease-in-out 2 !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.55) !important;
+  }
+
+  /* Modal Celebração + Tinder de Match Pós-Cadastro */
+  #v7CelebrateMatchModal {
+    position: fixed;
+    inset: 0;
+    z-index: 100080;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(2, 6, 23, 0.86);
+    backdrop-filter: blur(12px);
+    overflow-y: auto;
+  }
+  #v7CelebrateMatchModal.open { display: flex; }
+  .v7-celeb-box {
+    width: 100%;
+    max-width: 460px;
+    background: linear-gradient(155deg, rgba(14,22,42,0.98), rgba(7,12,24,0.98));
+    border: 1px solid rgba(212,175,55,0.65);
+    border-radius: 22px;
+    padding: 18px;
+    color: #f8fafc;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 36px rgba(212,175,55,0.22);
+    position: relative;
+    overflow: hidden;
+  }
+  .v7-tinder-card {
+    background: rgba(15,23,42,0.92);
+    border: 1px solid rgba(52,211,153,0.45);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .v7-tinder-img {
+    width: 100%;
+    height: 165px;
+    object-fit: cover;
+    display: block;
+    background: #0f172a;
+  }
+  .v7-confetti {
+    position: fixed;
+    width: 9px;
+    height: 9px;
+    top: -12px;
+    z-index: 100095;
+    pointer-events: none;
+    border-radius: 2px;
+    animation: v7ConfettiFall 2.6s ease-out forwards;
+  }
+  @keyframes v7ConfettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(680deg); opacity: 0; }
+  }
+</style>
+
+<!-- MODAL CELEBRAÇÃO PÓS-CADASTRO + TINDER DE MATCH DE PERMUTA -->
+<div id="v7CelebrateMatchModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="v7-celeb-box">
+    <div style="text-align:center;">
+      <div style="font-size:2.1rem;line-height:1;">🎉✨</div>
+      <h3 style="margin:6px 0 4px;color:#fef08a;font-size:1.12rem;">Cadastro Recebido com Sucesso!</h3>
+      <div id="v7CelebCodeRow" style="display:inline-flex;align-items:center;gap:8px;background:rgba(212,175,55,0.16);border:1px solid rgba(212,175,55,0.55);border-radius:999px;padding:5px 14px;margin:6px 0;font-size:0.84rem;font-weight:800;color:#fef08a;">
+        <span>Código: <strong id="v7CelebCode">GD-NOVO</strong></span>
+        <button type="button" id="v7BtnCopyCode" style="background:#d4af37;color:#09111f;border:none;border-radius:999px;padding:3px 9px;font-size:0.70rem;font-weight:800;cursor:pointer;">📋 Copiar</button>
+      </div>
+      <div style="font-size:0.73rem;color:#cbd5e1;margin-top:4px;line-height:1.45;">
+        🔑 Guarde seu código + celular: com eles você pode <strong>consultar o anúncio, pedir alteração de preço ou solicitar remoção</strong> a qualquer momento (com aprovação do Master).
+      </div>
+    </div>
+
+    <div id="v7TinderSection" style="margin-top:14px;display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;">
+        <strong style="color:#6ee7b7;">🔥 Deu Match! Imóveis Compatíveis</strong>
+        <span id="v7TinderCounter" style="font-size:0.72rem;color:#94a3b8;">1 de 1</span>
+      </div>
+      <div id="v7TinderDeck"></div>
+    </div>
+
+    <button type="button" onclick="document.getElementById('v7CelebrateMatchModal').classList.remove('open')" class="btn-ghost" style="width:100%;margin-top:12px;padding:9px;font-size:0.80rem;">Fechar e Voltar ao Site</button>
+  </div>
+</div>
+
+<script id="guildimob-v7-captacao-match-engine">
+(function() {
+  'use strict';
+  if (window.__guildImobV7Active) return;
+  window.__guildImobV7Active = true;
+
+  // =========================================================================
+  // 1. BASE INTELIGENTE DE BAIRROS, JARDINS, VILAS, NÚCLEOS E CONDOMÍNIOS (BAURU & REGIÃO)
+  // =========================================================================
+  const BAURU_REGIAO_BAIRROS = [
+    // Condomínios Fechados & Loteamentos Premium
+    ['Harmonis Parque Residencial', 'Condomínio • Piratininga'],
+    ['Guestier 1 — Destino Guestier', 'Condomínio • Piratininga'],
+    ['Guestier 2 — Destino Guestier', 'Condomínio • Piratininga'],
+    ['Guestier 3 — Altos da Boa Vista', 'Condomínio • Piratininga'],
+    ['Residencial Nova Quinta', 'Condomínio • Bauru'],
+    ['Quinta Ranieri', 'Condomínio • Bauru'],
+    ['Villagio I', 'Condomínio • Bauru'],
+    ['Villagio II', 'Condomínio • Bauru'],
+    ['Villagio III', 'Condomínio • Bauru'],
+    ['Tamboré Bauru', 'Condomínio • Bauru'],
+    ['Residencial Samambaia', 'Condomínio • Bauru'],
+    ['Residencial Shangri-Lá', 'Condomínio • Bauru'],
+    ['Residencial Lago Sul', 'Condomínio • Bauru'],
+    ['Residencial Tivoli I', 'Condomínio • Bauru'],
+    ['Residencial Tivoli II', 'Condomínio • Bauru'],
+    ['Residencial Villa Dumont', 'Condomínio • Bauru'],
+    ['Spazio Verde', 'Condomínio • Bauru'],
+    ['Bosque Imperial', 'Condomínio • Bauru'],
+    ['Jardim do Lago', 'Condomínio • Bauru'],
+    ['Residencial Eldorado', 'Condomínio • Bauru'],
+    ['Residencial Odete', 'Condomínio • Bauru'],
+    ['Condomínio Monte Verde', 'Condomínio • Bauru'],
+    ['Condomínio Ipê', 'Condomínio • Bauru'],
+    ['Terras de Piratininga', 'Condomínio • Piratininga'],
+    ['Estância Santa Helena', 'Condomínio • Piratininga'],
+    // Jardins & Bairros Nobres / Zona Sul
+    ['Jardim Estoril I', 'Jardim • Bauru'],
+    ['Jardim Estoril II', 'Jardim • Bauru'],
+    ['Jardim Estoril III', 'Jardim • Bauru'],
+    ['Jardim Estoril IV', 'Jardim • Bauru'],
+    ['Jardim Estoril V', 'Jardim • Bauru'],
+    ['Jardim Infante Dom Henrique', 'Jardim • Bauru'],
+    ['Jardim América', 'Jardim • Bauru'],
+    ['Jardim Europa', 'Jardim • Bauru'],
+    ['Jardim Aeroporto', 'Jardim • Bauru'],
+    ['Jardim Brasil', 'Jardim • Bauru'],
+    ['Jardim Contorno', 'Jardim • Bauru'],
+    ['Jardim Coralina', 'Jardim • Bauru'],
+    ['Jardim Cruzeiro do Sul', 'Jardim • Bauru'],
+    ['Jardim Ferraz', 'Jardim • Bauru'],
+    ['Jardim Flórida', 'Jardim • Bauru'],
+    ['Jardim Godoy', 'Jardim • Bauru'],
+    ['Jardim Guadalajara', 'Jardim • Bauru'],
+    ['Jardim Helena', 'Jardim • Bauru'],
+    ['Jardim Higienópolis', 'Jardim • Bauru'],
+    ['Jardim Marambá', 'Jardim • Bauru'],
+    ['Jardim Nicéia', 'Jardim • Bauru'],
+    ['Jardim Ouro Verde', 'Jardim • Bauru'],
+    ['Jardim Pagani', 'Jardim • Bauru'],
+    ['Jardim Panorama', 'Jardim • Bauru'],
+    ['Jardim Paulista', 'Jardim • Bauru'],
+    ['Jardim Planalto', 'Jardim • Bauru'],
+    ['Jardim Prudência', 'Jardim • Bauru'],
+    ['Jardim Redentor', 'Jardim • Bauru'],
+    ['Jardim Santa Clara', 'Jardim • Bauru'],
+    ['Jardim Solange', 'Jardim • Bauru'],
+    ['Jardim Tangarás', 'Jardim • Bauru'],
+    ['Jardim Terra Branca', 'Jardim • Bauru'],
+    ['Jardim TV', 'Jardim • Bauru'],
+    ['Altos da Cidade', 'Bairro • Bauru'],
+    ['Centro', 'Bairro • Bauru'],
+    ['Higienópolis', 'Bairro • Bauru'],
+    // Vilas
+    ['Vila Universitária', 'Vila • Bauru'],
+    ['Vila Pacífico', 'Vila • Bauru'],
+    ['Vila Cardia', 'Vila • Bauru'],
+    ['Vila Falcão', 'Vila • Bauru'],
+    ['Vila Independência', 'Vila • Bauru'],
+    ['Vila Industrial', 'Vila • Bauru'],
+    ['Vila Ipiranga', 'Vila • Bauru'],
+    ['Vila Nipônica', 'Vila • Bauru'],
+    ['Vila Nova Santa Luzia', 'Vila • Bauru'],
+    ['Vila Rocha', 'Vila • Bauru'],
+    ['Vila Santa Tereza', 'Vila • Bauru'],
+    ['Vila São Francisco', 'Vila • Bauru'],
+    ['Vila São Paulo', 'Vila • Bauru'],
+    ['Vila Seabra', 'Vila • Bauru'],
+    ['Vila Souto', 'Vila • Bauru'],
+    ['Vila Zillo', 'Vila • Bauru'],
+    // Parques & Núcleos
+    ['Parque das Nações', 'Parque • Bauru'],
+    ['Parque Paulista', 'Parque • Bauru'],
+    ['Parque Santa Edwiges', 'Parque • Bauru'],
+    ['Parque Vista Alegre', 'Parque • Bauru'],
+    ['Parque Jaraguá', 'Parque • Bauru'],
+    ['Parque Júlio Nóbrega', 'Parque • Bauru'],
+    ['Parque Roosevelt', 'Parque • Bauru'],
+    ['Parque São Geraldo', 'Parque • Bauru'],
+    ['Parque Viaduto', 'Parque • Bauru'],
+    ['Núcleo Habitacional Mary Dota', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Presidente Geisel', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Gasparini', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Octávio Rasi', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Beija-Flor', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Isaura Pitta Garms', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional José Regino', 'Núcleo • Bauru'],
+    ['Núcleo Habitacional Nobuji Nagasawa', 'Núcleo • Bauru'],
+    ['Bela Vista', 'Bairro • Bauru'],
+    ['Pousada da Esperança I', 'Bairro • Bauru'],
+    ['Pousada da Esperança II', 'Bairro • Bauru'],
+    ['Nova Esperança', 'Bairro • Bauru'],
+    ['Centro — Piratininga', 'Bairro • Piratininga'],
+    ['Centro — Agudos', 'Bairro • Agudos'],
+    ['Chácaras Bauruenses', 'Chácaras • Bauru'],
+    ['Vale do Igapó', 'Chácaras • Bauru'],
+    ['Estância Avaí', 'Chácaras • Avaí']
+  ];
+
+  function normStrV7(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function fuzzyScoreV7(query, target) {
+    const q = normStrV7(query), t = normStrV7(target);
+    if (!q) return 0;
+    if (t === q) return 100;
+    if (t.startsWith(q)) return 90;
+    if (t.includes(q)) return 75;
+    const words = q.split(' ').filter(Boolean);
+    let hits = 0;
+    words.forEach(w => { if (w.length >= 2 && t.includes(w)) hits++; });
+    if (hits > 0) return 40 + (hits / words.length) * 30;
+    // Tolerância simples de 1-2 letras erradas (bigram overlap)
+    if (q.length >= 3) {
+      let common = 0;
+      for (let i = 0; i < q.length - 1; i++) {
+        if (t.includes(q.slice(i, i + 2))) common++;
+      }
+      const ratio = common / Math.max(1, q.length - 1);
+      if (ratio >= 0.55) return Math.round(ratio * 45);
+    }
+    return 0;
+  }
+
+  function attachBairroAutocompleteV7(inputEl) {
+    if (!inputEl || inputEl.__v7AcReady) return;
+    inputEl.__v7AcReady = true;
+    const wrap = inputEl.parentElement;
+    if (wrap) wrap.classList.add('v7-ac-wrap');
+    const list = document.createElement('div');
+    list.className = 'v7-ac-list';
+    inputEl.insertAdjacentElement('afterend', list);
+
+    const render = () => {
+      const val = inputEl.value.trim();
+      if (val.length < 2) { list.classList.remove('open'); return; }
+      const matches = BAURU_REGIAO_BAIRROS
+        .map(([name, tag]) => ({ name, tag, score: fuzzyScoreV7(val, name) }))
+        .filter(x => x.score >= 25)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 7);
+
+      let htmlItems = matches.map(m =>
+        `<div class="v7-ac-item" data-val="${m.name.replace(/"/g,'&quot;')}"><span>${m.name}</span><span class="v7-ac-tag">${m.tag}</span></div>`
+      ).join('');
+      htmlItems += `<div class="v7-ac-item" data-cep-lookup="1" style="color:#6ee7b7;"><span>📍 Não achou? Buscar bairro pelo CEP</span><span class="v7-ac-tag">ViaCEP</span></div>`;
+      list.innerHTML = htmlItems;
+      list.classList.add('open');
+
+      list.querySelectorAll('.v7-ac-item').forEach(it => {
+        it.onmousedown = (ev) => {
+          ev.preventDefault();
+          if (it.getAttribute('data-cep-lookup')) {
+            list.classList.remove('open');
+            const cepInp = document.getElementById('v7CapCep');
+            if (cepInp) { cepInp.focus(); cepInp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            if (typeof showToast === 'function') showToast('Digite o CEP abaixo para preencher o bairro automaticamente.');
+            return;
+          }
+          inputEl.value = it.getAttribute('data-val');
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+          list.classList.remove('open');
+        };
+      });
+    };
+
+    inputEl.addEventListener('input', render);
+    inputEl.addEventListener('focus', render);
+    inputEl.addEventListener('blur', () => setTimeout(() => list.classList.remove('open'), 180));
+  }
+
+  // =========================================================================
+  // 2. UPGRADE DO MODAL "ANUNCIE SEU IMÓVEL" (PROPRIETÁRIO vs PARCEIRO + DOC ÚNICO + PERMUTA + BRILHO GUIADO)
+  // =========================================================================
+  let v7Role = 'proprietario'; // 'proprietario' | 'parceiro'
+  let v7DocType = 'cpf'; // 'creci' | 'cpf' | 'rg'
+  let v7Objetivo = 'vender'; // 'vender' | 'permuta' | 'vender_comprar'
+  let v7PermutaTipos = [];
+  let v7PermutaPct = '40';
+
+  function enhanceCaptacaoFormV7() {
+    const form = document.getElementById('captacaoForm');
+    if (!form || document.getElementById('v7RoleSwitch')) return;
+
+    // A) Seletor Proprietário vs Corretor Parceiro/Indicador no topo
+    const roleBox = document.createElement('div');
+    roleBox.id = 'v7RoleSwitch';
+    roleBox.innerHTML = `
+      <div class="v7-role-switch">
+        <button type="button" class="v7-role-card active" data-role="proprietario">
+          <div style="font-size:1.25rem;">👤</div>
+          <strong>Sou Proprietário</strong>
+          <span>Endereço e contato no cofre</span>
+        </button>
+        <button type="button" class="v7-role-card" data-role="parceiro">
+          <div style="font-size:1.25rem;">🤝</div>
+          <strong>Corretor Parceiro / Indicador</strong>
+          <span>Só Bairro (sem expor endereço)</span>
+        </button>
+      </div>
+      <div id="v7RoleNotice" style="font-size:0.74rem;color:#93c5fd;background:rgba(59,130,246,0.10);border:1px solid rgba(59,130,246,0.28);border-radius:10px;padding:8px 10px;margin-bottom:10px;line-height:1.4;">
+        🔒 <strong>100% Confidencial:</strong> seu endereço e contato nunca aparecem no site. Todos os leads são atendidos pelo Gerente Master (Guild Imob).
+      </div>`;
+    form.prepend(roleBox);
+
+    // B) Seletor de Documento Único (CRECI | CPF | RG) + Endereço/CEP adaptativo
+    const capWhatsConfirmWrap = document.getElementById('capWhatsConfirm') && document.getElementById('capWhatsConfirm').closest('.form-grid');
+    if (capWhatsConfirmWrap) {
+      const docEndBox = document.createElement('div');
+      docEndBox.id = 'v7DocAndAddrBox';
+      docEndBox.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);';
+      docEndBox.innerHTML = `
+        <div style="font-size:0.76rem;font-weight:700;color:#f3e5ab;" id="v7DocHeading">🪪 Identificação Obrigatória (Escolha 1 documento):</div>
+        <div class="v7-pill-row" id="v7DocPills">
+          <button type="button" class="v7-choice-pill active" data-doc="cpf">CPF</button>
+          <button type="button" class="v7-choice-pill" data-doc="creci" style="display:none;">CRECI (Físico/Jurídico)</button>
+          <button type="button" class="v7-choice-pill" data-doc="rg" style="display:none;">RG</button>
+        </div>
+        <input type="text" id="v7CapDocValue" class="input-field" required placeholder="Digite seu CPF (000.000.000-00)">
+
+        <div id="v7AddrSection" class="form-grid" style="margin-top:10px;">
+          <div class="form-group">
+            <label class="form-label" for="v7CapCep" id="v7CepLabel">CEP *</label>
+            <input type="text" id="v7CapCep" class="input-field" placeholder="17000-000 (preenche bairro)" maxlength="9">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="v7CapEndereco" id="v7EndLabel">Endereço Completo (Rua e nº — Privado) *</label>
+            <input type="text" id="v7CapEndereco" class="input-field" placeholder="Rua, número e complemento">
+          </div>
+        </div>`;
+      capWhatsConfirmWrap.insertAdjacentElement('afterend', docEndBox);
+    }
+
+    // C) Bloco Opcional de Objetivo & Match de Permuta antes do botão submit
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      const permBox = document.createElement('div');
+      permBox.id = 'v7PermutaSection';
+      permBox.className = 'glass-soft';
+      permBox.style.cssText = 'padding:12px;border-radius:14px;margin:12px 0;border:1px solid rgba(52,211,153,0.32);';
+      permBox.innerHTML = `
+        <div style="font-size:0.82rem;font-weight:800;color:#6ee7b7;margin-bottom:6px;">🔄 Objetivo &amp; Radar de Permutas (Opcional)</div>
+        <div class="v7-pill-row" id="v7ObjPills">
+          <button type="button" class="v7-choice-pill active" data-obj="vender">💰 Só Vender</button>
+          <button type="button" class="v7-choice-pill" data-obj="permuta">🔄 Aceita Permuta</button>
+          <button type="button" class="v7-choice-pill" data-obj="vender_comprar">🏡 Vender p/ Comprar Outro</button>
+        </div>
+        <div id="v7PermutaExtras" style="display:none;margin-top:8px;">
+          <div style="font-size:0.74rem;color:#cbd5e1;margin-bottom:4px;">O que aceita / procura na troca?</div>
+          <div class="v7-pill-row" id="v7PermTipos">
+            <button type="button" class="v7-choice-pill" data-ptipo="Casa">🏠 Casa</button>
+            <button type="button" class="v7-choice-pill" data-ptipo="Apartamento">🏢 Apartamento</button>
+            <button type="button" class="v7-choice-pill" data-ptipo="Terreno">🌳 Terreno/Lote</button>
+            <button type="button" class="v7-choice-pill" data-ptipo="Veículo">🚗 Veículo</button>
+            <button type="button" class="v7-choice-pill" data-ptipo="Chácara">🌾 Chácara</button>
+          </div>
+          <div style="font-size:0.74rem;color:#cbd5e1;margin:6px 0 4px;">Até quanto % do valor aceita em permuta?</div>
+          <div class="v7-pill-row" id="v7PermPct">
+            <button type="button" class="v7-choice-pill" data-pct="20">Até 20%</button>
+            <button type="button" class="v7-choice-pill active" data-pct="40">Até 40%</button>
+            <button type="button" class="v7-choice-pill" data-pct="60">Até 60%</button>
+            <button type="button" class="v7-choice-pill" data-pct="80">Até 80%</button>
+            <button type="button" class="v7-choice-pill" data-pct="100">100% Troca</button>
+          </div>
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.75rem;color:#fef08a;margin-top:6px;cursor:pointer;">
+            <input type="checkbox" id="v7ChkParticiparMatch" checked> 🔥 Mostrar imóveis compatíveis (Match Guild Imob) após cadastrar
+          </label>
+        </div>`;
+      submitBtn.insertAdjacentElement('beforebegin', permBox);
+    }
+
+    // Attach autocomplete to capBairro and propBairro
+    attachBairroAutocompleteV7(document.getElementById('capBairro'));
+    attachBairroAutocompleteV7(document.getElementById('propBairro'));
+
+    // ViaCEP lookup on v7CapCep
+    const cepEl = document.getElementById('v7CapCep');
+    if (cepEl) {
+      cepEl.addEventListener('input', async () => {
+        const d = cepEl.value.replace(/\D/g, '');
+        if (d.length === 8) {
+          try {
+            const r = await fetch('https://viacep.com.br/ws/' + d + '/json/');
+            const j = await r.json();
+            if (j && !j.erro) {
+              const b = document.getElementById('capBairro');
+              const c = document.getElementById('capCidade');
+              const e = document.getElementById('v7CapEndereco');
+              if (b && j.bairro) b.value = j.bairro;
+              if (c && j.localidade) c.value = j.localidade + (j.uf ? ' - ' + j.uf : '');
+              if (e && j.logradouro && !e.value) e.value = j.logradouro + ', nº ';
+              if (typeof showToast === 'function') showToast('📍 CEP localizado: ' + (j.bairro || j.localidade));
+            }
+          } catch (err) {}
+        }
+      });
+    }
+
+    // Bind Role switch
+    function applyRoleUiV7() {
+      const isParceiro = v7Role === 'parceiro';
+      const notice = document.getElementById('v7RoleNotice');
+      const creciPill = document.querySelector('#v7DocPills [data-doc="creci"]');
+      const rgPill = document.querySelector('#v7DocPills [data-doc="rg"]');
+      const cpfPill = document.querySelector('#v7DocPills [data-doc="cpf"]');
+      const cepLbl = document.getElementById('v7CepLabel');
+      const endLbl = document.getElementById('v7EndLabel');
+      const cepInp = document.getElementById('v7CapCep');
+      const endInp = document.getElementById('v7CapEndereco');
+
+      if (isParceiro) {
+        if (creciPill) creciPill.style.display = 'inline-flex';
+        if (rgPill) rgPill.style.display = 'inline-flex';
+        if (cepLbl) cepLbl.textContent = 'CEP (Opcional p/ Parceiro)';
+        if (endLbl) endLbl.textContent = 'Endereço / Referência (Opcional p/ Parceiro)';
+        if (cepInp) cepInp.required = false;
+        if (endInp) endInp.required = false;
+        if (notice) notice.innerHTML = '🤝 <strong>Parceria Protegida:</strong> informe apenas o <strong>Bairro/Condomínio</strong> (endereço e CEP não são obrigatórios). Todos os leads no site vão 100% para o Master, que qualifica o cliente e aciona você.';
+        setDocTypeV7('creci');
+      } else {
+        if (creciPill) creciPill.style.display = 'none';
+        if (rgPill) rgPill.style.display = 'none';
+        if (cepLbl) cepLbl.textContent = 'CEP *';
+        if (endLbl) endLbl.textContent = 'Endereço Completo (Rua e nº — Privado) *';
+        if (cepInp) cepInp.required = true;
+        if (endInp) endInp.required = true;
+        if (notice) notice.innerHTML = '🔒 <strong>100% Confidencial:</strong> seu endereço, CPF e telefone ficam no cofre privado apenas para o Gerente Master — nunca aparecem no anúncio público.';
+        setDocTypeV7('cpf');
+      }
+      refreshGuidedGoldGlowV7();
+    }
+
+    function setDocTypeV7(dt) {
+      v7DocType = dt;
+      document.querySelectorAll('#v7DocPills .v7-choice-pill').forEach(p => p.classList.toggle('active', p.getAttribute('data-doc') === dt));
+      const inp = document.getElementById('v7CapDocValue');
+      if (!inp) return;
+      if (dt === 'creci') inp.placeholder = 'Número do CRECI (Ex: 272251-F ou J-50143)';
+      else if (dt === 'rg') inp.placeholder = 'Número do RG (Indicador / Captador)';
+      else inp.placeholder = 'Digite o CPF (000.000.000-00)';
+    }
+
+    roleBox.querySelectorAll('.v7-role-card').forEach(c => {
+      c.onclick = () => {
+        if (window.playOrbClickSfxV6) window.playOrbClickSfxV6(523.25);
+        v7Role = c.getAttribute('data-role');
+        roleBox.querySelectorAll('.v7-role-card').forEach(x => x.classList.toggle('active', x === c));
+        applyRoleUiV7();
+      };
+    });
+
+    document.querySelectorAll('#v7DocPills .v7-choice-pill').forEach(p => {
+      p.onclick = () => setDocTypeV7(p.getAttribute('data-doc'));
+    });
+
+    document.querySelectorAll('#v7ObjPills .v7-choice-pill').forEach(p => {
+      p.onclick = () => {
+        v7Objetivo = p.getAttribute('data-obj');
+        document.querySelectorAll('#v7ObjPills .v7-choice-pill').forEach(x => x.classList.toggle('active', x === p));
+        const ext = document.getElementById('v7PermutaExtras');
+        if (ext) ext.style.display = v7Objetivo === 'vender' ? 'none' : 'block';
+      };
+    });
+
+    document.querySelectorAll('#v7PermTipos .v7-choice-pill').forEach(p => {
+      p.onclick = () => {
+        p.classList.toggle('active');
+        v7PermutaTipos = Array.from(document.querySelectorAll('#v7PermTipos .v7-choice-pill.active')).map(x => x.getAttribute('data-ptipo'));
+      };
+    });
+
+    document.querySelectorAll('#v7PermPct .v7-choice-pill').forEach(p => {
+      p.onclick = () => {
+        v7PermutaPct = p.getAttribute('data-pct');
+        document.querySelectorAll('#v7PermPct .v7-choice-pill').forEach(x => x.classList.toggle('active', x === p));
+      };
+    });
+
+    // Brilho Dourado Guiado (apenas 1 campo obrigatório ativo brilha por vez!)
+    function refreshGuidedGoldGlowV7() {
+      const reqs = Array.from(form.querySelectorAll('input[required], select[required], textarea[required]'))
+        .filter(el => el.offsetParent !== null && el.type !== 'hidden');
+      let firstEmptyFound = false;
+      reqs.forEach(el => {
+        el.classList.remove('v7-field-gold-active', 'v7-field-ok');
+        const filled = String(el.value || '').trim().length > 0;
+        if (filled) {
+          el.classList.add('v7-field-ok');
+          el.classList.remove('v7-field-error');
+        } else if (!firstEmptyFound) {
+          firstEmptyFound = true;
+          el.classList.add('v7-field-gold-active');
+        }
+      });
+    }
+    form.addEventListener('input', refreshGuidedGoldGlowV7);
+    form.addEventListener('change', refreshGuidedGoldGlowV7);
+
+    // Intercepta submit na fase de captura: valida campos obrigatórios (scroll vermelho) + anexa metadados na descrição + dispara celebração e Match!
+    form.addEventListener('submit', function(ev) {
+      const reqs = Array.from(form.querySelectorAll('input[required], select[required], textarea[required]'))
+        .filter(el => el.offsetParent !== null && el.type !== 'hidden');
+      const missing = reqs.find(el => !String(el.value || '').trim());
+      if (missing) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        missing.classList.add('v7-field-error');
+        missing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        missing.focus();
+        if (typeof showToast === 'function') showToast('⚠️ Preencha o campo destacado em vermelho antes de enviar.');
+        return false;
+      }
+
+      // Valida documento mínimo
+      const docVal = (document.getElementById('v7CapDocValue') || {}).value || '';
+      if (docVal.trim().length < 4) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        const el = document.getElementById('v7CapDocValue');
+        el.classList.add('v7-field-error');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus();
+        if (typeof showToast === 'function') showToast('⚠️ Informe pelo menos 1 documento válido (CRECI, CPF ou RG).');
+        return false;
+      }
+
+      // Anexa metadados de Perfil, Documento, Endereço e Permuta de forma organizada na descrição (sem quebrar o backend atual!)
+      const descEl = document.getElementById('capDesc');
+      if (descEl && !descEl.value.includes('[PERFIL_CADASTRO:')) {
+        const perfilTag = v7Role === 'parceiro' ? 'CORRETOR PARCEIRO / INDICADOR' : 'PROPRIETÁRIO';
+        const cepVal = (document.getElementById('v7CapCep') || {}).value || '';
+        const endVal = (document.getElementById('v7CapEndereco') || {}).value || '';
+        const permStr = v7Objetivo === 'vender'
+          ? 'Só Venda'
+          : `${v7Objetivo === 'permuta' ? 'Aceita Permuta' : 'Vender p/ Comprar'} (${v7PermutaTipos.join(', ') || 'A combinar'} • até ${v7PermutaPct}%)`;
+        const metaLine = `\n\n[PERFIL_CADASTRO: ${perfilTag} | DOC(${v7DocType.toUpperCase()}): ${docVal.trim()}${cepVal ? ' | CEP: ' + cepVal : ''}${endVal ? ' | END_PRIVADO: ' + endVal : ''} | OBJETIVO: ${permStr}]`;
+        descEl.value = (descEl.value || '').trim() + metaLine;
+      }
+
+      // Agenda a celebração + Tinder de Match logo após o envio
+      const snap = {
+        nome: (document.getElementById('capNome') || {}).value || 'Cliente',
+        fone: (document.getElementById('capWhats') || {}).value || '',
+        valor: Number(String((document.getElementById('capValor') || {}).value || '0').replace(/[^\d]/g, '')) || 0,
+        tipo: (document.getElementById('capTipo') || {}).value || '',
+        bairro: (document.getElementById('capBairro') || {}).value || '',
+        objetivo: v7Objetivo,
+        permTipos: v7PermutaTipos.slice(),
+        permPct: Number(v7PermutaPct) || 40,
+        showMatch: !!(document.getElementById('v7ChkParticiparMatch') && document.getElementById('v7ChkParticiparMatch').checked),
+        role: v7Role
+      };
+      setTimeout(() => launchCelebrationAndMatchV7(snap), 1400);
+    }, true);
+
+    applyRoleUiV7();
+  }
+
+  // =========================================================================
+  // 3. CELEBRAÇÃO (CONFETES + SOM) & TINDER DE MATCH DE PERMUTA
+  // =========================================================================
+  function spawnConfettiV7() {
+    const colors = ['#d4af37', '#f3e5ab', '#34d399', '#38bdf8', '#f472b6', '#ffffff'];
+    for (let i = 0; i < 42; i++) {
+      const c = document.createElement('div');
+      c.className = 'v7-confetti';
+      c.style.left = (Math.random() * 100) + 'vw';
+      c.style.background = colors[i % colors.length];
+      c.style.animationDelay = (Math.random() * 0.6) + 's';
+      c.style.width = (6 + Math.random() * 6) + 'px';
+      c.style.height = (6 + Math.random() * 6) + 'px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3300);
+    }
+    if (window.playOrbClickSfxV6) {
+      window.playOrbClickSfxV6(523.25);
+      setTimeout(() => window.playOrbClickSfxV6(659.25), 110);
+      setTimeout(() => window.playOrbClickSfxV6(783.99), 220);
+    }
+  }
+
+  function findPermutaMatchesV7(snap) {
+    const props = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+    if (!props.length || snap.objetivo === 'vender') return [];
+    const maxVal = snap.valor > 0 ? snap.valor * (snap.objetivo === 'permuta' ? (snap.permPct / 100) * 1.35 : 1.55) : 99999999;
+    const minVal = snap.valor > 0 ? snap.valor * 0.20 : 0;
+
+    return props.filter(p => {
+      const pv = Number(p.valor) || 0;
+      if (pv <= 0) return false;
+      const t = String(p.tipo || '').toLowerCase();
+      const typeOk = !snap.permTipos.length || snap.permTipos.some(pt => t.includes(pt.toLowerCase().slice(0, 4)));
+      const priceOk = snap.valor <= 0 || (pv >= minVal && pv <= maxVal);
+      return typeOk && priceOk;
+    }).slice(0, 8);
+  }
+
+  function launchCelebrationAndMatchV7(snap) {
+    spawnConfettiV7();
+    const code = 'GD' + String(Math.floor(1000 + Math.random() * 8999));
+    const codeEl = document.getElementById('v7CelebCode');
+    if (codeEl) codeEl.textContent = code;
+    const copyBtn = document.getElementById('v7BtnCopyCode');
+    if (copyBtn) copyBtn.onclick = () => {
+      navigator.clipboard && navigator.clipboard.writeText(code).catch(() => {});
+      if (typeof showToast === 'function') showToast('📋 Código copiado: ' + code);
+    };
+
+    const matches = (snap.showMatch && snap.objetivo !== 'vender') ? findPermutaMatchesV7(snap) : [];
+    const sec = document.getElementById('v7TinderSection');
+    const deck = document.getElementById('v7TinderDeck');
+    const counter = document.getElementById('v7TinderCounter');
+
+    if (matches.length && sec && deck) {
+      sec.style.display = 'block';
+      let idx = 0;
+      const renderCard = () => {
+        if (idx >= matches.length) {
+          deck.innerHTML = '<div class="v6-card" style="text-align:center;color:#6ee7b7;font-size:0.82rem;margin-top:8px;">✅ Você viu todas as compatibilidades de hoje! O Master também já recebeu sua lista.</div>';
+          return;
+        }
+        const p = matches[idx];
+        counter.textContent = `${idx + 1} de ${matches.length}`;
+        const img = (Array.isArray(p.fotos) && p.fotos[0]) || p.fotoCapa || '';
+        const val = 'R$ ' + (Number(p.valor) || 0).toLocaleString('pt-BR');
+        deck.innerHTML = `
+          <div class="v7-tinder-card">
+            ${img ? `<img class="v7-tinder-img" src="${img}" alt="Imóvel compatível">` : ''}
+            <div style="padding:12px;">
+              <div style="font-size:0.70rem;color:#6ee7b7;font-weight:800;">⚡ Compatível com seu objetivo (${snap.objetivo === 'permuta' ? 'Permuta' : 'Troca'})</div>
+              <div style="font-size:0.88rem;font-weight:800;color:#fff;margin:3px 0;">${p.codigo || ''} — ${(p.titulo || '').slice(0, 58)}</div>
+              <div style="font-size:0.76rem;color:#cbd5e1;">📍 ${p.bairro || 'Bauru/Região'} • <strong style="color:#fef08a;">${val}</strong></div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <button type="button" id="v7TinderSkip" class="btn-ghost" style="flex:1;padding:9px;font-size:0.78rem;">⏭️ Próximo</button>
+                <button type="button" id="v7TinderLike" class="btn-gold" style="flex:2;padding:9px;font-size:0.78rem;">❤️ Quero Negociar essa Troca</button>
+              </div>
+            </div>
+          </div>`;
+        deck.querySelector('#v7TinderSkip').onclick = () => { idx++; renderCard(); };
+        deck.querySelector('#v7TinderLike').onclick = () => {
+          const gasUrl = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+          fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'registrarMatchPermuta',
+              perfil: snap.role === 'parceiro' ? 'Corretor Parceiro' : 'Proprietário',
+              nome: snap.nome,
+              telefone: snap.fone,
+              origemCodigo: code,
+              destinoCodigo: p.codigo || p.id,
+              destinoTitulo: p.titulo || '',
+              detalhe: `Interesse via Match Pós-Cadastro (${snap.objetivo}, até ${snap.permPct}%)`
+            })
+          }).catch(() => {});
+          if (typeof showToast === 'function') showToast('❤️ Match enviado ao Master! Vamos intermediar as duas pontas.');
+          idx++;
+          renderCard();
+        };
+      };
+      renderCard();
+    } else if (sec) {
+      sec.style.display = 'none';
+    }
+
+    document.getElementById('v7CelebrateMatchModal').classList.add('open');
+  }
+
+  // =========================================================================
+  // 4. SOLICITAÇÃO DE REMOÇÃO NO MODAL DO PROPRIETÁRIO / PARCEIRO (CÓDIGO + CELULAR)
+  // =========================================================================
+  function injectOwnerRemovalRequestV7() {
+    const priceForm = document.getElementById('ownerPriceRequestForm');
+    if (!priceForm || document.getElementById('v7OwnerRemovalForm')) return;
+    const remForm = document.createElement('form');
+    remForm.id = 'v7OwnerRemovalForm';
+    remForm.className = 'glass-soft';
+    remForm.style.cssText = 'padding:12px;border-radius:14px;margin-top:12px;border:1px solid rgba(248,113,113,0.38);';
+    remForm.innerHTML = `
+      <strong style="font-size:0.86rem;color:#fca5a5;">🗑️ Solicitar Remoção do Anúncio (Aprovação do Master)</strong>
+      <p style="font-size:0.74rem;color:#cbd5e1;margin:4px 0 8px;">Por segurança, o anúncio não é apagado imediatamente — o Gerente Master recebe seu pedido e confirma com você.</p>
+      <select id="v7RemMotivo" class="input-field" style="margin-bottom:8px;">
+        <option value="Imóvel já foi vendido">Imóvel já foi vendido</option>
+        <option value="Desisti de vender no momento">Desisti de vender no momento</option>
+        <option value="Imóvel foi alugado">Imóvel foi alugado</option>
+        <option value="Outro motivo">Outro motivo</option>
+      </select>
+      <button type="submit" class="btn-ghost" style="width:100%;border-color:rgba(248,113,113,0.6);color:#fca5a5;">📩 Enviar Pedido de Remoção ao Master</button>`;
+    remForm.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const motivo = document.getElementById('v7RemMotivo').value;
+      const code = (document.getElementById('ownerAccessCode') || {}).value || (window.state && window.state.ownerAccessCode) || 'CODIGO';
+      const fone = (document.getElementById('ownerAccessPhone') || {}).value || '';
+      const gasUrl = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+      try {
+        await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'solicitarRemocaoImovel', codigo: code, telefone: fone, perfil: 'Proprietário / Parceiro', motivo })
+        });
+        if (typeof showToast === 'function') showToast('✅ Solicitação de remoção enviada ao Master!');
+      } catch (e) { if (typeof showToast === 'function') showToast('⚠️ Erro ao enviar solicitação.'); }
+    };
+    priceForm.insertAdjacentElement('afterend', remForm);
+  }
+
+  // =========================================================================
+  // 5. TRAVA PARA CORRETOR INTERNO (NUNCA EXCLUI — SÓ SOLICITA REMOÇÃO) + RADAR DE PERMUTAS NO MASTER
+  // =========================================================================
+  function enforceBrokerNoDeleteV7() {
+    const sess = (window.state && window.state.session) || {};
+    const isMaster = String(sess.role || '').toUpperCase() === 'MASTER';
+    if (isMaster) return;
+    document.querySelectorAll('#adminImoveisList .v6-more-actions-btn').forEach(btn => {
+      if (btn.__v7BrokerRem) return;
+      btn.__v7BrokerRem = true;
+      btn.textContent = '📩 Pedir Remoção';
+      btn.onclick = async (ev) => {
+        ev.stopPropagation();
+        const card = btn.closest('[data-id], .glass-soft, div');
+        const txt = card ? (card.textContent || '').match(/GD\d+/) : null;
+        const code = txt ? txt[0] : 'IMOVEL';
+        const gasUrl = typeof APPS_SCRIPT_URL !== 'undefined' ? APPS_SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+        await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'solicitarRemocaoImovel', codigo: code, nome: sess.nome || sess.login || 'Corretor', perfil: 'Corretor Interno', motivo: 'Solicitado pelo painel do corretor' })
+        }).catch(() => {});
+        if (typeof showToast === 'function') showToast('📩 Pedido de remoção de ' + code + ' enviado ao Master!');
+      };
+    });
+  }
+
+  function injectRadarPermutasTabV7() {
+    const subtabs = document.getElementById('v6CrmSubtabs');
+    const crmPanel = document.getElementById('v6PanelCrm');
+    if (!subtabs || !crmPanel || document.getElementById('v7CrmViewPermutas')) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'v6-subtab';
+    btn.setAttribute('data-crm-view', 'permutas');
+    btn.textContent = '🔥 Radar Permutas';
+    subtabs.appendChild(btn);
+
+    const view = document.createElement('div');
+    view.id = 'v7CrmViewPermutas';
+    view.style.display = 'none';
+    view.innerHTML = '<div id="v7PermutasPairsList"></div>';
+    crmPanel.appendChild(view);
+
+    btn.onclick = () => {
+      subtabs.querySelectorAll('.v6-subtab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ['v6CrmViewKanban','v6CrmViewAgenda','v6CrmViewOwners','v6CrmViewSim'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      view.style.display = 'block';
+      renderRadarPermutasMasterV7();
+    };
+  }
+
+  function renderRadarPermutasMasterV7() {
+    const cont = document.getElementById('v7PermutasPairsList');
+    if (!cont) return;
+    const ims = ((window.state && window.state.adminData && window.state.adminData.imoveis) || []).filter(i => i.status === 'ATIVO');
+    const leads = ((window.state && window.state.adminData && window.state.adminData.leads) || []).filter(l => /permuta|match/i.test(String(l.mensagem || '') + String(l.origem || '')));
+
+    const permutaIms = ims.filter(p => /permuta|troca|vender p\/ comprar/i.test(String(p.descricao || '') + String(p.titulo || '')));
+    let htmlOut = '';
+
+    if (leads.length) {
+      htmlOut += `<div class="v6-card" style="border-color:rgba(244,114,182,0.45);"><strong style="color:#f9a8d4;font-size:0.84rem;">❤️ Matches Solicitados por Clientes (${leads.length})</strong>` +
+        leads.slice(0, 10).map(l => `<div style="font-size:0.76rem;color:#e2e8f0;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);"><strong>${l.nome||'Cliente'}</strong> — ${l.mensagem||''}</div>`).join('') +
+        `</div>`;
+    }
+
+    if (permutaIms.length) {
+      htmlOut += permutaIms.slice(0, 12).map(a => {
+        const va = Number(a.valor) || 0;
+        const matchB = ims.find(b => b.id !== a.id && (Number(b.valor)||0) > 0 && (Number(b.valor)||0) <= va * 0.85 && String(b.tipo) !== String(a.tipo));
+        return `<div class="v6-card" style="border-color:rgba(52,211,153,0.4);">
+          <div style="font-size:0.78rem;font-weight:800;color:#6ee7b7;">🔄 ${a.codigo} (${a.tipo} • R$ ${va.toLocaleString('pt-BR')})</div>
+          <div style="font-size:0.74rem;color:#cbd5e1;margin-top:3px;">${matchB ? `⇄ Compatível com <strong>${matchB.codigo}</strong> (${matchB.tipo} • R$ ${(Number(matchB.valor)||0).toLocaleString('pt-BR')} em ${matchB.bairro||''})` : 'Aguardando contraparte compatível no estoque.'}</div>
+        </div>`;
+      }).join('');
+    } else if (!leads.length) {
+      htmlOut = '<div class="v6-card" style="color:#94a3b8;font-size:0.80rem;">Assim que proprietários ou parceiros marcarem "Aceita Permuta" ou curtirem um Match, os pares compatíveis aparecem automaticamente aqui para você intermediar as duas pontas!</div>';
+    }
+    cont.innerHTML = htmlOut;
+  }
+
+  function bootV7() {
+    enhanceCaptacaoFormV7();
+    injectOwnerRemovalRequestV7();
+    injectRadarPermutasTabV7();
+    setInterval(() => {
+      enhanceCaptacaoFormV7();
+      injectOwnerRemovalRequestV7();
+      injectRadarPermutasTabV7();
+      enforceBrokerNoDeleteV7();
+    }, 1500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootV7);
+  else bootV7();
+})();
+</script>
+<!-- V7_CAPTACAO_MATCH_END -->
+
 </body>
 </html>
