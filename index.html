@@ -6001,7 +6001,7 @@
     ];
 
     /* APPLICATION STATE */
-    const state = {
+    const state = window.state = {
       apiUrl: safeGetLS("guild_api_url", "") || DEFAULT_APPS_SCRIPT_URL,
       isLive: false,
       properties: [],
@@ -16576,7 +16576,7 @@
   }
 
   function findPermutaMatchesV7(snap) {
-    const props = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+    const stObj = window.state || {}; const props = (Array.isArray(stObj.properties) && stObj.properties.length) ? stObj.properties : ((stObj.adminData && Array.isArray(stObj.adminData.imoveis)) ? stObj.adminData.imoveis.filter(x => x.status === 'ATIVO') : []);
     if (!props.length || snap.objetivo === 'vender') return [];
     const maxVal = snap.valor > 0 ? snap.valor * (snap.objetivo === 'permuta' ? (snap.permPct / 100) * 1.35 : 1.55) : 99999999;
     const minVal = snap.valor > 0 ? snap.valor * 0.20 : 0;
@@ -16999,8 +16999,8 @@
       const b = (window.fixMojibakeV6 ? window.fixMojibakeV6(p.bairro || 'Bauru') : (p.bairro || 'Bauru')).trim() || 'Bauru';
       const val = Number(p.valor) || 0;
       const area = (t.includes('terren') || t.includes('lote'))
-        ? (Number(p.areaTerreno) || Number(p.areaConstruida) || 0)
-        : (Number(p.areaConstruida) || Number(p.areaTerreno) || 0);
+        ? (Number(p.areaTerreno) || Number(p.area) || Number(p.metragem) || Number(p.areaConstruida) || 0)
+        : (Number(p.areaConstruida) || Number(p.area) || Number(p.metragem) || Number(p.areaTerreno) || 0);
       const pm2 = (val > 10000 && area > 12) ? (val / area) : 0;
 
       if (!map[b]) map[b] = { bairro: b, count: 0, pm2Sum: 0, pm2Count: 0, minVal: Infinity, maxVal: 0, coord: resolveCoordV8(b) };
@@ -17088,6 +17088,12 @@
         const mk = L.marker(r.coord, { icon }).addTo(v8MarkersLayer);
         mk.bindPopup(`<strong>${r.bairro}</strong><br>${r.count} opções ativas<br>Média: <strong>${r.avgM2 ? 'R$ ' + r.avgM2.toLocaleString('pt-BR') + '/m²' : 'Sob consulta'}</strong>`);
       });
+      if (regions.length > 0 && v8LeafletMap) {
+        try {
+          const bounds = L.latLngBounds(regions.map(r => r.coord));
+          v8LeafletMap.fitBounds(bounds, { padding: [32, 32], maxZoom: 13 });
+        } catch (eB) {}
+      }
     });
   }
 
