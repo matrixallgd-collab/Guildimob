@@ -17908,7 +17908,7 @@
   .v93-compare-btn {
     position: absolute;
     top: 10px;
-    left: 10px;
+    right: 54px;
     z-index: 12;
     background: rgba(8, 15, 30, 0.86);
     color: #e2e8f0;
@@ -18278,7 +18278,7 @@
     const cards = document.querySelectorAll('.prop-card, .property-card');
     cards.forEach((card) => {
       if (card.querySelector('.v93-compare-btn')) return;
-      const cid = card.getAttribute('data-id') || card.getAttribute('data-code') || '';
+      const cid = card.getAttribute('data-prop-id') || card.getAttribute('data-id') || card.getAttribute('data-code') || '';
       if (!cid) return;
       if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
       const btn = document.createElement('button');
@@ -18648,7 +18648,7 @@
   const isLancamentoProp = (p) => {
     if (!p) return true;
     const t = norm((p.tipo || '') + ' ' + (p.categoria || '') + ' ' + (p.condominio || '') + ' ' + (p.titulo || '') + ' ' + (p.codigo || ''));
-    if (p.isLancamento || p.lancamento || p.origem === 'lancamento') return true;
+    if (p.isLaunch || p.isLancamento || p.lancamento || p.origem === 'lancamento' || p.listingOrigin === 'LANCAMENTO' || p.listingOrigin === 'PRE_LANCAMENTO') return true;
     if (t.includes('harmonis') || t.includes('guestier') || t.includes('lancamento')) return true;
     return false;
   };
@@ -18752,7 +18752,7 @@
 
     document.querySelectorAll('.prop-card, .property-card').forEach((card) => {
       if (card.querySelector('.v95-mkt-ticker')) return;
-      const cid = card.getAttribute('data-id') || card.getAttribute('data-code') || '';
+      const cid = card.getAttribute('data-prop-id') || card.getAttribute('data-id') || card.getAttribute('data-code') || '';
       const prop = byId.get(cid);
       if (!prop || isLancamentoProp(prop) || Number(prop.valor || 0) < 30000) return;
 
@@ -18770,8 +18770,15 @@
         }
       };
 
-      const priceEl = card.querySelector('.prop-price, .card-price, .gold-text, [class*="price"]');
-      if (priceEl) priceEl.appendChild(badge);
+      const footerTop = card.querySelector('.card-footer-top');
+      const viewsEl = footerTop ? footerTop.querySelector('.card-views-txt') : null;
+      if (footerTop && viewsEl) {
+        badge.style.marginLeft = '0';
+        footerTop.insertBefore(badge, viewsEl);
+      } else {
+        const priceEl = card.querySelector('.prop-price, .card-price, .gold-text, [class*="price"]');
+        if (priceEl) priceEl.appendChild(badge);
+      }
     });
 
     // Também coloca na Ficha do Imóvel (ao lado do olhinho detailViewsBadge)
@@ -18918,9 +18925,17 @@
         '<option value="60">Média 60 dias</option>' +
         '<option value="365">Média 1 ano (365d)</option>' +
         '</select>' +
+        '<select id="v98MapTipoSelect" style="flex:1 1 140px;padding:8px 10px;border-radius:12px;border:1px solid rgba(52,211,153,0.45);background:#0c162b;color:#a7f3d0;font-size:0.76rem;font-weight:700;">' +
+        '<option value="casaM2">🏠 Mapa: Casa (R$/m²)</option>' +
+        '<option value="sobradoM2">🏡 Mapa: Sobrado (R$/m²)</option>' +
+        '<option value="aptoM2">🏢 Mapa: Apto (R$/m²)</option>' +
+        '<option value="terrenoM2">📐 Mapa: Terreno (R$/m²)</option>' +
+        '<option value="chacaraM2">🌿 Mapa: Chácara (R$/m²)</option>' +
+        '</select>' +
         '<button type="button" id="v96BtnPrintMarketPdf" class="btn-gold" style="flex:1 1 190px;font-size:0.78rem;padding:9px 12px;">🖨️ Imprimir / Salvar Relatório PDF</button>' +
         '</div>' +
         '<div id="v96GpsMarketResult" style="display:none;margin-bottom:10px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,0.12);border:1px solid rgba(52,211,153,0.45);font-size:0.8rem;color:#ecfdf5;"></div>' +
+        '<div id="v98ExternalLeafletMap" style="width:100%;height:265px;border-radius:16px;overflow:hidden;border:1px solid rgba(52,211,153,0.4);margin-bottom:10px;background:#0b1426;"></div>' +
         '<div style="font-size:0.74rem;color:#93c5fd;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:8px 10px;margin-bottom:10px;">' +
         '📡 <strong>Referência de Mercado Externo:</strong> ' + (m.fontes || 'Portais nacionais e sites de imobiliárias locais indexados') + '<br>' +
         '🕒 Atualização: <strong>' + dtStr + '</strong> • Ciclo diário às 4h (4 locais/madrugada — fila ' + (m.queueIndex || 0) + '/' + (m.totalLocalidades || bList.length) + ')' + dedupInfo + '</div>' +
@@ -19012,6 +19027,13 @@
               matchObj = bMap[best.key] || (m.cidades && m.cidades.bauru) || { nome: 'Bauru', cidade: 'Bauru', casaM2: 4950, aptoM2: 5600, terrenoM2: 1450 };
             }
             const localLabel = detectedSuburb ? (detectedSuburb + (detectedCity ? ' • ' + detectedCity : '')) : (matchObj.nome + ' • ' + (matchObj.cidade || 'Região'));
+            try {
+              if (window._v98ExtMap && typeof L !== 'undefined') {
+                window._v98ExtMap.flyTo([latitude, longitude], 14, { duration: 1.0 });
+                L.circleMarker([latitude, longitude], { radius: 9, color: '#60a5fa', fillColor: '#3b82f6', fillOpacity: 0.9, weight: 3 })
+                  .bindPopup('<strong>📍 Você está aqui</strong><br>' + localLabel).addTo(window._v98ExtMap).openPopup();
+              }
+            } catch (_) {}
             gpsRes.innerHTML =
               '<div style="font-weight:800;color:#6ee7b7;margin-bottom:4px;">📍 Sua localização: ' + localLabel + '</div>' +
               '<div>Referência de mercado nesta região (<strong>' + matchObj.nome + '</strong>):</div>' +
@@ -19024,6 +19046,98 @@
             gpsRes.textContent = '⚠️ Não foi possível ativar o GPS (' + (err.message || 'permissão negada') + ').';
           }, { enableHighAccuracy: true, timeout: 10000 });
         };
+      }
+
+      // A2) MAPA INTERATIVO LEAFLET EXCLUSIVO DO MERCADO EXTERNO (BAURU & PIRATININGA)
+      const MAP_COORDS = [
+        { key: 'jardim estoril', lat: -22.3458, lng: -49.0604 },
+        { key: 'altos da cidade', lat: -22.3338, lng: -49.0667 },
+        { key: 'vila universitaria', lat: -22.3401, lng: -49.0510 },
+        { key: 'jardim infante dom henrique', lat: -22.3435, lng: -49.0558 },
+        { key: 'vila aviacao', lat: -22.3578, lng: -49.0442 },
+        { key: 'jardim america', lat: -22.3390, lng: -49.0630 },
+        { key: 'jardim europa', lat: -22.3490, lng: -49.0530 },
+        { key: 'jardim colonial', lat: -22.3560, lng: -49.0645 },
+        { key: 'jardim brasil', lat: -22.3315, lng: -49.0545 },
+        { key: 'mary dota', lat: -22.3012, lng: -49.0298 },
+        { key: 'centro', lat: -22.3218, lng: -49.0706 },
+        { key: 'quinta ranieri', lat: -22.3550, lng: -49.0850 },
+        { key: 'vila falcao', lat: -22.3175, lng: -49.0845 },
+        { key: 'bela vista', lat: -22.3260, lng: -49.0835 },
+        { key: 'jardim redentor', lat: -22.3250, lng: -49.0355 },
+        { key: 'presidente geisel', lat: -22.3340, lng: -49.0325 },
+        { key: 'octavio rasi', lat: -22.3385, lng: -49.0215 },
+        { key: 'beija-flor', lat: -22.3155, lng: -49.0195 },
+        { key: 'jardim solange', lat: -22.3365, lng: -49.0920 },
+        { key: 'jardim terra branca', lat: -22.3305, lng: -49.0965 },
+        { key: 'jardim pagani', lat: -22.3095, lng: -49.0450 },
+        { key: 'parque vista alegre', lat: -22.2950, lng: -49.0640 },
+        { key: 'tambore bauru', lat: -22.3690, lng: -49.0410 },
+        { key: 'villaggio i', lat: -22.3635, lng: -49.0515 },
+        { key: 'harmonis parque residencial', lat: -22.3710, lng: -49.0615 },
+        { key: 'altos da boa vista piratininga', lat: -22.3820, lng: -49.1120 },
+        { key: 'piratininga cidade', lat: -22.4135, lng: -49.1355 },
+        { key: 'chacaras piratininga sp225', lat: -22.4050, lng: -49.1150 },
+        { key: 'chacaras piratininga acesso bauru', lat: -22.3930, lng: -49.1050 },
+        { key: 'chacaras piratininga thermas', lat: -22.4260, lng: -49.1450 }
+      ];
+
+      const mapBox = document.getElementById('v98ExternalLeafletMap');
+      if (mapBox && typeof L !== 'undefined') {
+        try {
+          if (window._v98ExtMap) { try { window._v98ExtMap.remove(); } catch (_) {} }
+          const extMap = L.map(mapBox, { zoomControl: true }).setView([-22.348, -49.075], 12);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 17
+          }).addTo(extMap);
+          const extLayer = L.layerGroup().addTo(extMap);
+          window._v98ExtMap = extMap;
+          window._v98ExtLayer = extLayer;
+
+          const drawExtPins = () => {
+            extLayer.clearLayers();
+            const tipoField = (document.getElementById('v98MapTipoSelect') || {}).value || 'casaM2';
+            const bMap = m.bairros || {};
+            MAP_COORDS.forEach((pt) => {
+              // Tenta achar no bMap por chave exata ou parcial
+              let bObj = bMap[pt.key];
+              if (!bObj) {
+                for (const k of Object.keys(bMap)) {
+                  if (norm(k).includes(norm(pt.key)) || norm(pt.key).includes(norm(k))) { bObj = bMap[k]; break; }
+                }
+              }
+              if (!bObj) return;
+              const valM2 = Number(bObj[tipoField] || bObj.casaM2 || 0);
+              if (valM2 <= 0) return;
+              const isHigh = valM2 >= (tipoField === 'terrenoM2' ? 1800 : (tipoField === 'chacaraM2' ? 750 : 5600));
+              const borderCol = isHigh ? '#f4d26a' : '#34d399';
+              const icon = L.divIcon({
+                className: 'v98-ext-pin',
+                html: '<div style="background:rgba(9,17,31,0.94);color:#f8fafc;border:1.5px solid ' + borderCol + ';border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.45);">' + fmtBRL(valM2) + '/m²</div>',
+                iconSize: [90, 24],
+                iconAnchor: [45, 12]
+              });
+              const popupHtml =
+                '<div style="font-family:Arial,sans-serif;font-size:12px;color:#0f172a;min-width:170px;">' +
+                '<strong>' + bObj.nome + '</strong><br>' +
+                '<span style="color:#64748b;font-size:11px;">' + (bObj.cidade || 'Bauru') + ' • ' + fmtDaysAgo(bObj.updatedAt) + '</span><hr style="margin:5px 0;border:none;border-top:1px solid #e2e8f0;">' +
+                '🏠 Casa: <strong>' + fmtBRL(bObj.casaM2) + '/m²</strong><br>' +
+                '🏡 Sobrado: <strong>' + fmtBRL(bObj.sobradoM2 || bObj.casaM2) + '/m²</strong><br>' +
+                '🏢 Apto: <strong>' + fmtBRL(bObj.aptoM2) + '/m²</strong><br>' +
+                '📐 Terreno: <strong>' + fmtBRL(bObj.terrenoM2) + '/m²</strong><br>' +
+                '🌿 Chácara: <strong>' + fmtBRL(bObj.chacaraM2 || 620) + '/m²</strong>' +
+                '</div>';
+              L.marker([pt.lat, pt.lng], { icon }).bindPopup(popupHtml).addTo(extLayer);
+            });
+          };
+
+          drawExtPins();
+          const tipoSel = document.getElementById('v98MapTipoSelect');
+          if (tipoSel) tipoSel.onchange = drawExtPins;
+          setTimeout(() => { try { extMap.invalidateSize(true); } catch (_) {} }, 180);
+          setTimeout(() => { try { extMap.invalidateSize(true); } catch (_) {} }, 480);
+        } catch (_) {}
       }
 
       // B) IMPRIMIR / SALVAR RELATÓRIO PDF (APOIO À AVALIAÇÃO BANCÁRIA / CAIXA)
