@@ -18436,7 +18436,7 @@
   };
 
   document.addEventListener('click', (e) => {
-    const target = e.target.closest('.quick-orb-item, .mana-whats-fab, .v6-master-orb, .v93-compare-btn, .btn-gold, .btn-back-home-float');
+    const target = e.target.closest('.quick-orb-item, .mana-whats-fab, .v6-master-orb, .v93-compare-btn, .btn-gold, .btn-back-home-float, #v99NewsDrawerTab, .v99-news-cat, #v911BackHomeInlineBtn');
     if (!target) return;
     const x = e.clientX || (target.getBoundingClientRect().left + target.offsetWidth / 2);
     const y = e.clientY || (target.getBoundingClientRect().top + target.offsetHeight / 2);
@@ -18468,6 +18468,17 @@
       spawnManaRipple(x, y, '#f4d26a');
     } else if (target.classList.contains('v93-compare-btn')) {
       playManaTone([740, 987.77], 'sine', 0.14);
+      spawnManaRipple(x, y, '#f4d26a');
+    } else if (target.id === 'v99NewsDrawerTab') {
+      const isCurrentlyOpen = document.getElementById('v99NewsDrawerWrap') && document.getElementById('v99NewsDrawerWrap').classList.contains('open');
+      // Som ascendente cristalino ao abrir a gaveta de Notícias, e descendente suave ao recolher!
+      playManaTone(isCurrentlyOpen ? [659.25, 523.25, 392.0] : [440.0, 587.33, 880.0], 'sine', 0.22);
+      spawnManaRipple(x, y, '#fde68a');
+    } else if (target.classList.contains('v99-news-cat')) {
+      playManaTone([587.33, 783.99], 'sine', 0.15);
+      spawnManaRipple(x, y, '#f4d26a');
+    } else if (target.id === 'v911BackHomeInlineBtn') {
+      playManaTone([523.25, 392.0], 'triangle', 0.16);
       spawnManaRipple(x, y, '#f4d26a');
     } else {
       playManaTone([523.25, 659.25], 'sine', 0.15);
@@ -19337,6 +19348,620 @@
 })();
 </script>
 <!-- GUILD_V95_END -->
+
+<!-- GUILD_V99_NEWS_START -->
+<style id="guild-v99-news-drawer-css">
+  @keyframes v99ShimmerEdge {
+    0%   { transform: translateY(-100%) translateZ(0); opacity: 0; }
+    45%  { opacity: 0.95; }
+    100% { transform: translateY(220%) translateZ(0); opacity: 0; }
+  }
+  @keyframes v99ArrowNudge {
+    0%, 100% { transform: translateX(0) translateZ(0); }
+    50%      { transform: translateX(2.5px) translateZ(0); }
+  }
+
+  #v99NewsDrawerWrap {
+    position: fixed;
+    top: 74px;
+    bottom: 76px;
+    left: 0;
+    width: min(345px, 82vw);
+    z-index: 9975;
+    transform: translateX(-100%) translateZ(0);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    display: flex;
+    align-items: stretch;
+  }
+  #v99NewsDrawerWrap.open {
+    transform: translateX(0) translateZ(0);
+    pointer-events: auto;
+  }
+
+  #v99NewsDrawerPanel {
+    width: 100%;
+    height: 100%;
+    background: #091224;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-left: none;
+    border-radius: 0 14px 14px 0;
+    box-shadow: 14px 0 38px rgba(0, 0, 0, 0.72);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f8fafc;
+  }
+
+  /* Etiqueta lateral simétrica, fina e reta/chanfrada (NÃO redonda!) */
+  #v99NewsDrawerTab {
+    position: absolute;
+    left: 100%;
+    top: 40%;
+    transform: translateY(-50%) translateZ(0);
+    pointer-events: auto;
+    width: 24px;
+    padding: 8px 2px 7px;
+    background: linear-gradient(180deg, #0d1930 0%, #081020 100%);
+    border: 1px solid rgba(244, 210, 106, 0.65);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    box-shadow: 3px 0 14px rgba(0, 0, 0, 0.55), inset 0 0 8px rgba(212, 175, 55, 0.14);
+    color: #f8fafc;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #v99NewsDrawerTab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 44%;
+    background: linear-gradient(180deg, transparent, #fde68a, transparent);
+    animation: v99ShimmerEdge 3.2s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+  .v99-tab-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #f4d26a;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .v99-tab-arrow {
+    font-size: 9px;
+    line-height: 1;
+    color: #fde68a;
+    display: inline-block;
+    animation: v99ArrowNudge 1.8s ease-in-out infinite;
+    will-change: transform;
+    transition: transform 0.22s ease;
+  }
+  #v99NewsDrawerWrap.open .v99-tab-arrow {
+    animation: none;
+    transform: rotate(180deg) translateZ(0);
+  }
+
+  .v99-news-hdr {
+    padding: 11px 12px 9px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.22);
+    background: #0b162b;
+  }
+  .v99-news-tabs {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .v99-news-cat {
+    flex: 1;
+    padding: 5px 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    color: #cbd5e1;
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+  }
+  .v99-news-cat.active {
+    background: linear-gradient(135deg, #e6c367, #c89c3c);
+    border-color: #fde68a;
+    color: #081020;
+  }
+  #v99NewsList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Card ★ DESTAQUE editorial com foto real ou banner dinâmico único */
+  .v99-hero-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(160deg, rgba(16, 28, 52, 0.96), rgba(9, 17, 32, 0.98));
+    border: 1px solid rgba(244, 210, 106, 0.48);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  }
+  .v99-hero-media {
+    position: relative;
+    width: 100%;
+    height: 112px;
+    overflow: hidden;
+    background: #0c182e;
+  }
+  .v99-hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .v99-hero-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(9, 17, 31, 0.88);
+    border: 1px solid rgba(244, 210, 106, 0.65);
+    color: #f4d26a;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .v99-hero-body {
+    padding: 10px 11px 11px;
+  }
+  .v99-hero-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.28;
+    color: #f8fafc;
+    margin: 0;
+  }
+  .v99-hero-foot {
+    margin-top: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.69rem;
+    color: #94a3b8;
+  }
+
+  .v99-sec-label {
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #c8a951;
+    margin: 6px 2px 0;
+    text-transform: uppercase;
+  }
+  .v99-news-card {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 8px 9px;
+  }
+  .v99-news-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 7px;
+    object-fit: cover;
+    flex: 0 0 52px;
+    background: #0c182e;
+  }
+  .v99-news-title {
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #f1f5f9;
+  }
+  .v99-news-meta {
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    gap: 6px;
+  }
+</style>
+
+<aside id="v99NewsDrawerWrap" aria-label="Gaveta de Notícias Imobiliárias">
+  <div id="v99NewsDrawerPanel">
+    <div class="v99-news-hdr">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <img id="v99DrawerLogo" src="" alt="" style="height:24px;width:auto;display:none;border-radius:4px;">
+          <strong style="font-size:0.88rem;color:#f4d26a;">📰 Notícias do Mercado</strong>
+        </div>
+        <button type="button" id="v99NewsCloseBtn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);color:#e2e8f0;border-radius:6px;padding:3px 7px;font-size:0.68rem;cursor:pointer;">◀</button>
+      </div>
+      <div class="v99-news-tabs">
+        <button type="button" class="v99-news-cat active" data-ncat="bauru">📍 Bauru</button>
+        <button type="button" class="v99-news-cat" data-ncat="caixa">🏦 Caixa/Juros</button>
+        <button type="button" class="v99-news-cat" data-ncat="mercado">📈 Brasil</button>
+      </div>
+    </div>
+    <div id="v99NewsList">
+      <div style="font-size:0.76rem;color:#94a3b8;padding:12px 4px;">Toque para carregar as manchetes mais recentes...</div>
+    </div>
+    <div style="padding:7px 11px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.64rem;color:#64748b;display:flex;justify-content:space-between;">
+      <span>Renovação automática (6h)</span>
+      <span id="v99NewsUpdated">—</span>
+    </div>
+  </div>
+
+  <button type="button" id="v99NewsDrawerTab" title="Abrir / Recolher Notícias Imobiliárias" aria-expanded="false">
+    <span class="v99-tab-label">NOTÍCIAS</span>
+    <span class="v99-tab-arrow" aria-hidden="true">▶</span>
+  </button>
+</aside>
+
+<script id="guild-v99-news-drawer-js">
+(function() {
+  'use strict';
+
+  const wrap = document.getElementById('v99NewsDrawerWrap');
+  const tab = document.getElementById('v99NewsDrawerTab');
+  const closeBtn = document.getElementById('v99NewsCloseBtn');
+  const listEl = document.getElementById('v99NewsList');
+  const updEl = document.getElementById('v99NewsUpdated');
+  const logoEl = document.getElementById('v99DrawerLogo');
+  if (!wrap || !tab || !listEl) return;
+
+  let newsData = null;
+  let activeCat = 'bauru';
+  let loading = false;
+
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const fmtAgo = (iso) => {
+    if (!iso) return '';
+    const hrs = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 3600000));
+    if (hrs < 1) return 'agora';
+    if (hrs < 24) return 'há ' + hrs + 'h';
+    const d = Math.floor(hrs / 24);
+    return d === 1 ? 'há 1 dia' : ('há ' + d + ' dias');
+  };
+
+  // Gera uma capa editorial dinâmica ÚNICA por notícia (hash do título -> 6 paletas x 6 padrões arquitetônicos)
+  // Assim NUNCA aparece um banner repetido dando impressão de notícia velha!
+  const buildUniqueEditorialBanner = (item, cat) => {
+    const str = String(item.title || '') + '|' + String(item.pubDate || '');
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = Math.abs(hash);
+
+    const palettes = [
+      ['#0c223d', '#163c5c', '#f4d26a'],
+      ['#0a2824', '#134e4a', '#6ee7b7'],
+      ['#1e1b38', '#312e81', '#c4b5fd'],
+      ['#261910', '#451a03', '#fbbf24'],
+      ['#102033', '#1e3a5f', '#60a5fa'],
+      ['#1f172a', '#3b1d4a', '#f9a8d4']
+    ];
+    const pal = palettes[hash % palettes.length];
+    const patIdx = (hash >> 3) % 4;
+    const catTag = cat === 'bauru' ? 'BAURU & REGIÃO' : (cat === 'caixa' ? 'CRÉDITO & JUROS' : 'MERCADO BRASIL');
+    const dateTag = item.pubDate ? new Date(item.pubDate).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }).toUpperCase() : 'HOJE';
+
+    const patterns = [
+      '<path d="M0 90 L70 40 L140 72 L220 20 L320 65 L320 112 L0 112 Z" fill="' + pal[2] + '" fill-opacity="0.13"/><path d="M0 90 L70 40 L140 72 L220 20 L320 65" fill="none" stroke="' + pal[2] + '" stroke-opacity="0.45" stroke-width="1.6"/>',
+      '<g stroke="' + pal[2] + '" stroke-opacity="0.18" stroke-width="1"><rect x="20" y="34" width="38" height="78"/><rect x="68" y="18" width="44" height="94"/><rect x="122" y="42" width="36" height="70"/><rect x="170" y="24" width="52" height="88"/><rect x="234" y="48" width="46" height="64"/></g>',
+      '<g stroke="' + pal[2] + '" stroke-opacity="0.16" fill="none"><circle cx="260" cy="56" r="24"/><circle cx="260" cy="56" r="46"/><circle cx="260" cy="56" r="68"/><line x1="0" y1="88" x2="320" y2="88"/></g>',
+      '<g stroke="' + pal[2] + '" stroke-opacity="0.18" stroke-width="1"><line x1="0" y1="28" x2="320" y2="28"/><line x1="0" y1="56" x2="320" y2="56"/><line x1="0" y1="84" x2="320" y2="84"/><line x1="80" y1="0" x2="80" y2="112"/><line x1="160" y1="0" x2="160" y2="112"/><line x1="240" y1="0" x2="240" y2="112"/></g>'
+    ];
+
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 112" preserveAspectRatio="xMidYMid slice">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + pal[0] + '"/><stop offset="100%" stop-color="' + pal[1] + '"/></linearGradient></defs>' +
+      '<rect width="320" height="112" fill="url(#g)"/>' +
+      patterns[patIdx] +
+      '<text x="14" y="96" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="' + pal[2] + '" fill-opacity="0.88" letter-spacing="1.5">' + catTag + ' • ' + dateTag + '</text>' +
+      '<text x="306" y="96" text-anchor="end" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="#ffffff" fill-opacity="0.55">' + esc(String(item.source || '').slice(0, 18)) + '</text>' +
+      '</svg>';
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  };
+
+  const renderNews = () => {
+    const arr = (newsData && newsData.categorias && newsData.categorias[activeCat]) || [];
+    if (!arr.length) {
+      listEl.innerHTML = '<div style="font-size:0.76rem;color:#94a3b8;padding:14px 4px;">Nenhuma manchete recente nesta categoria no momento.</div>';
+      return;
+    }
+
+    const hero = arr[0];
+    const rest = arr.slice(1);
+    const fallbackBanner = buildUniqueEditorialBanner(hero, activeCat);
+    const heroImgSrc = hero.image ? esc(hero.image) : fallbackBanner;
+
+    const heroHtml =
+      '<a class="v99-hero-card" href="' + esc(hero.url) + '" target="_blank" rel="noopener noreferrer">' +
+      '<div class="v99-hero-media">' +
+      '<img id="v99HeroImgEl" src="' + heroImgSrc + '" alt="" loading="lazy">' +
+      '<span class="v99-hero-badge">★ DESTAQUE</span>' +
+      '</div>' +
+      '<div class="v99-hero-body">' +
+      '<h4 class="v99-hero-title">' + esc(hero.title) + '</h4>' +
+      '<div class="v99-hero-foot"><span>' + esc(hero.source) + ' • ' + fmtAgo(hero.pubDate) + '</span><span style="color:#f4d26a;font-weight:700;">Ler matéria ↗</span></div>' +
+      '</div></a>';
+
+    const restHtml = rest.length
+      ? '<div class="v99-sec-label">MAIS RECENTES</div>' + rest.map((it) =>
+          '<a class="v99-news-card" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">' +
+          (it.image ? ('<img class="v99-news-thumb" src="' + esc(it.image) + '" alt="" loading="lazy">') : '') +
+          '<div style="min-width:0;flex:1;">' +
+          '<div class="v99-news-title">' + esc(it.title) + '</div>' +
+          '<div class="v99-news-meta"><span style="color:#f4d26a;font-weight:600;">' + esc(it.source) + '</span><span>' + fmtAgo(it.pubDate) + ' ↗</span></div>' +
+          '</div></a>'
+        ).join('')
+      : '';
+
+    listEl.innerHTML = heroHtml + restHtml;
+    const hImg = document.getElementById('v99HeroImgEl');
+    if (hImg) hImg.onerror = () => { hImg.onerror = null; hImg.src = fallbackBanner; };
+    listEl.querySelectorAll('.v99-news-thumb').forEach((im) => { im.onerror = () => { im.style.display = 'none'; }; });
+  };
+
+  const loadNewsIfNeeded = async () => {
+    if (logoEl && !logoEl.src) {
+      const hdrLogo = document.getElementById('headerLogoImg');
+      if (hdrLogo && hdrLogo.src) { logoEl.src = hdrLogo.src; logoEl.style.display = 'block'; }
+    }
+    if (newsData || loading) return;
+    loading = true;
+    listEl.innerHTML = '<div style="font-size:0.76rem;color:#93c5fd;padding:14px 4px;">⏳ Buscando notícias mais recentes...</div>';
+    try {
+      const gasUrl = (typeof GAS_URL !== 'undefined' && GAS_URL) || 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+      const resp = await fetch(gasUrl + '?action=getNoticiasImobiliarias');
+      const data = await resp.json();
+      if (data && data.ok) {
+        newsData = data;
+        if (updEl && data.updatedAt) {
+          updEl.textContent = new Date(data.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        renderNews();
+      } else {
+        listEl.innerHTML = '<div style="font-size:0.76rem;color:#fca5a5;padding:14px 4px;">⚠️ Atualize o Code.gs V6.4 para ativar as notícias.</div>';
+      }
+    } catch (e) {
+      listEl.innerHTML = '<div style="font-size:0.76rem;color:#fca5a5;padding:14px 4px;">⚠️ Sem conexão no momento. Tente novamente.</div>';
+    } finally {
+      loading = false;
+    }
+  };
+
+  const toggleDrawer = (forceState) => {
+    const willOpen = typeof forceState === 'boolean' ? forceState : !wrap.classList.contains('open');
+    wrap.classList.toggle('open', willOpen);
+    tab.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen) loadNewsIfNeeded();
+  };
+
+  tab.onclick = () => toggleDrawer();
+  if (closeBtn) closeBtn.onclick = () => toggleDrawer(false);
+
+  wrap.querySelectorAll('.v99-news-cat').forEach((btn) => {
+    btn.onclick = () => {
+      wrap.querySelectorAll('.v99-news-cat').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.getAttribute('data-ncat') || 'bauru';
+      renderNews();
+    };
+  });
+})();
+</script>
+<!-- GUILD_V99_NEWS_END -->
+
+<!-- GUILD_V911_START -->
+<style id="guild-v911-home-nav-css">
+  /* Barra discreta no fluxo normal (NÃO fixa/flutuante — nunca tampa nenhum card!) */
+  #v911BackHomeInlineBar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 6px 0 12px;
+    padding: 0 2px;
+  }
+  #v911BackHomeInlineBar.visible {
+    display: flex;
+  }
+  #v911BackHomeInlineBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: rgba(11, 20, 38, 0.92);
+    border: 1px solid rgba(244, 210, 106, 0.52);
+    color: #f4d26a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  #v911BackHomeInlineBtn:active {
+    transform: scale(0.97);
+  }
+  #v911BackHomeContextLabel {
+    font-size: 0.76rem;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  #headerLogoImg {
+    cursor: pointer;
+  }
+  /* Oculta gaveta de Notícias automaticamente quando qualquer modal estiver aberto */
+  #v99NewsDrawerWrap.v911-hidden-by-modal {
+    display: none !important;
+  }
+</style>
+
+<script id="guild-v911-home-nav-js">
+(function() {
+  'use strict';
+
+  // 1. Injeta barra discreta "← Tela Inicial" no fluxo normal logo acima da vitrine/catálogo
+  const ensureInlineHomeBar = () => {
+    const streamEl = document.getElementById('streamingContainer');
+    if (!streamEl || document.getElementById('v911BackHomeInlineBar')) return;
+    const bar = document.createElement('div');
+    bar.id = 'v911BackHomeInlineBar';
+    bar.innerHTML =
+      '<button type="button" id="v911BackHomeInlineBtn">← Tela Inicial</button>' +
+      '<span id="v911BackHomeContextLabel"></span>';
+    streamEl.insertAdjacentElement('beforebegin', bar);
+    document.getElementById('v911BackHomeInlineBtn').onclick = () => goToHomeClean();
+  };
+
+  // 2. Função central para voltar à Tela Inicial limpa (usada pelo botão discreto E pela Logo GUILD IMOB)
+  const goToHomeClean = () => {
+    try {
+      // Fecha quaisquer modais abertos
+      document.querySelectorAll('.modal-backdrop.open, #v8MapaRegionModal.open, #v93CompareModal.open, #v6RankExplainerModal.open, #v7CelebrateMatchModal.open, #lightboxModal.open').forEach((m) => {
+        m.classList.remove('open');
+      });
+      const newsWrap = document.getElementById('v99NewsDrawerWrap');
+      if (newsWrap) newsWrap.classList.remove('open');
+
+      // Limpa busca
+      const searchInp = document.getElementById('searchInput') || document.querySelector('input[type="search"]');
+      if (searchInp && searchInp.value) {
+        searchInp.value = '';
+        searchInp.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      // Reseta estado para Vitrine inicial
+      if (window.state) {
+        window.state.viewMode = 'streaming';
+        window.state.activeCategory = 'all';
+        window.state.onlyFavorites = false;
+        window.state.activeQuickFilter = '';
+        window.state.activeSectionGroup = '';
+      }
+      if (typeof resetAllFilters === 'function') {
+        try { resetAllFilters(); } catch (_) {}
+      } else if (typeof applyFiltersAndRender === 'function') {
+        try { applyFiltersAndRender(); } catch (_) {}
+      }
+
+      // Aciona botão Vitrine da barra inferior se existir
+      const vitrineBtn = document.querySelector('.mobile-dock button, .bottom-dock button');
+      if (vitrineBtn && /vitrine/i.test(vitrineBtn.textContent || '')) {
+        try { vitrineBtn.click(); } catch (_) {}
+      }
+
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { window.scrollTo(0, 0); }
+    } catch (_) {}
+    setTimeout(syncHomeAndNewsVisibility, 120);
+  };
+
+  // 3. Logo GUILD IMOB clicável para voltar à Tela Inicial
+  const bindLogoHomeClick = () => {
+    document.querySelectorAll('#headerLogoImg, .brand-logo-wrap').forEach((el) => {
+      if (el.dataset.v911LogoBound) return;
+      el.dataset.v911LogoBound = '1';
+      const btn = el.closest('button, a') || el;
+      btn.addEventListener('click', () => {
+        goToHomeClean();
+      });
+    });
+  };
+
+  // 4. Controla visibilidade:
+  //    - Gaveta NOTÍCIAS só aparece na Tela Inicial (esconde se abrir imóvel, Master, Mapa, Filtros, etc.)
+  //    - Botão discreto "← Tela Inicial" só aparece quando saiu da vitrine inicial (agrupamento/catálogo/filtro)
+  const syncHomeAndNewsVisibility = () => {
+    ensureInlineHomeBar();
+
+    // Verifica se algum modal está aberto
+    const anyModalOpen = Boolean(
+      document.querySelector('.modal-backdrop.open, #v8MapaRegionModal.open, #v93CompareModal.open, #v6RankExplainerModal.open, #v7CelebrateMatchModal.open, #lightboxModal.open')
+    );
+    const newsWrap = document.getElementById('v99NewsDrawerWrap');
+    if (newsWrap) {
+      if (anyModalOpen) {
+        newsWrap.classList.remove('open');
+        newsWrap.classList.add('v911-hidden-by-modal');
+      } else {
+        newsWrap.classList.remove('v911-hidden-by-modal');
+      }
+    }
+
+    // Verifica se saiu da Tela Inicial (catálogo aberto, filtro ativo, busca digitada ou lista de favoritos)
+    const bar = document.getElementById('v911BackHomeInlineBar');
+    const lbl = document.getElementById('v911BackHomeContextLabel');
+    if (!bar) return;
+
+    const searchInp = document.getElementById('searchInput') || document.querySelector('input[type="search"]');
+    const hasSearch = Boolean(searchInp && String(searchInp.value || '').trim().length > 0);
+    const propGrid = document.getElementById('propertyGrid');
+    const streamEl = document.getElementById('streamingContainer');
+    const gridVisible = Boolean(propGrid && propGrid.children.length > 0 && getComputedStyle(propGrid).display !== 'none');
+    const streamHidden = Boolean(streamEl && (streamEl.style.display === 'none' || getComputedStyle(streamEl).display === 'none'));
+    const st = window.state || {};
+    const nonHomeState = Boolean(
+      st.onlyFavorites ||
+      (st.viewMode && st.viewMode !== 'streaming') ||
+      (st.activeQuickFilter && st.activeQuickFilter !== 'all') ||
+      (st.activeCategory && st.activeCategory !== 'all')
+    );
+
+    const shouldShowBackHome = !anyModalOpen && (hasSearch || streamHidden || (gridVisible && nonHomeState));
+    bar.classList.toggle('visible', shouldShowBackHome);
+
+    if (shouldShowBackHome && lbl) {
+      const count = propGrid ? propGrid.children.length : 0;
+      if (st.onlyFavorites) lbl.textContent = 'Minha Lista • ' + count + ' imóvel(is)';
+      else if (hasSearch) lbl.textContent = 'Busca: "' + String(searchInp.value).trim().slice(0, 22) + '"';
+      else lbl.textContent = count > 0 ? ('Catálogo filtrado • ' + count + ' imóveis') : 'Visualização filtrada';
+    }
+  };
+
+  const bootV911 = () => {
+    ensureInlineHomeBar();
+    bindLogoHomeClick();
+    syncHomeAndNewsVisibility();
+    // Observa abertura/fechamento de modais para ocultar NOTÍCIAS instantaneamente
+    const obs = new MutationObserver(() => syncHomeAndNewsVisibility());
+    document.querySelectorAll('.modal-backdrop, #v8MapaRegionModal, #v93CompareModal, #v6RankExplainerModal, #v7CelebrateMatchModal, #lightboxModal').forEach((m) => {
+      obs.observe(m, { attributes: true, attributeFilter: ['class', 'style'] });
+    });
+    const streamEl = document.getElementById('streamingContainer');
+    if (streamEl) obs.observe(streamEl, { attributes: true, attributeFilter: ['style', 'class'] });
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(bootV911, 500));
+  else setTimeout(bootV911, 500);
+  setInterval(syncHomeAndNewsVisibility, 1200);
+})();
+</script>
+<!-- GUILD_V911_END -->
 
 </body>
 </html>
