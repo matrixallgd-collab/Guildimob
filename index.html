@@ -18490,5 +18490,739 @@
 </script>
 <!-- GUILD_V93_END -->
 
+<!-- GUILD_V95_START -->
+<style id="guild-v95-market-ticker-css">
+  /* Mini-indicador estilo ticker de bolsa/Bitcoin (mesmo porte discreto do olhinho de visualizações) */
+  .v95-mkt-ticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 5px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .v95-mkt-ticker.mkt-down {
+    background: rgba(16, 185, 129, 0.16);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.42);
+  }
+  .v95-mkt-ticker.mkt-eq {
+    background: rgba(59, 130, 246, 0.16);
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.45);
+  }
+  .v95-mkt-ticker.mkt-up {
+    background: rgba(239, 68, 68, 0.16);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.42);
+  }
+
+  /* Seletor de 2 abas no Mapa m²: Estoque GUILD IMOB vs Mercado Regional */
+  .v95-mapa-mode-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0 10px;
+    background: rgba(255,255,255,0.04);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .v95-mapa-mode-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .v95-mapa-mode-btn.active {
+    background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(16,185,129,0.2));
+    color: #f8fafc;
+    border: 1px solid rgba(244,210,106,0.45);
+  }
+  .v95-mkt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 8px;
+  }
+  .v95-mkt-table th, .v95-mkt-table td {
+    padding: 8px 7px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-align: left;
+  }
+  .v95-mkt-table th {
+    color: #f4d26a;
+    background: rgba(212,175,55,0.08);
+  }
+  .v95-suggest-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(12,24,44,0.95));
+    border: 1px solid rgba(96,165,250,0.38);
+    font-size: 0.79rem;
+    color: #e2e8f0;
+  }
+</style>
+
+<script id="guild-v95-market-engine">
+(function() {
+  'use strict';
+
+  const DEFAULT_MARKET = {
+    sourceType: 'baseline',
+    updatedAt: '',
+    fontes: 'Base regional inicial (Viva Real, ZAP Imóveis, Chaves na Mão)',
+    cidades: {
+      bauru:       { nome: 'Bauru',       casaM2: 4950, aptoM2: 5600, terrenoM2: 1450 },
+      piratininga: { nome: 'Piratininga', casaM2: 4300, aptoM2: 4600, terrenoM2: 1100 },
+      
+    },
+    bairros: {
+      'jardim estoril':     { nome: 'Jardim Estoril',     cidade: 'Bauru',       casaM2: 6100, aptoM2: 6800, terrenoM2: 2100 },
+      'altos da cidade':    { nome: 'Altos da Cidade',    cidade: 'Bauru',       casaM2: 6400, aptoM2: 7200, terrenoM2: 2400 },
+      'vila universitaria': { nome: 'Vila Universitária', cidade: 'Bauru',       casaM2: 5800, aptoM2: 6500, terrenoM2: 1950 },
+      'jardim infante':     { nome: 'Jardim Infante',     cidade: 'Bauru',       casaM2: 6300, aptoM2: 7100, terrenoM2: 2200 },
+      'vila aviacao':       { nome: 'Vila Aviação',       cidade: 'Bauru',       casaM2: 6900, aptoM2: 7600, terrenoM2: 2350 },
+      'jardim america':     { nome: 'Jardim América',     cidade: 'Bauru',       casaM2: 5900, aptoM2: 6600, terrenoM2: 2050 },
+      'jardim europa':      { nome: 'Jardim Europa',      cidade: 'Bauru',       casaM2: 5700, aptoM2: 6300, terrenoM2: 1900 },
+      'jardim colonial':    { nome: 'Jardim Colonial',    cidade: 'Bauru',       casaM2: 5400, aptoM2: 5900, terrenoM2: 1650 },
+      'jardim brasil':      { nome: 'Jardim Brasil',      cidade: 'Bauru',       casaM2: 4900, aptoM2: 5400, terrenoM2: 1500 },
+      'mary dota':          { nome: 'Mary Dota',          cidade: 'Bauru',       casaM2: 3600, aptoM2: 4100, terrenoM2: 950  },
+      'centro':             { nome: 'Centro',             cidade: 'Bauru',       casaM2: 4800, aptoM2: 5500, terrenoM2: 1850 },
+      'quinta ranieri':     { nome: 'Quinta Ranieri',     cidade: 'Bauru',       casaM2: 4700, aptoM2: 5200, terrenoM2: 1350 },
+      'vila cardoso':       { nome: 'Vila Cardoso',       cidade: 'Bauru',       casaM2: 4300, aptoM2: 4700, terrenoM2: 1150 },
+      'jardim pagani':      { nome: 'Jardim Pagani',      cidade: 'Bauru',       casaM2: 4500, aptoM2: 4900, terrenoM2: 1200 },
+      'parque vista alegre':{ nome: 'Parque Vista Alegre',cidade: 'Bauru',       casaM2: 4400, aptoM2: 4800, terrenoM2: 1150 },
+      'vila santa clara':   { nome: 'Vila Santa Clara',   cidade: 'Bauru',       casaM2: 5100, aptoM2: 5700, terrenoM2: 1550 },
+      'altos da boa vista': { nome: 'Altos da Boa Vista', cidade: 'Piratininga', casaM2: 5200, aptoM2: 5400, terrenoM2: 1280 },
+      'centro piratininga': { nome: 'Centro (Piratininga)',cidade:'Piratininga', casaM2: 4100, aptoM2: 4500, terrenoM2: 980  },
+      
+    }
+  };
+
+  const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const fmtBRL = (v) => Number(v || 0) > 0 ? Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }) : '—';
+
+  // Captura mercadoRegional automaticamente quando o servidor responder
+  let liveMarket = DEFAULT_MARKET;
+  try {
+    const cached = JSON.parse(localStorage.getItem('guild_mercado_regional_v6') || 'null');
+    if (cached && cached.cidades) liveMarket = cached;
+  } catch (_) {}
+
+  const origFetch = window.fetch;
+  if (origFetch && !window.__v95FetchWrapped) {
+    window.__v95FetchWrapped = true;
+    window.fetch = async function(...args) {
+      const resp = await origFetch.apply(this, args);
+      try {
+        const clone = resp.clone();
+        const urlStr = String(args[0] || '');
+        if (urlStr.includes('script.google.com')) {
+          clone.json().then((d) => {
+            if (d && d.mercadoRegional && d.mercadoRegional.cidades) {
+              liveMarket = d.mercadoRegional;
+              try { localStorage.setItem('guild_mercado_regional_v6', JSON.stringify(liveMarket)); } catch (_) {}
+              setTimeout(injectAllMarketTickers, 250);
+            }
+          }).catch(() => {});
+        }
+      } catch (_) {}
+      return resp;
+    };
+  }
+
+  const isLancamentoProp = (p) => {
+    if (!p) return true;
+    const t = norm((p.tipo || '') + ' ' + (p.categoria || '') + ' ' + (p.condominio || '') + ' ' + (p.titulo || '') + ' ' + (p.codigo || ''));
+    if (p.isLancamento || p.lancamento || p.origem === 'lancamento') return true;
+    if (t.includes('harmonis') || t.includes('guestier') || t.includes('lancamento')) return true;
+    return false;
+  };
+
+  // Cascata Matemática de 4 Níveis: Bairro -> Cidade -> Ajuste por Suítes/Terreno
+  const computeMarketBenchmark = (params) => {
+    const bairroNorm = norm(params.bairro || params.condominio || '');
+    const cidadeNorm = norm(params.cidade || 'bauru');
+    const tipoNorm = norm(params.tipo || params.titulo || 'casa');
+    const isTerreno = tipoNorm.includes('terreno') || tipoNorm.includes('lote') || tipoNorm.includes('chacara');
+    const isApto = tipoNorm.includes('apart') || tipoNorm.includes('apto') || tipoNorm.includes('flat') || tipoNorm.includes('studio');
+    const m2Key = isTerreno ? 'terrenoM2' : (isApto ? 'aptoM2' : 'casaM2');
+
+    // Nível 1: busca bairro exato ou parcial
+    let refObj = null;
+    let refLabel = '';
+    const bMap = (liveMarket && liveMarket.bairros) || {};
+    for (const k of Object.keys(bMap)) {
+      const kn = norm(k);
+      if (bairroNorm && (bairroNorm.includes(kn) || kn.includes(bairroNorm))) {
+        refObj = bMap[k];
+        refLabel = bMap[k].nome || k;
+        break;
+      }
+    }
+    // Nível 2: fallback para cidade (Bauru, Piratininga ou Agudos)
+    if (!refObj) {
+      const cMap = (liveMarket && liveMarket.cidades) || DEFAULT_MARKET.cidades;
+      if (cidadeNorm.includes('piratininga') || bairroNorm.includes('piratininga')) {
+        refObj = cMap.piratininga || DEFAULT_MARKET.cidades.piratininga;
+        refLabel = 'Piratininga';
+      } else if (cidadeNorm.includes('agudos') || bairroNorm.includes('agudos')) {
+        refObj = cMap.agudos || DEFAULT_MARKET.cidades.agudos;
+        refLabel = 'Agudos';
+      } else {
+        refObj = cMap.bauru || DEFAULT_MARKET.cidades.bauru;
+        refLabel = 'Bauru (média regional)';
+      }
+    }
+
+    let baseM2 = Number(refObj[m2Key] || refObj.casaM2 || 4800);
+    // Nível 3: micro-ajuste por suítes extras (casas/aptos)
+    const suites = Number(params.suites || 0);
+    if (!isTerreno && suites >= 2) {
+      baseM2 = baseM2 * (1 + Math.min(0.12, (suites - 1) * 0.035));
+    }
+
+    const area = isTerreno
+      ? Number(params.areaTerreno || params.areaConstruida || 0)
+      : Number(params.areaConstruida || params.areaTerreno || 0);
+    if (area < 15) return null;
+
+    const suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
+    const valor = Number(params.valor || 0);
+    const propM2 = valor > 0 ? (valor / area) : 0;
+    const diffPct = valor > 0 ? ((valor - suggestedPrice) / suggestedPrice) * 100 : 0;
+
+    let cls = 'mkt-eq';
+    let arrow = '→';
+    let shortTxt = '→ Equilíbrio';
+    let fullTxt = 'Preço equilibrado com a média praticada em ' + refLabel;
+
+    if (diffPct <= -5) {
+      cls = 'mkt-down';
+      arrow = '▼';
+      shortTxt = '▼ ' + Math.abs(Math.round(diffPct)) + '%';
+      fullTxt = Math.abs(Math.round(diffPct)) + '% abaixo da média praticada em ' + refLabel + ' (Oportunidade)';
+    } else if (diffPct >= 5) {
+      cls = 'mkt-up';
+      arrow = '▲';
+      shortTxt = '▲ +' + Math.round(diffPct) + '%';
+      fullTxt = Math.round(diffPct) + '% acima da média praticada em ' + refLabel + ' (pode refletir acabamento/diferenciais)';
+    }
+
+    return {
+      refLabel,
+      baseM2: Math.round(baseM2),
+      propM2: Math.round(propM2),
+      suggestedPrice,
+      minFair: Math.round((suggestedPrice * 0.95) / 1000) * 1000,
+      maxFair: Math.round((suggestedPrice * 1.05) / 1000) * 1000,
+      diffPct: Math.round(diffPct),
+      cls,
+      arrow,
+      shortTxt,
+      fullTxt
+    };
+  };
+
+  // =========================================================================
+  // 1. MINI-TICKER ESTILO BITCOIN NOS CARDS (SOMENTE NÃO-LANÇAMENTOS)
+  // =========================================================================
+  const injectAllMarketTickers = () => {
+    const allProps = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+    if (!allProps.length) return;
+    const byId = new Map();
+    allProps.forEach((p) => {
+      if (p.id) byId.set(String(p.id), p);
+      if (p.codigo) byId.set(String(p.codigo), p);
+    });
+
+    document.querySelectorAll('.prop-card, .property-card').forEach((card) => {
+      if (card.querySelector('.v95-mkt-ticker')) return;
+      const cid = card.getAttribute('data-id') || card.getAttribute('data-code') || '';
+      const prop = byId.get(cid);
+      if (!prop || isLancamentoProp(prop) || Number(prop.valor || 0) < 30000) return;
+
+      const bm = computeMarketBenchmark(prop);
+      if (!bm) return;
+
+      const badge = document.createElement('span');
+      badge.className = 'v95-mkt-ticker ' + bm.cls;
+      badge.textContent = bm.shortTxt;
+      badge.title = bm.fullTxt + ' • Ref: ' + fmtBRL(bm.baseM2) + '/m²';
+      badge.onclick = (ev) => {
+        ev.stopPropagation();
+        if (typeof showToast === 'function') {
+          showToast('📊 ' + bm.fullTxt + ' (Ref. ' + fmtBRL(bm.baseM2) + '/m²)');
+        }
+      };
+
+      const priceEl = card.querySelector('.prop-price, .card-price, .gold-text, [class*="price"]');
+      if (priceEl) priceEl.appendChild(badge);
+    });
+
+    // Também coloca na Ficha do Imóvel (ao lado do olhinho detailViewsBadge)
+    const viewsBadge = document.getElementById('detailViewsBadge');
+    const curProp = window.state && window.state.currentDetailProperty;
+    const oldDetailTicker = document.getElementById('v95DetailTicker');
+    if (oldDetailTicker) oldDetailTicker.remove();
+    if (viewsBadge && curProp && !isLancamentoProp(curProp) && Number(curProp.valor || 0) >= 30000) {
+      const bm = computeMarketBenchmark(curProp);
+      if (bm) {
+        const dt = document.createElement('span');
+        dt.id = 'v95DetailTicker';
+        dt.className = 'v95-mkt-ticker ' + bm.cls;
+        dt.textContent = bm.shortTxt + ' mercado';
+        dt.title = bm.fullTxt;
+        dt.onclick = () => {
+          if (typeof showToast === 'function') {
+            showToast('📊 ' + bm.fullTxt + ' • Imóvel: ' + fmtBRL(bm.propM2) + '/m² vs Região: ' + fmtBRL(bm.baseM2) + '/m²');
+          }
+        };
+        viewsBadge.insertAdjacentElement('afterend', dt);
+      }
+    }
+  };
+
+  // =========================================================================
+  // 2. PREÇO SUGERIDO AUTOMÁTICO NO CADASTRO (PROPRIETÁRIO, PARCEIRO & CORRETOR)
+  // =========================================================================
+  const attachSmartPriceSuggester = (cfg) => {
+    const valEl = document.getElementById(cfg.valId);
+    if (!valEl || document.getElementById(cfg.boxId)) return;
+    const box = document.createElement('div');
+    box.id = cfg.boxId;
+    box.className = 'v95-suggest-box';
+    box.style.display = 'none';
+    const anchor = valEl.closest('.form-group');
+    if (!anchor || !anchor.parentElement) return;
+    anchor.parentElement.insertAdjacentElement('afterend', box);
+
+    const parseNum = (id) => {
+      const raw = String((document.getElementById(id) || {}).value || '').replace(/[^0-9,.-]/g, '').replace(/\./g, '').replace(',', '.');
+      return parseFloat(raw) || 0;
+    };
+
+    const recalc = () => {
+      const bairro = (document.getElementById(cfg.bairroId) || {}).value || '';
+      const cidade = (document.getElementById(cfg.cidadeId) || {}).value || 'Bauru';
+      const tipo = (document.getElementById(cfg.tipoId) || {}).value || 'Casa';
+      const areaC = parseNum(cfg.areaCId);
+      const areaT = parseNum(cfg.areaTId);
+      const suites = parseNum(cfg.suitesId);
+      const valor = parseNum(cfg.valId);
+      if (Math.max(areaC, areaT) < 15) { box.style.display = 'none'; return; }
+
+      const bm = computeMarketBenchmark({ bairro, cidade, tipo, areaConstruida: areaC, areaTerreno: areaT, suites, valor });
+      if (!bm) { box.style.display = 'none'; return; }
+
+      box.style.display = 'block';
+      box.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<div><strong>💡 Preço Sugerido (' + bm.refLabel + '):</strong> <span style="color:#f4d26a;font-weight:800;">' + fmtBRL(bm.suggestedPrice) + '</span>' +
+        '<div style="font-size:0.72rem;color:#94a3b8;margin-top:2px;">Faixa equilibrada: ' + fmtBRL(bm.minFair) + ' a ' + fmtBRL(bm.maxFair) + ' • Ref. ' + fmtBRL(bm.baseM2) + '/m²</div></div>' +
+        '<button type="button" class="btn-glass" data-apply-price="' + bm.suggestedPrice + '" style="padding:5px 10px;font-size:0.72rem;">Usar Sugerido</button>' +
+        '</div>' +
+        (valor > 0
+          ? '<div style="margin-top:7px;">Seu valor digitado está <span class="v95-mkt-ticker ' + bm.cls + '">' + bm.shortTxt + '</span> <span style="font-size:0.74rem;color:#cbd5e1;">' + bm.fullTxt + '</span></div>'
+          : '');
+
+      const applyBtn = box.querySelector('[data-apply-price]');
+      if (applyBtn) {
+        applyBtn.onclick = () => {
+          valEl.value = String(bm.suggestedPrice);
+          valEl.dispatchEvent(new Event('input', { bubbles: true }));
+          if (typeof showToast === 'function') showToast('💡 Preço sugerido aplicado!');
+        };
+      }
+    };
+
+    [cfg.valId, cfg.bairroId, cfg.cidadeId, cfg.tipoId, cfg.areaCId, cfg.areaTId, cfg.suitesId].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', recalc);
+        el.addEventListener('change', recalc);
+      }
+    });
+  };
+
+  // =========================================================================
+  // 3. ABA "MERCADO REGIONAL (BAURU • AGUDOS • PIRATININGA)" NO MAPA m²
+  // =========================================================================
+  const enhanceMapaModalWithRegionalTab = () => {
+    const sheet = document.querySelector('#v8MapaRegionModal .v8-mapa-sheet');
+    if (!sheet || document.getElementById('v95MapaModeTabs')) return;
+    const pills = document.getElementById('v8MapaFilterPills');
+    if (!pills) return;
+
+    const tabs = document.createElement('div');
+    tabs.id = 'v95MapaModeTabs';
+    tabs.className = 'v95-mapa-mode-tabs';
+    tabs.innerHTML =
+      '<button type="button" class="v95-mapa-mode-btn active" data-mode="estoque">🏠 Estoque GUILD IMOB</button>' +
+      '<button type="button" class="v95-mapa-mode-btn" data-mode="mercado">📊 Mercado Externo (Bauru &amp; Piratininga)</button>';
+    pills.insertAdjacentElement('beforebegin', tabs);
+
+    const extPanel = document.createElement('div');
+    extPanel.id = 'v95ExternalMarketPanel';
+    extPanel.style.display = 'none';
+    pills.insertAdjacentElement('afterend', extPanel);
+
+    const renderExternalPanel = () => {
+      const m = liveMarket || DEFAULT_MARKET;
+      const dtStr = m.updatedAt ? new Date(m.updatedAt).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Base inicial (aguardando 1ª coleta ao vivo)';
+      const fmtDaysAgo = (iso) => {
+        if (!iso) return 'Na fila';
+        const diffD = Math.floor((Date.now() - new Date(iso).getTime()) / (24 * 60 * 60 * 1000));
+        if (diffD <= 0) return 'Hoje';
+        if (diffD === 1) return 'há 1 dia';
+        return 'há ' + diffD + ' dias';
+      };
+      const cRows = Object.values(m.cidades || {}).filter((c) => c && String(c.nome || '').toLowerCase() !== 'agudos').map((c) =>
+        '<tr><td><strong>' + c.nome + '</strong></td><td>' + fmtBRL(c.casaM2) + '</td><td>' + fmtBRL(c.sobradoM2 || c.casaM2) + '</td><td>' + fmtBRL(c.aptoM2) + '</td><td>' + fmtBRL(c.terrenoM2) + '</td><td>' + fmtBRL(c.chacaraM2 || 620) + '</td></tr>'
+      ).join('');
+      const bList = Object.values(m.bairros || {}).filter((b) => b && String(b.cidade || '').toLowerCase() !== 'agudos').sort((a, b) => {
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        if (tb !== ta) return tb - ta;
+        return (b.casaM2 || 0) - (a.casaM2 || 0);
+      });
+      const bRows = bList.map((b) =>
+        '<tr data-bname="' + norm(b.nome + ' ' + (b.cidade || '') + ' ' + (b.zona || '')) + '"><td><strong>' + b.nome + '</strong><div style="font-size:0.67rem;color:#94a3b8;">' + (b.cidade || 'Bauru') + (b.zona ? ' • ' + b.zona : '') + ' • <em>' + fmtDaysAgo(b.updatedAt) + '</em>' + (b.amostras ? (' (' + b.amostras + ' am.)') : '') + '</div></td><td>' + fmtBRL(b.casaM2) + '</td><td>' + fmtBRL(b.sobradoM2 || b.casaM2) + '</td><td>' + fmtBRL(b.aptoM2) + '</td><td>' + fmtBRL(b.terrenoM2) + '</td><td>' + fmtBRL(b.chacaraM2 || 620) + '</td></tr>'
+      ).join('');
+
+      const fontesUrls = Array.isArray(m.fontesUrls) ? m.fontesUrls : [];
+      const dedupInfo = (m.amostrasAnalisadas || m.duplicatasRemovidas)
+        ? (' • Amostras: <strong>' + (m.amostrasAnalisadas || '-') + '</strong> (duplicatas removidas: <strong>' + (m.duplicatasRemovidas || 0) + '</strong>)')
+        : '';
+
+      extPanel.innerHTML =
+        '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">' +
+        '<button type="button" id="v96BtnGpsMarket" class="btn-glass" style="flex:1 1 200px;font-size:0.78rem;padding:9px 12px;border-color:rgba(52,211,153,0.5);color:#a7f3d0;">📍 Ativar GPS — Ver R$/m² onde estou agora</button>' +
+        '<select id="v97ReportPeriodSelect" style="flex:0 1 165px;padding:8px 10px;border-radius:12px;border:1px solid rgba(244,210,106,0.45);background:#0c162b;color:#f8fafc;font-size:0.76rem;font-weight:700;">' +
+        '<option value="0">Última coleta</option>' +
+        '<option value="30">Média 30 dias</option>' +
+        '<option value="60">Média 60 dias</option>' +
+        '<option value="365">Média 1 ano (365d)</option>' +
+        '</select>' +
+        '<button type="button" id="v96BtnPrintMarketPdf" class="btn-gold" style="flex:1 1 190px;font-size:0.78rem;padding:9px 12px;">🖨️ Imprimir / Salvar Relatório PDF</button>' +
+        '</div>' +
+        '<div id="v96GpsMarketResult" style="display:none;margin-bottom:10px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,0.12);border:1px solid rgba(52,211,153,0.45);font-size:0.8rem;color:#ecfdf5;"></div>' +
+        '<div style="font-size:0.74rem;color:#93c5fd;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:8px 10px;margin-bottom:10px;">' +
+        '📡 <strong>Referência de Mercado Externo:</strong> ' + (m.fontes || 'Portais nacionais e sites de imobiliárias locais indexados') + '<br>' +
+        '🕒 Atualização: <strong>' + dtStr + '</strong> • Ciclo diário às 4h (4 locais/madrugada — fila ' + (m.queueIndex || 0) + '/' + (m.totalLocalidades || bList.length) + ')' + dedupInfo + '</div>' +
+        '<h4 style="margin:8px 0 4px;color:#f4d26a;font-size:0.86rem;">🏙️ Média por Cidade (R$/m²)</h4>' +
+        '<div style="overflow-x:auto;"><table class="v95-mkt-table"><thead><tr><th>Cidade</th><th>Casa</th><th>Sobrado</th><th>Apto</th><th>Terreno</th><th>Chácara</th></tr></thead><tbody>' + cRows + '</tbody></table></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 6px;"><h4 style="margin:0;color:#f4d26a;font-size:0.86rem;">📍 Bairros, Condomínios &amp; Chácaras (' + bList.length + ' locais • R$/m²)</h4><input type="search" id="v97FilterBairroMkt" placeholder="Filtrar bairro, jardim, vila ou chácara..." style="padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.35);color:#fff;font-size:0.75rem;min-width:210px;"></div>' +
+        '<div style="max-height:280px;overflow:auto;"><table class="v95-mkt-table" id="v97BairrosMktTable"><thead><tr><th>Localidade / Consulta</th><th>Casa</th><th>Sobrado</th><th>Apto</th><th>Terreno</th><th>Chácara</th></tr></thead><tbody>' + bRows + '</tbody></table></div>' +
+        (fontesUrls.length
+          ? '<details style="margin-top:10px;font-size:0.74rem;color:#cbd5e1;"><summary style="cursor:pointer;color:#f4d26a;font-weight:700;">🔗 Fontes públicas consultadas (' + fontesUrls.length + ' links) ▾</summary><ul style="margin:6px 0 0;padding-left:16px;line-height:1.5;">' +
+            fontesUrls.slice(0, 15).map((u) => '<li><a href="' + u.url + '" target="_blank" rel="noopener" style="color:#93c5fd;">' + (u.title || u.url) + '</a></li>').join('') +
+            '</ul></details>'
+          : '');
+
+      const filtInp = document.getElementById('v97FilterBairroMkt');
+      if (filtInp) {
+        filtInp.oninput = () => {
+          const q = norm(filtInp.value);
+          document.querySelectorAll('#v97BairrosMktTable tbody tr').forEach((tr) => {
+            tr.style.display = (!q || (tr.getAttribute('data-bname') || '').includes(q)) ? '' : 'none';
+          });
+        };
+      }
+
+      // A) GPS EXCLUSIVO DO MAPA DE MERCADO EXTERNO
+      const gpsBtn = document.getElementById('v96BtnGpsMarket');
+      const gpsRes = document.getElementById('v96GpsMarketResult');
+      if (gpsBtn && gpsRes) {
+        const COORDS_REF = [
+          { key: 'jardim estoril', lat: -22.3458, lng: -49.0604 },
+          { key: 'altos da cidade', lat: -22.3338, lng: -49.0667 },
+          { key: 'vila universitaria', lat: -22.3401, lng: -49.0510 },
+          { key: 'jardim infante', lat: -22.3435, lng: -49.0558 },
+          { key: 'vila aviacao', lat: -22.3578, lng: -49.0442 },
+          { key: 'jardim america', lat: -22.3390, lng: -49.0630 },
+          { key: 'jardim europa', lat: -22.3490, lng: -49.0530 },
+          { key: 'jardim colonial', lat: -22.3560, lng: -49.0645 },
+          { key: 'jardim brasil', lat: -22.3315, lng: -49.0545 },
+          { key: 'mary dota', lat: -22.3012, lng: -49.0298 },
+          { key: 'centro', lat: -22.3218, lng: -49.0706 },
+          { key: 'quinta ranieri', lat: -22.3550, lng: -49.0850 },
+          { key: 'vila cardoso', lat: -22.3130, lng: -49.0580 },
+          { key: 'jardim pagani', lat: -22.3095, lng: -49.0450 },
+          { key: 'parque vista alegre', lat: -22.2950, lng: -49.0640 },
+          { key: 'vila santa clara', lat: -22.3260, lng: -49.0460 },
+          { key: 'altos da boa vista', lat: -22.3820, lng: -49.1120 },
+          { key: 'centro piratininga', lat: -22.4135, lng: -49.1355 },
+          { key: 'chacaras piratininga sp225', lat: -22.4050, lng: -49.1150 }
+        ];
+        const distKm = (lat1, lon1, lat2, lon2) => {
+          const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+          const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        };
+        gpsBtn.onclick = () => {
+          if (!navigator.geolocation) {
+            gpsRes.style.display = 'block';
+            gpsRes.textContent = '⚠️ Seu navegador não suporta GPS.';
+            return;
+          }
+          gpsRes.style.display = 'block';
+          gpsRes.textContent = '📡 Localizando seu bairro via GPS...';
+          navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            let detectedSuburb = '';
+            let detectedCity = '';
+            try {
+              const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + latitude + '&lon=' + longitude + '&zoom=15&addressdetails=1');
+              const j = await r.json();
+              const addr = j.address || {};
+              detectedSuburb = addr.suburb || addr.neighbourhood || addr.quarter || '';
+              detectedCity = addr.city || addr.town || addr.municipality || '';
+            } catch (_) {}
+
+            // Tenta casar o bairro detectado; se não encontrar, pega a referência mais próxima por distância
+            let matchObj = null;
+            const bMap = m.bairros || {};
+            if (detectedSuburb) {
+              const dn = norm(detectedSuburb);
+              for (const k of Object.keys(bMap)) {
+                if (dn.includes(norm(k)) || norm(k).includes(dn)) { matchObj = bMap[k]; break; }
+              }
+            }
+            if (!matchObj) {
+              let best = COORDS_REF[0], bestD = 9999;
+              COORDS_REF.forEach((pt) => {
+                const d = distKm(latitude, longitude, pt.lat, pt.lng);
+                if (d < bestD) { bestD = d; best = pt; }
+              });
+              matchObj = bMap[best.key] || (m.cidades && m.cidades.bauru) || { nome: 'Bauru', cidade: 'Bauru', casaM2: 4950, aptoM2: 5600, terrenoM2: 1450 };
+            }
+            const localLabel = detectedSuburb ? (detectedSuburb + (detectedCity ? ' • ' + detectedCity : '')) : (matchObj.nome + ' • ' + (matchObj.cidade || 'Região'));
+            gpsRes.innerHTML =
+              '<div style="font-weight:800;color:#6ee7b7;margin-bottom:4px;">📍 Sua localização: ' + localLabel + '</div>' +
+              '<div>Referência de mercado nesta região (<strong>' + matchObj.nome + '</strong>):</div>' +
+              '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">' +
+              '<span>🏠 Casa: <strong>' + fmtBRL(matchObj.casaM2) + '/m²</strong></span>' +
+              '<span>🏢 Apto: <strong>' + fmtBRL(matchObj.aptoM2) + '/m²</strong></span>' +
+              '<span>📐 Terreno: <strong>' + fmtBRL(matchObj.terrenoM2) + '/m²</strong></span>' +
+              '</div>';
+          }, (err) => {
+            gpsRes.textContent = '⚠️ Não foi possível ativar o GPS (' + (err.message || 'permissão negada') + ').';
+          }, { enableHighAccuracy: true, timeout: 10000 });
+        };
+      }
+
+      // B) IMPRIMIR / SALVAR RELATÓRIO PDF (APOIO À AVALIAÇÃO BANCÁRIA / CAIXA)
+      const pdfBtn = document.getElementById('v96BtnPrintMarketPdf');
+      if (pdfBtn) {
+        pdfBtn.onclick = () => {
+          const periodDays = Number((document.getElementById('v97ReportPeriodSelect') || {}).value || 0);
+          const periodLabel = periodDays === 30 ? 'Média dos últimos 30 dias' : (periodDays === 60 ? 'Média dos últimos 60 dias' : (periodDays === 365 ? 'Média do último 1 ano (365 dias)' : 'Última coleta individual por bairro'));
+          const avgFieldForPeriod = (b, field) => {
+            if (!periodDays || !Array.isArray(b.historico) || !b.historico.length) return Number(b[field] || 0);
+            const cutoff = Date.now() - periodDays * 24 * 60 * 60 * 1000;
+            const vals = b.historico
+              .filter((h) => h && h.d && new Date(h.d).getTime() >= cutoff && Number(h[field]) > 0)
+              .map((h) => Number(h[field]));
+            if (!vals.length) return Number(b[field] || 0);
+            return Math.round(vals.reduce((a, x) => a + x, 0) / vals.length);
+          };
+          const pdfBRows = bList.map((b) =>
+            '<tr><td><strong>' + b.nome + '</strong> <span style="color:#64748b;font-size:10px;">(' + (b.cidade || 'Bauru') + ' • ' + fmtDaysAgo(b.updatedAt) + (b.amostras ? (' • ' + b.amostras + ' am.') : '') + ')</span></td>' +
+            '<td>' + fmtBRL(avgFieldForPeriod(b, 'casaM2')) + '</td>' +
+            '<td>' + fmtBRL(avgFieldForPeriod(b, 'sobradoM2') || avgFieldForPeriod(b, 'casaM2')) + '</td>' +
+            '<td>' + fmtBRL(avgFieldForPeriod(b, 'aptoM2')) + '</td>' +
+            '<td>' + fmtBRL(avgFieldForPeriod(b, 'terrenoM2')) + '</td>' +
+            '<td>' + fmtBRL(avgFieldForPeriod(b, 'chacaraM2') || 620) + '</td></tr>'
+          ).join('');
+          const fontesHtml = fontesUrls.length
+            ? '<ol style="font-size:11px;line-height:1.55;color:#334155;">' +
+              fontesUrls.map((u) => '<li><strong>' + (u.title || 'Anúncio / Portal Público') + '</strong> — <span style="color:#1d4ed8;word-break:break-all;">' + u.url + '</span></li>').join('') +
+              '</ol>'
+            : '<p style="font-size:11px;color:#475569;">Fontes consultadas: anúncios públicos ativos em portais nacionais (Viva Real, ZAP Imóveis, Chaves na Mão) e sites de imobiliárias locais de Bauru e Piratininga. Para listar os links individuais da última coleta, execute "Atualizar Índice Mercado Agora" no Painel Master.</p>';
+
+          const w = window.open('', '_blank');
+          if (!w) { if (typeof showToast === 'function') showToast('⚠️ Permita pop-ups para gerar o Relatório PDF.'); return; }
+          w.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Pesquisa de Mercado — GUILD IMOB</title>' +
+            '<style>' +
+            'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:24px 28px;line-height:1.45;}' +
+            '.hdr{border-bottom:3px solid #b48a28;padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;}' +
+            'h1{margin:0;font-size:19px;color:#0b1320;} h2{font-size:14px;color:#0b1320;margin:16px 0 6px;border-left:4px solid #b48a28;padding-left:8px;}' +
+            '.meta{font-size:11px;color:#475569;} .box{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-size:11.5px;margin:10px 0;}' +
+            'table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px;} th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;} th{background:#f1f5f9;font-weight:700;}' +
+            '.no-print{margin-bottom:14px;text-align:right;} @media print{.no-print{display:none;}}' +
+            '</style></head><body>' +
+            '<div class="no-print"><button onclick="window.print()" style="background:#b48a28;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;cursor:pointer;">🖨️ Salvar em PDF / Imprimir</button></div>' +
+            '<div class="hdr"><div style="display:flex;align-items:center;gap:12px;">' +
+            (((document.getElementById('headerLogoImg') || {}).src) ? ('<img src="' + document.getElementById('headerLogoImg').src + '" alt="GUILD IMOB" style="height:52px;width:auto;object-fit:contain;border-radius:8px;background:#09111f;padding:4px;">') : '') +
+            '<div><h1>GUILD IMOB — Relatório Comparativo de Mercado Imobiliário</h1><div class="meta">Bauru &amp; Piratininga (SP) — Apoio Técnico à Precificação e Avaliação Bancária</div></div></div>' +
+            '<div class="meta" style="text-align:right;"><strong>Guilherme Delfino</strong><br>CRECI 272251-F | J-50143<br>guildimob.com</div></div>' +
+            '<div class="meta"><strong>Data de emissão:</strong> ' + new Date().toLocaleString('pt-BR') + ' &nbsp;|&nbsp; <strong>Período do relatório:</strong> ' + periodLabel + ' &nbsp;|&nbsp; <strong>Última coleta de mercado:</strong> ' + dtStr + (m.amostrasAnalisadas ? (' &nbsp;|&nbsp; <strong>Amostras consideradas:</strong> ' + m.amostrasAnalisadas + ' (duplicatas removidas: ' + (m.duplicatasRemovidas || 0) + ')') : '') + '</div>' +
+            '<h2>1. Resumo Metodológico da Coleta</h2>' +
+            '<div class="box">Os valores de referência por metro quadrado (R$/m²) apresentados neste relatório resultam de pesquisa periódica (atualizada duas vezes por semana) de ofertas públicas ativas na região de Bauru e Piratininga, abrangendo tanto grandes portais imobiliários quanto sites próprios de imobiliárias locais.<br><br>' +
+            '<strong>Critério de Saneamento e Desduplicação:</strong> As amostras são separadas por cidade, bairro e tipologia (Casa, Apartamento e Terreno/Lote). Anúncios idênticos replicados em múltiplos portais ou imobiliárias — identificados por mesma localização, metragem, preço e descrição equivalente — são contabilizados apenas uma vez para evitar distorção estatística na média. Para terrenos em loteamentos, lotes distintos com metragem e valor padrão são preservados.<br><br>' +
+            '<em>Nota técnica: Este documento constitui Estudo Comparativo de Mercado de apoio à precificação comercial e consulta complementar, não substituindo laudo de avaliação técnica formal (ABNT NBR 14653) emitido por profissional engenheiro ou arquiteto habilitado.</em></div>' +
+            '<h2>2. Média Regional Consolidada por Cidade (R$/m²)</h2>' +
+            '<table><thead><tr><th>Cidade</th><th>Casa</th><th>Sobrado</th><th>Apto</th><th>Terreno</th><th>Chácara</th></tr></thead><tbody>' + cRows + '</tbody></table>' +
+            '<h2>3. Média de Referência por Bairro e Região (R$/m²)</h2>' +
+            '<table><thead><tr><th>Bairro / Condomínio / Região (Última Consulta)</th><th>Casa</th><th>Sobrado</th><th>Apto</th><th>Terreno</th><th>Chácara</th></tr></thead><tbody>' + pdfBRows + '</tbody></table>' +
+            '<h2>4. Fontes Públicas Consultadas</h2>' + fontesHtml +
+            '</body></html>');
+          w.document.close();
+          setTimeout(() => { try { w.focus(); w.print(); } catch (_) {} }, 400);
+        };
+      }
+    };
+
+    tabs.querySelectorAll('.v95-mapa-mode-btn').forEach((btn) => {
+      btn.onclick = () => {
+        tabs.querySelectorAll('.v95-mapa-mode-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.getAttribute('data-mode');
+        const isExt = mode === 'mercado';
+        pills.style.display = isExt ? 'none' : '';
+        extPanel.style.display = isExt ? 'block' : 'none';
+        Array.from(sheet.children).forEach((ch) => {
+          if (ch.id === 'v95MapaModeTabs' || ch.id === 'v95ExternalMarketPanel' || ch.id === 'v8MapaFilterPills' || ch === sheet.firstElementChild) return;
+          ch.style.display = isExt ? 'none' : '';
+        });
+        if (isExt) renderExternalPanel();
+        else setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 120);
+      };
+    });
+  };
+
+  // =========================================================================
+  // 4. BOTÕES DO ROBÔ DE ÍNDICE DE MERCADO NO PAINEL MASTER
+  // =========================================================================
+  const injectMasterMarketButtons = () => {
+    const bar = document.getElementById('v93MasterAutomationBar');
+    if (!bar || document.getElementById('v95BtnUpdateMktNow')) return;
+    const btnWrap = bar.querySelector('div[style*="flex-wrap"]');
+    if (!btnWrap) return;
+
+    const b1 = document.createElement('button');
+    b1.type = 'button';
+    b1.id = 'v95BtnUpdateMktNow';
+    b1.className = 'btn-glass';
+    b1.style.cssText = 'font-size:0.76rem;padding:8px 12px;border-color:rgba(96,165,250,0.45);color:#bfdbfe;';
+    b1.textContent = '📊 Atualizar Índice Mercado Agora';
+
+    const b2 = document.createElement('button');
+    b2.type = 'button';
+    b2.id = 'v95BtnScheduleMkt';
+    b2.className = 'btn-glass';
+    b2.style.cssText = 'font-size:0.76rem;padding:8px 12px;border-color:rgba(244,210,106,0.45);color:#fde68a;';
+    b2.textContent = '🗓️ Ativar Robô Diário 4h (4 bairros/dia)';
+
+    btnWrap.appendChild(b1);
+    btnWrap.appendChild(b2);
+
+    const callMkt = async (actionName) => {
+      const out = document.getElementById('v93MasterAuditOut');
+      const auth = (window.state && window.state.authUser) || {};
+      if (!auth.login || !auth.senha) { if (out) out.textContent = '⚠️ Faça login como Master primeiro.'; return; }
+      if (out) out.textContent = '⏳ Consultando Google Search (Bauru, Agudos e Piratininga)...';
+      try {
+        const gasUrl = (typeof GAS_URL !== 'undefined' && GAS_URL) || 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+        const resp = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: actionName, login: auth.login, senha: auth.senha })
+        });
+        const data = await resp.json();
+        if (data.ok && data.mercadoRegional) {
+          liveMarket = data.mercadoRegional;
+          try { localStorage.setItem('guild_mercado_regional_v6', JSON.stringify(liveMarket)); } catch (_) {}
+          injectAllMarketTickers();
+        }
+        if (out) out.textContent = data.ok ? ('✅ ' + (data.message || 'Atualizado!')) : ('❌ ' + (data.error || 'Falha'));
+      } catch (err) {
+        if (out) out.textContent = '❌ Erro: ' + err.message;
+      }
+    };
+
+    b1.onclick = () => callMkt('atualizarIndiceMercadoAgora');
+    b2.onclick = () => callMkt('ativarIndiceMercadoSemanal');
+
+    const b3 = document.createElement('button');
+    b3.type = 'button';
+    b3.id = 'v97BtnSearchOneBairro';
+    b3.className = 'btn-glass';
+    b3.style.cssText = 'font-size:0.76rem;padding:8px 12px;border-color:rgba(52,211,153,0.45);color:#a7f3d0;';
+    b3.textContent = '🔍 Pesquisar 1 Bairro Agora';
+    btnWrap.appendChild(b3);
+    b3.onclick = async () => {
+      const bairro = prompt('Digite o nome do bairro, condomínio ou região de chácaras (ex: Jardim Solange, Terra Branca, Chácaras Piratininga):');
+      if (!bairro || !bairro.trim()) return;
+      const isPir = norm(bairro).includes('piratininga') || norm(bairro).includes('guestier') || norm(bairro).includes('toscana') || norm(bairro).includes('chacara');
+      const cidade = isPir ? 'Piratininga' : 'Bauru';
+      const out = document.getElementById('v93MasterAuditOut');
+      const auth = (window.state && window.state.authUser) || {};
+      if (!auth.login || !auth.senha) { if (out) out.textContent = '⚠️ Faça login como Master primeiro.'; return; }
+      if (out) out.textContent = '⏳ Fazendo varredura profunda em "' + bairro.trim() + ' (' + cidade + ')"...';
+      try {
+        const gasUrl = (typeof GAS_URL !== 'undefined' && GAS_URL) || 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+        const resp = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'pesquisarBairroMercadoAgora', login: auth.login, senha: auth.senha, bairro: bairro.trim(), cidade })
+        });
+        const data = await resp.json();
+        if (data.ok && data.mercadoRegional) {
+          liveMarket = data.mercadoRegional;
+          try { localStorage.setItem('guild_mercado_regional_v6', JSON.stringify(liveMarket)); } catch (_) {}
+          injectAllMarketTickers();
+        }
+        if (out) out.textContent = data.ok ? ('✅ ' + data.message) : ('❌ ' + (data.error || 'Falha'));
+      } catch (err) {
+        if (out) out.textContent = '❌ Erro: ' + err.message;
+      }
+    };
+  };
+
+  // Boot & observadores leves
+  const bootV95 = () => {
+    injectAllMarketTickers();
+    enhanceMapaModalWithRegionalTab();
+    injectMasterMarketButtons();
+    // Cadastro Público (Proprietário / Parceiro)
+    attachSmartPriceSuggester({
+      boxId: 'v95SuggestCap', valId: 'capValor', bairroId: 'capBairro', cidadeId: 'capCidade',
+      tipoId: 'capTipo', areaCId: 'capAreaConst', areaTId: 'capAreaTerr', suitesId: 'capSuites'
+    });
+    // Cadastro Interno (Corretor / Master)
+    attachSmartPriceSuggester({
+      boxId: 'v95SuggestMaster', valId: 'propValor', bairroId: 'propBairro', cidadeId: 'propCidade',
+      tipoId: 'propTipo', areaCId: 'propConstruida', areaTId: 'propTerreno', suitesId: 'propSuites'
+    });
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(bootV95, 800));
+  else setTimeout(bootV95, 800);
+  setInterval(() => { injectAllMarketTickers(); injectMasterMarketButtons(); }, 2800);
+
+  const propModal = document.getElementById('propertyModal');
+  if (propModal) {
+    new MutationObserver(() => setTimeout(injectAllMarketTickers, 90)).observe(propModal, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
+</script>
+<!-- GUILD_V95_END -->
+
 </body>
 </html>
