@@ -17377,6 +17377,7 @@
     background-color: rgba(14, 24, 44, 0.92) !important;
   }
   .modal-backdrop, #v6RankExplainerModal, #v7CelebrateMatchModal, #v8MapaRegionModal {
+    flex-direction: column !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: rgba(3, 8, 20, 0.88) !important;
@@ -17384,8 +17385,7 @@
 
   /* 2. Mata animações CSS infinitas de box-shadow / filter / background-position (causa #1 de celular fervendo!) */
   .property-card, .spotlight-card, .property-card *, .spotlight-card *,
-  .quick-orb-item, .quick-orb-circle, .quick-orb-circle::before, .quick-orb-circle::after,
-  .floating-wa, .wa-orb, .wa-fab, .tier-pill, .glass-badge, .v6-master-orb, .v6-master-orb::before {
+  .tier-pill, .glass-badge {
     animation: none !important;
     will-change: auto !important;
   }
@@ -17838,11 +17838,70 @@
   main, #catalogSection, .catalog-grid, .streaming-sections {
     padding-bottom: 92px !important;
   }
+  /* Labels dos 6 orbes sem encostar um no outro (corrige LançamentoProntos) */
+  .quick-orb-item {
+    min-width: 0 !important;
+    padding: 0 2px !important;
+  }
   .quick-orb-label {
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
+    font-size: 0.62rem !important;
+    letter-spacing: -0.025em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
     line-height: 1.15 !important;
+    text-align: center !important;
+  }
+
+  /* Aura giratória de Mana 100% GPU (transform: rotate = 0% lag, mantém 60 FPS!) */
+  @keyframes guildManaSpinGpu {
+    from { transform: rotate(0deg) translateZ(0); }
+    to   { transform: rotate(360deg) translateZ(0); }
+  }
+  @keyframes guildManaPulseGpu {
+    0%, 100% { transform: scale(1) translateZ(0); opacity: 0.72; }
+    50%      { transform: scale(1.07) translateZ(0); opacity: 1; }
+  }
+  @keyframes guildManaTapWave {
+    0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0.9; }
+    100% { transform: translate(-50%, -50%) scale(2.4);  opacity: 0; }
+  }
+  .quick-orb-circle {
+    position: relative !important;
+    overflow: visible !important;
+    transform: translateZ(0);
+  }
+  .quick-orb-circle::before {
+    animation: guildManaSpinGpu 5.5s linear infinite !important;
+    will-change: transform !important;
+  }
+  .quick-orb-circle::after {
+    animation: guildManaPulseGpu 3.2s ease-in-out infinite !important;
+    will-change: transform, opacity !important;
+  }
+  .mana-whats-fab::before {
+    animation: guildManaSpinGpu 4.8s linear infinite !important;
+    will-change: transform !important;
+  }
+  .mana-whats-fab::after {
+    animation: guildManaPulseGpu 2.6s ease-in-out infinite !important;
+    will-change: transform, opacity !important;
+  }
+  .v6-master-orb::before {
+    animation: guildManaSpinGpu 7s linear infinite !important;
+    will-change: transform !important;
+  }
+  .v94-mana-ripple {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100220;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--mana-color, #f4d26a);
+    box-shadow: 0 0 14px var(--mana-color, #f4d26a);
+    animation: guildManaTapWave 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* 8. Comparador Lado a Lado (Grátis para Clientes) */
@@ -18274,8 +18333,9 @@
   // 7. PAINEL MASTER: AUDITOR DE CADASTROS + FOLLOW-UP LEADS 24H+
   // =========================================================================
   const injectMasterAuditToolsV93 = () => {
-    const crmBox = document.getElementById('v6CrmViewLeads') || document.getElementById('adminSection') || document.getElementById('adminModal');
+    const crmBox = document.getElementById('v6CrmViewLeads') || document.querySelector('#adminModal .modal-sheet');
     if (!crmBox || document.getElementById('v93MasterAutomationBar')) return;
+    // Garante que nunca seja inserido fora de .modal-sheet (evita espremer o flex do modal!)
     const bar = document.createElement('div');
     bar.id = 'v93MasterAutomationBar';
     bar.className = 'v93-tool-box';
@@ -18287,7 +18347,7 @@
       '<button type="button" id="v93BtnFollowupNow" class="btn-glass" style="font-size:0.76rem;padding:8px 12px;border-color:rgba(52,211,153,0.45);color:#a7f3d0;">📧 Enviar Follow-up Leads 24h+</button>' +
       '<button type="button" id="v93BtnFollowupCron" class="btn-gold" style="font-size:0.76rem;padding:8px 12px;">⏰ Ativar Follow-up Diário 9h</button>' +
       '</div><div id="v93MasterAuditOut" style="margin-top:8px;font-size:0.76rem;color:#cbd5e1;"></div>';
-    crmBox.prepend(bar);
+    if (crmBox.id === 'v6CrmViewLeads') crmBox.prepend(bar); else crmBox.appendChild(bar);
 
     document.getElementById('v93BtnAuditProps').onclick = () => {
       const props = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
@@ -18335,6 +18395,85 @@
     document.getElementById('v93BtnFollowupNow').onclick = () => callGasMaster('enviarFollowupLeads24h');
     document.getElementById('v93BtnFollowupCron').onclick = () => callGasMaster('ativarFollowupDiario9h');
   };
+
+  // =========================================================================
+  // 8. SONS TEMÁTICOS ÚNICOS POR BOTÃO + ONDA DE MANA GPU (ZERO LAG)
+  // =========================================================================
+  let v94AudioCtx = null;
+  const playManaTone = (notes, type, dur) => {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!v94AudioCtx) v94AudioCtx = new AC();
+      if (v94AudioCtx.state === 'suspended') v94AudioCtx.resume();
+      const now = v94AudioCtx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = v94AudioCtx.createOscillator();
+        const gain = v94AudioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+        gain.gain.setValueAtTime(0.0001, now + idx * 0.055);
+        gain.gain.exponentialRampToValueAtTime(0.11, now + idx * 0.055 + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.055 + (dur || 0.22));
+        osc.connect(gain);
+        gain.connect(v94AudioCtx.destination);
+        osc.start(now + idx * 0.055);
+        osc.stop(now + idx * 0.055 + (dur || 0.24));
+      });
+    } catch (_) {}
+  };
+
+  const spawnManaRipple = (x, y, color) => {
+    try {
+      const r = document.createElement('div');
+      r.className = 'v94-mana-ripple';
+      r.style.left = x + 'px';
+      r.style.top = y + 'px';
+      r.style.setProperty('--mana-color', color || '#f4d26a');
+      document.body.appendChild(r);
+      setTimeout(() => r.remove(), 520);
+    } catch (_) {}
+  };
+
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('.quick-orb-item, .mana-whats-fab, .v6-master-orb, .v93-compare-btn, .btn-gold, .btn-back-home-float');
+    if (!target) return;
+    const x = e.clientX || (target.getBoundingClientRect().left + target.offsetWidth / 2);
+    const y = e.clientY || (target.getBoundingClientRect().top + target.offsetHeight / 2);
+    const txt = (target.textContent || '').toLowerCase();
+
+    if (target.classList.contains('mana-whats-fab')) {
+      playManaTone([523.25, 659.25, 783.99], 'triangle', 0.20);
+      spawnManaRipple(x, y, '#34d399');
+    } else if (txt.includes('busca ia')) {
+      playManaTone([587.33, 880, 1174.66], 'sine', 0.24); // Arpejo cristalino IA
+      spawnManaRipple(x, y, '#c084fc');
+    } else if (txt.includes('ranking')) {
+      playManaTone([523.25, 659.25, 1046.5], 'triangle', 0.26); // Fanfarra dourada
+      spawnManaRipple(x, y, '#f4d26a');
+    } else if (txt.includes('filtro')) {
+      playManaTone([440, 554.37], 'sine', 0.16); // Clique vidro azul
+      spawnManaRipple(x, y, '#60a5fa');
+    } else if (txt.includes('lançament')) {
+      playManaTone([493.88, 739.99, 987.77], 'sine', 0.24); // Subida foguete esmeralda
+      spawnManaRipple(x, y, '#34d399');
+    } else if (txt.includes('pronto')) {
+      playManaTone([392, 493.88, 587.33], 'triangle', 0.20); // Acorde casa acolhedor
+      spawnManaRipple(x, y, '#38bdf8');
+    } else if (txt.includes('mapa')) {
+      playManaTone([659.25, 987.77], 'sine', 0.22); // Ping sonar mapa
+      spawnManaRipple(x, y, '#6ee7b7');
+    } else if (target.classList.contains('v6-master-orb')) {
+      playManaTone([440, 659.25, 880], 'sine', 0.22);
+      spawnManaRipple(x, y, '#f4d26a');
+    } else if (target.classList.contains('v93-compare-btn')) {
+      playManaTone([740, 987.77], 'sine', 0.14);
+      spawnManaRipple(x, y, '#f4d26a');
+    } else {
+      playManaTone([523.25, 659.25], 'sine', 0.15);
+      spawnManaRipple(x, y, '#f4d26a');
+    }
+  }, true);
 
   // Boot seguro sem pesar FPS
   const bootV93 = () => {
