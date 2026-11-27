@@ -6317,26 +6317,20 @@
           ? liveEntry.activeLots.map(x => ({ ...x, _sold48h: false }))
           : (LANCAMENTOS_LOTES_DB[key] || []).map(x => ({ ...x, _sold48h: false }));
         const nowMs = Date.now();
-        const sold48Lots = (liveEntry && Array.isArray(liveEntry.soldLots))
-          ? liveEntry.soldLots.filter(s => s.soldAt && (nowMs - Number(s.soldAt)) < 48 * 3600 * 1000).map(x => ({ ...x, _sold48h: true }))
-          : [];
+        // Regra de 48h removida: apenas lotes realmente disponíveis entram na vitrine pública.
+        // Vendidos, reservados e em andamento saem imediatamente (continuam reativáveis no Painel Master e no Mapa 3D).
         const overrides = getLaunchManualOverrides();
         const combinedMap = new Map();
-        [...activeLots, ...sold48Lots].forEach(x => {
+        activeLots.forEach(x => {
           const q = String(x.q || "").toUpperCase();
           const l = String(x.l || "").padStart(2, "0");
           const lk = key + "_" + q + "_" + l;
           const ov = overrides[lk];
-          if (ov && ov.status === "VENDIDO") {
-            const age = nowMs - (Number(ov.soldAt) || 0);
-            if (age < 48 * 3600 * 1000) {
-              combinedMap.set(lk, { ...x, _sold48h: true });
-            }
-            // if >= 48h, omit from public catalog (remains searchable in Master Panel to reactivate!)
-          } else if (ov && ov.status === "DISPONIVEL") {
+          const ovStatus = ov ? String(ov.status || "").toUpperCase() : "";
+          const ovMapStatus = ov ? String(ov.mapStatus || "").toLowerCase() : "";
+          const isUnavailable = (ovStatus === "VENDIDO" || ovStatus === "RESERVADO" || ovMapStatus === "vendido" || ovMapStatus === "reservado" || ovMapStatus === "andamento");
+          if (!isUnavailable) {
             combinedMap.set(lk, { ...x, _sold48h: false });
-          } else {
-            combinedMap.set(lk, x);
           }
         });
         const lots = Array.from(combinedMap.values());
@@ -7695,7 +7689,7 @@
       const isFiltering = state.activeFilter !== "TODOS" || activeRefCount > 0 || state.searchQuery.trim() !== "" || state.sortBy !== "destaque";
       const useStreaming = !isFiltering && !state.forceGridMode && ativos.length > 0;
 
-      label.textContent = state.filtered.length + (state.filtered.length === 1 ? " imóvel selecionado" : " imóveis selecionados");
+      const availCount = state.filtered.filter(p => !p.isSold48h).length; label.textContent = availCount + (availCount === 1 ? " imóvel selecionado" : " imóveis selecionados");
 
       if (toggleBtn) {
         toggleBtn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>${useStreaming ? "Ver Catálogo" : (grid.classList.contains("compact-grid") ? "Lista" : "Grade")}</span></span>`;
