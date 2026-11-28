@@ -9392,21 +9392,21 @@
         });
       });
 
-      // Re-bind manual buttons when re-rendered via search
+      // Re-bind manual buttons when re-rendered via search (nomes reais das funções!)
       listEl.querySelectorAll("[data-approve-id]").forEach(btn => {
-        btn.addEventListener("click", () => updatePropertyStatus(btn.getAttribute("data-approve-id"), btn.getAttribute("data-new-status")));
+        btn.addEventListener("click", () => changePropertyStatus(btn.getAttribute("data-approve-id"), btn.getAttribute("data-new-status")));
       });
       listEl.querySelectorAll("[data-edit-prop]").forEach(btn => {
-        btn.addEventListener("click", () => editPropertyInForm(btn.getAttribute("data-edit-prop")));
+        btn.addEventListener("click", () => loadPropertyIntoForm(btn.getAttribute("data-edit-prop")));
       });
       listEl.querySelectorAll("[data-del-prop]").forEach(btn => {
-        btn.addEventListener("click", () => deletePropertyById(btn.getAttribute("data-del-prop")));
+        btn.addEventListener("click", () => deleteProperty(btn.getAttribute("data-del-prop")));
       });
       listEl.querySelectorAll("[data-mkt-prop]").forEach(btn => {
         btn.addEventListener("click", () => openMarketingStudio(btn.getAttribute("data-mkt-prop")));
       });
       listEl.querySelectorAll("[data-gps-prop]").forEach(btn => {
-        btn.addEventListener("click", () => openPropertyGpsRoute(btn.getAttribute("data-gps-prop")));
+        btn.addEventListener("click", () => openPropertyGPS(btn.getAttribute("data-gps-prop")));
       });
     }
 
@@ -21289,7 +21289,7 @@
     });
   };
 
-  setInterval(() => { renderCondoLazerBox(); stylePublicCondoTags(); }, 1800);
+  setInterval(() => { if (!document.getElementById('v927CondoLazerBox')) renderCondoLazerBox(); stylePublicCondoTags(); }, 2500);
   setTimeout(renderCondoLazerBox, 500);
 })();
 </script>
