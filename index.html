@@ -18674,53 +18674,91 @@
     return false;
   };
 
-  // Cascata Matemática de 4 Níveis: Bairro -> Cidade -> Ajuste por Suítes/Terreno
+  // Cascata Científica V9.22: Condomínio Específico -> Bairro Real (Escala/Acabamento) -> Cidade Real
   const computeMarketBenchmark = (params) => {
     const bairroNorm = norm(params.bairro || params.condominio || '');
+    const condoNorm = norm(params.condominio || params.titulo || params.bairro || '');
     const cidadeNorm = norm(params.cidade || 'bauru');
     const tipoNorm = norm(params.tipo || params.titulo || 'casa');
-    const isTerreno = tipoNorm.includes('terreno') || tipoNorm.includes('lote') || tipoNorm.includes('chacara');
+    const descNorm = norm((params.titulo || '') + ' ' + (params.descricao || '') + ' ' + (params.diferenciais || '') + ' ' + (params.caracteristicas || ''));
+    const isTerreno = tipoNorm.includes('terreno') || tipoNorm.includes('lote') || tipoNorm.includes('chacara') || tipoNorm.includes('gleba');
     const isApto = tipoNorm.includes('apart') || tipoNorm.includes('apto') || tipoNorm.includes('flat') || tipoNorm.includes('studio');
-    const m2Key = isTerreno ? 'terrenoM2' : (isApto ? 'aptoM2' : 'casaM2');
-
-    // Nível 1: busca bairro exato ou parcial
-    let refObj = null;
-    let refLabel = '';
-    const bMap = (liveMarket && liveMarket.bairros) || {};
-    for (const k of Object.keys(bMap)) {
-      const kn = norm(k);
-      if (bairroNorm && (bairroNorm.includes(kn) || kn.includes(bairroNorm))) {
-        refObj = bMap[k];
-        refLabel = bMap[k].nome || k;
-        break;
-      }
-    }
-    // Nível 2: fallback para cidade (Bauru, Piratininga ou Agudos)
-    if (!refObj) {
-      const cMap = (liveMarket && liveMarket.cidades) || DEFAULT_MARKET.cidades;
-      if (cidadeNorm.includes('piratininga') || bairroNorm.includes('piratininga')) {
-        refObj = cMap.piratininga || DEFAULT_MARKET.cidades.piratininga;
-        refLabel = 'Piratininga';
-      } else if (cidadeNorm.includes('agudos') || bairroNorm.includes('agudos')) {
-        refObj = cMap.agudos || DEFAULT_MARKET.cidades.agudos;
-        refLabel = 'Agudos';
-      } else {
-        refObj = cMap.bauru || DEFAULT_MARKET.cidades.bauru;
-        refLabel = 'Bauru (média regional)';
-      }
-    }
-
-    let baseM2 = Number(refObj[m2Key] || refObj.casaM2 || 4800);
-    // Nível 3: micro-ajuste por suítes extras (casas/aptos)
-    const suites = Number(params.suites || 0);
-    if (!isTerreno && suites >= 2) {
-      baseM2 = baseM2 * (1 + Math.min(0.12, (suites - 1) * 0.035));
-    }
-
     const area = isTerreno
       ? Number(params.areaTerreno || params.areaConstruida || 0)
       : Number(params.areaConstruida || params.areaTerreno || 0);
     if (area < 15) return null;
+
+    // Detecta Patamar de Acabamento (Reforma / Pronta / Completa & Mobiliada)
+    const isReforma = /(reforma|demolir|antiga|original)/.test(descNorm);
+    const isCompleta = !isReforma && /(mobiliad|porteira fechada|piscina|jacuzzi|hidromassagem|energia solar|fotovoltaic|porcelanato|gourmet|planejados|alto padrao)/.test(descNorm);
+    const acabLabel = isTerreno ? '' : (isReforma ? ' • Para Reforma' : (isCompleta ? ' • Completa/Lazer' : ' • Pronta'));
+
+    // Nível 1: Condomínio / Edifício específico com amostras reais
+    let refObj = null;
+    let refLabel = '';
+    const cMap = (liveMarket && liveMarket.condominios) || {};
+    for (const ck of Object.keys(cMap)) {
+      const cObj = cMap[ck];
+      if (!cObj || (Number(cObj.amostras) || 0) <= 0) continue;
+      const cn = norm(cObj.nome || ck);
+      if (condoNorm && cn.length >= 4 && (condoNorm.includes(cn) || cn.includes(condoNorm))) {
+        refObj = cObj;
+        refLabel = cObj.nome + acabLabel;
+        break;
+      }
+    }
+    // Nível 2: Bairro real (com amostras > 0 ou curadoria manual)
+    if (!refObj) {
+      const bMap = (liveMarket && liveMarket.bairros) || {};
+      for (const k of Object.keys(bMap)) {
+        const bObj = bMap[k];
+        if (!bObj || ((Number(bObj.amostras) || 0) <= 0 && bObj.origem !== 'curadoria_manual')) continue;
+        const kn = norm(k);
+        if (bairroNorm && (bairroNorm.includes(kn) || kn.includes(bairroNorm))) {
+          refObj = bObj;
+          refLabel = (bObj.nome || k) + acabLabel;
+          break;
+        }
+      }
+    }
+    // Nível 3: Cidade real (ou fallback seguro se 1ª coleta ainda não concluiu)
+    if (!refObj) {
+      const cidMap = (liveMarket && liveMarket.cidades) || DEFAULT_MARKET.cidades;
+      if (cidadeNorm.includes('piratininga') || bairroNorm.includes('piratininga')) {
+        refObj = (cidMap.piratininga && (cidMap.piratininga.casaM2 || cidMap.piratininga.terrenoM2)) ? cidMap.piratininga : DEFAULT_MARKET.cidades.piratininga;
+        refLabel = 'Piratininga' + acabLabel;
+      } else {
+        refObj = (cidMap.bauru && (cidMap.bauru.casaM2 || cidMap.bauru.terrenoM2)) ? cidMap.bauru : DEFAULT_MARKET.cidades.bauru;
+        refLabel = 'Bauru (média regional)' + acabLabel;
+      }
+    }
+
+    // Seleção científica da base R$/m² por escala (terrenos) ou patamar de acabamento (casas/aptos)
+    let baseM2 = 0;
+    if (isTerreno) {
+      if (area < 160) baseM2 = Number(refObj.terrenoMeioM2 || refObj.terrenoForaM2 || refObj.terrenoM2 || 0);
+      else if (area < 250) baseM2 = Number(refObj.terrenoInterM2 || refObj.terrenoInteiroM2 || refObj.terrenoM2 || 0);
+      else if (area < 550) baseM2 = Number(refObj.terrenoInteiroM2 || refObj.terrenoCondM2 || refObj.terrenoM2 || 0);
+      else if (area < 2000) baseM2 = Number(refObj.terrenoGrandeM2 || refObj.terrenoM2 || 0);
+      else if (area < 20000) baseM2 = Number(refObj.terrenoAreaM2 || refObj.terrenoGrandeM2 || refObj.terrenoM2 || 0);
+      else baseM2 = Number(refObj.terrenoGlebaM2 || refObj.terrenoAreaM2 || refObj.terrenoM2 || 0);
+      if (!baseM2) baseM2 = Number(refObj.terrenoM2 || 1350);
+    } else if (isApto) {
+      if (isReforma) baseM2 = Number(refObj.aptoReformaM2 || (refObj.aptoM2 ? refObj.aptoM2 * 0.85 : 0));
+      else if (isCompleta) baseM2 = Number(refObj.aptoCompletaM2 || (refObj.aptoM2 ? refObj.aptoM2 * 1.12 : 0));
+      else baseM2 = Number(refObj.aptoProntaM2 || refObj.aptoM2 || 0);
+      if (!baseM2) baseM2 = Number(refObj.aptoM2 || 5400);
+    } else {
+      if (isReforma) baseM2 = Number(refObj.casaReformaM2 || (refObj.casaM2 ? refObj.casaM2 * 0.80 : 0));
+      else if (isCompleta) baseM2 = Number(refObj.casaCompletaM2 || refObj.casaAltoM2 || (refObj.casaM2 ? refObj.casaM2 * 1.15 : 0));
+      else baseM2 = Number(refObj.casaProntaM2 || refObj.casaMedioM2 || refObj.casaM2 || 0);
+      if (!baseM2) baseM2 = Number(refObj.casaM2 || 4800);
+    }
+
+    const suites = Number(params.suites || 0);
+    if (!isTerreno && !isCompleta && suites >= 3) {
+      baseM2 = baseM2 * (1 + Math.min(0.10, (suites - 2) * 0.035));
+    }
 
     const suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
     const valor = Number(params.valor || 0);
@@ -20197,6 +20235,369 @@
     enhanceStreamingRails();
   });
   setTimeout(enhanceStreamingRails, 900);
+})();
+</script>
+
+
+<!-- GUILD IMOB V9.22 — RADAR CIENTÍFICO DEFINITIVO (3 PATAMARES + 6 ESCALAS + MONITOR AO VIVO + MINI AVALIADOR IA) -->
+<script id="guildimob-v922-radar-definitivo">
+(function() {
+  if (window.__GUILD_V922_RADAR_INIT__) return;
+  window.__GUILD_V922_RADAR_INIT__ = true;
+
+  const normS = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
+  const fmtM2 = (v) => { const n = Math.round(Number(v) || 0); return n > 0 ? ('R$ ' + n.toLocaleString('pt-BR')) : '—'; };
+  const fmtK = (v) => {
+    const n = Math.round(Number(v) || 0);
+    if (!n) return '—';
+    if (n >= 1000000) return 'R$ ' + (n / 1000000).toFixed(2).replace('.', ',') + 'M';
+    return 'R$ ' + Math.round(n / 1000) + ' mil';
+  };
+  const distKm = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 999;
+    const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const COORDS_MAP = {
+    'jardim estoril': [-22.3458, -49.0604], 'altos da cidade': [-22.3338, -49.0667],
+    'vila universitaria': [-22.3401, -49.0510], 'jardim infante dom henrique': [-22.3435, -49.0558],
+    'vila aviacao': [-22.3578, -49.0442], 'jardim america': [-22.3390, -49.0630],
+    'jardim europa': [-22.3490, -49.0530], 'jardim colonial': [-22.3560, -49.0645],
+    'jardim brasil': [-22.3315, -49.0545], 'mary dota': [-22.3012, -49.0298],
+    'centro': [-22.3218, -49.0706], 'quinta ranieri': [-22.3550, -49.0850],
+    'vila falcao': [-22.3175, -49.0845], 'bela vista': [-22.3260, -49.0835],
+    'jardim redentor': [-22.3250, -49.0355], 'presidente geisel': [-22.3340, -49.0325],
+    'octavio rasi': [-22.3385, -49.0215], 'beija-flor': [-22.3155, -49.0195],
+    'jardim solange': [-22.3365, -49.0920], 'jardim terra branca': [-22.3305, -49.0965],
+    'jardim pagani': [-22.3095, -49.0450], 'parque vista alegre': [-22.2950, -49.0640],
+    'tambore': [-22.3690, -49.0410], 'alphaville': [-22.3740, -49.0480], 'lago sul': [-22.3655, -49.0465],
+    'spazio verde': [-22.3620, -49.0420], 'samambaia': [-22.3590, -49.0390],
+    'villaggio i': [-22.3635, -49.0515], 'villaggio ii': [-22.3645, -49.0535], 'villaggio iii': [-22.3665, -49.0555],
+    'harmonis': [-22.3710, -49.0615], 'altos da boa vista piratininga': [-22.3820, -49.1120],
+    'guestier': [-22.3820, -49.1120], 'villa de leon': [-22.3985, -49.1245],
+    'vale florido': [-22.3910, -49.1190], 'piratininga cidade': [-22.4135, -49.1355],
+    'chacaras piratininga sp225': [-22.4050, -49.1150]
+  };
+
+  const resolveCoords = (item) => {
+    if (item && Number(item.lat) && Number(item.lng)) return [Number(item.lat), Number(item.lng)];
+    const nk = normS((item && (item.key || item.nome)) || ''), nb = normS((item && item.bairro) || '');
+    for (const k of Object.keys(COORDS_MAP)) { if (nk && (nk.includes(k) || k.includes(nk))) return COORDS_MAP[k]; }
+    for (const k of Object.keys(COORDS_MAP)) { if (nb && (nb.includes(k) || k.includes(nb))) return COORDS_MAP[k]; }
+    return null;
+  };
+
+  const getApiUrl = () => {
+    if (window.API_URL) return window.API_URL;
+    if (window.APPS_SCRIPT_URL) return window.APPS_SCRIPT_URL;
+    return 'https://script.google.com/macros/s/AKfycbx8WPOIIrLHjj_e9s_ZgXpriYzY4pTQi1N0a-LTbSSlacUMxE9l0dHioUTAga7-_LTp4A/exec';
+  };
+
+  const origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const resp = await origFetch.apply(this, args);
+    try {
+      if (String(args[0] || '').includes('script.google.com')) {
+        resp.clone().json().then((j) => {
+          if (j && j.mercadoRegional) {
+            window.__GUILD_LIVE_MARKET_V922__ = j.mercadoRegional;
+            if (document.getElementById('v922RadarRoot')) renderV922Radar();
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+    return resp;
+  };
+
+  const SCALE_OPTIONS = {
+    terreno: [
+      ['all', 'Todas as metragens'],
+      ['meio', 'Meio Lote (< 160 m² • 5m frente)'],
+      ['intermediario', 'Meio-Termo (160–249 m² • 7–8m)'],
+      ['inteiro', 'Lote Inteiro (250–549 m² • 10–12m+)'],
+      ['grande', 'Lote Grande (550–1.999 m²)'],
+      ['area', 'Área / Galpão (2k–19.9k m²)'],
+      ['gleba', 'Gleba / Grande Área (20k–500k+ m²)']
+    ],
+    casa: [
+      ['all', 'Todos os acabamentos'],
+      ['pronta', '🏠 Pronta para Morar'],
+      ['completa', '✨ Completa / Mobiliada & Lazer'],
+      ['reforma', '🛠️ Para Reforma / Simples'],
+      ['compacta', 'Metragem: Compacta (< 100 m²)'],
+      ['media', 'Metragem: Padrão (100–219 m²)'],
+      ['alta', 'Metragem: Ampla (≥ 220 m²)']
+    ],
+    apto: [
+      ['all', 'Todos os acabamentos'],
+      ['pronta', '🏠 Pronto para Morar'],
+      ['completa', '✨ Mobiliado / Lazer Completo'],
+      ['reforma', '🛠️ Para Reforma / Original'],
+      ['compacto', 'Metragem: Compacto (< 65 m²)'],
+      ['medio', 'Metragem: Padrão (65–119 m²)'],
+      ['amplo', 'Metragem: Amplo (≥ 120 m²)']
+    ],
+    chacara: [['all', 'Chácaras e Sítios']]
+  };
+
+  const getVal = (obj, st) => {
+    if (!obj) return 0;
+    if (st.prod === 'terreno') {
+      if (st.scale === 'meio') return Number(obj.terrenoMeioM2 || 0);
+      if (st.scale === 'intermediario') return Number(obj.terrenoInterM2 || 0);
+      if (st.scale === 'inteiro') return Number(obj.terrenoInteiroM2 || 0);
+      if (st.scale === 'grande') return Number(obj.terrenoGrandeM2 || 0);
+      if (st.scale === 'area') return Number(obj.terrenoAreaM2 || 0);
+      if (st.scale === 'gleba') return Number(obj.terrenoGlebaM2 || 0);
+      if (st.cond === 'cond') return Number(obj.terrenoCondM2 || 0);
+      if (st.cond === 'fora') return Number(obj.terrenoForaM2 || 0);
+      return Number(obj.terrenoInteiroM2 || obj.terrenoM2 || obj.terrenoCondM2 || obj.terrenoForaM2 || 0);
+    }
+    if (st.prod === 'casa') {
+      if (st.scale === 'reforma') return Number(obj.casaReformaM2 || 0);
+      if (st.scale === 'pronta') return Number(obj.casaProntaM2 || obj.casaMedioM2 || obj.casaM2 || 0);
+      if (st.scale === 'completa') return Number(obj.casaCompletaM2 || obj.casaAltoM2 || 0);
+      if (st.scale === 'compacta') return Number(obj.casaCompactaM2 || 0);
+      if (st.scale === 'media') return Number(obj.casaMediaAreaM2 || 0);
+      if (st.scale === 'alta') return Number(obj.casaAmplaM2 || 0);
+      if (st.cond === 'cond') return Number(obj.casaCondM2 || 0);
+      if (st.cond === 'fora') return Number(obj.casaForaM2 || 0);
+      return Number(obj.casaProntaM2 || obj.casaM2 || obj.casaMedioM2 || obj.casaAltoM2 || 0);
+    }
+    if (st.prod === 'apto') {
+      if (st.scale === 'reforma') return Number(obj.aptoReformaM2 || 0);
+      if (st.scale === 'pronta') return Number(obj.aptoProntaM2 || obj.aptoM2 || 0);
+      if (st.scale === 'completa') return Number(obj.aptoCompletaM2 || 0);
+      if (st.scale === 'compacto') return Number(obj.aptoCompactoM2 || 0);
+      if (st.scale === 'medio') return Number(obj.aptoMedioM2 || 0);
+      if (st.scale === 'amplo') return Number(obj.aptoAmploM2 || 0);
+      return Number(obj.aptoM2 || 0);
+    }
+    return Number(obj.chacaraM2 || 0);
+  };
+
+  let st = { prod: 'terreno', scale: 'all', cond: 'all', showAdv: false, radiusKm: 3, selCondo: '', query: '', iaReply: '', iaBusy: false };
+
+  function renderV922Radar() {
+    const extPanel = document.getElementById('v95ExternalMarketPanel');
+    if (!extPanel) return;
+    let root = document.getElementById('v922RadarRoot');
+    if (!root) { extPanel.innerHTML = '<div id="v922RadarRoot"></div>'; root = document.getElementById('v922RadarRoot'); }
+
+    const m = window.__GUILD_LIVE_MARKET_V922__ || null;
+    const bReal = (m && m.bairros ? Object.keys(m.bairros).map((k) => Object.assign({ key: k }, m.bairros[k])) : [])
+      .filter((b) => b && ((Number(b.amostras) || 0) > 0 || b.origem === 'curadoria_manual') && String(b.cidade || '').toLowerCase() !== 'agudos');
+    const cReal = (m && m.condominios ? Object.keys(m.condominios).map((k) => Object.assign({ key: k }, m.condominios[k])) : [])
+      .filter((c) => c && (Number(c.amostras) || 0) > 0);
+    const rReal = m && m.rodovias ? Object.values(m.rodovias).filter((r) => r && r.amostras > 0) : [];
+
+    const qNorm = normS(st.query);
+    const fBairros = bReal.filter((b) => !qNorm || normS(b.nome + ' ' + b.cidade + ' ' + b.zona).includes(qNorm)).sort((a, b) => (b.amostras || 0) - (a.amostras || 0));
+    const fConds = cReal.filter((c) => !qNorm || normS(c.nome + ' ' + c.bairro + ' ' + c.cidade).includes(qNorm)).sort((a, b) => (b.amostras || 0) - (a.amostras || 0));
+    const dtStr = (m && m.updatedAt) ? new Date(m.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Aguardando 1ª coleta real (V7.3)';
+
+    // Monitor ao Vivo
+    const totLoc = (m && m.totalLocalidades) ? Number(m.totalLocalidades) : 98;
+    const totSites = (m && m.totalSites) ? Number(m.totalSites) : 16;
+    const visSites = (m && m.sitesVisitadosCount) ? Number(m.sitesVisitadosCount) : 0;
+    const pctBairros = Math.min(100, Math.round((bReal.length / Math.max(1, totLoc)) * 100));
+    const hrsAgo = (m && m.updatedAt) ? ((Date.now() - new Date(m.updatedAt).getTime()) / 3600000) : 999;
+    const healthDot = hrsAgo <= 12 ? '🟢 Ativo hoje' : (hrsAgo <= 48 ? '🟡 Atenção (' + Math.round(hrsAgo) + 'h)' : '🔴 Aguardando 1ª coleta');
+    const healthCol = hrsAgo <= 12 ? '#34d399' : (hrsAgo <= 48 ? '#fbbf24' : '#f87171');
+
+    // Comparador Condomínio vs. Vizinhos
+    let compHtml = '';
+    if (st.selCondo && m && m.condominios && m.condominios[st.selCondo]) {
+      const sel = Object.assign({ key: st.selCondo }, m.condominios[st.selCondo]);
+      const selVal = getVal(sel, st) || sel.aptoM2 || sel.terrenoInteiroM2 || sel.terrenoM2 || sel.casaM2 || 0;
+      const selPt = resolveCoords(sel);
+      const viz = cReal.filter((o) => o.key !== sel.key).map((o) => {
+        const ov = getVal(o, st) || (sel.categoria === 'apto' ? o.aptoM2 : (sel.categoria === 'terreno' ? (o.terrenoInteiroM2 || o.terrenoM2) : o.casaM2)) || 0;
+        const opt = resolveCoords(o);
+        const d = (selPt && opt) ? distKm(selPt[0], selPt[1], opt[0], opt[1]) : (normS(o.bairro) && normS(o.bairro) === normS(sel.bairro) ? 0.5 : 999);
+        return { o, ov, d };
+      }).filter((x) => x.ov > 0 && x.d <= st.radiusKm).sort((a, b) => a.d - b.d);
+      const vals = viz.map((x) => x.ov).sort((a, b) => a - b);
+      const medV = vals.length ? vals[Math.floor(vals.length / 2)] : 0;
+      const diff = (selVal > 0 && medV > 0) ? Math.round(((selVal - medV) / medV) * 100) : null;
+      const badge = diff === null ? '' : (diff > 0 ? '<span style="color:#fbbf24;font-weight:800;">▲ +' + diff + '% acima dos vizinhos</span>' : '<span style="color:#34d399;font-weight:800;">▼ ' + diff + '% abaixo dos vizinhos</span>');
+
+      compHtml =
+        '<div style="margin:8px 0;padding:12px;border-radius:14px;background:rgba(15,23,42,0.94);border:1.5px solid rgba(244,210,106,0.55);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;">' +
+        '<strong style="color:#f4d26a;font-size:0.86rem;">🏢 ' + sel.nome + ' vs. Vizinhos (' + st.radiusKm + ' km)</strong>' +
+        '<div style="display:flex;gap:5px;">' +
+        [1, 3, 5].map((r) => '<button type="button" class="v922-rad" data-r="' + r + '" style="padding:3px 8px;border-radius:8px;border:1px solid ' + (st.radiusKm === r ? '#34d399' : 'rgba(255,255,255,0.2)') + ';background:' + (st.radiusKm === r ? 'rgba(52,211,153,0.2)' : 'transparent') + ';color:#fff;font-size:0.71rem;cursor:pointer;">' + r + ' km</button>').join('') +
+        '<button type="button" id="v922CloseComp" style="padding:3px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#cbd5e1;font-size:0.71rem;cursor:pointer;">✕</button></div></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;">' +
+        '<div style="padding:9px;border-radius:10px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.4);">' +
+        '<div style="font-size:0.7rem;color:#a7f3d0;">SELECIONADO (' + sel.amostras + ' amostras)</div>' +
+        '<div style="font-size:1.15rem;font-weight:900;color:#fff;">' + fmtM2(selVal) + '/m²</div>' +
+        '<div style="font-size:0.71rem;color:#cbd5e1;">Faixa: ' + fmtM2(sel.minM2) + ' a ' + fmtM2(sel.maxM2) + '/m²' + (sel.temElevador ? ' • 🛗 Elevador' : '') + '</div>' +
+        ((sel.aptoMobM2 || sel.aptoSemMobM2) ? ('<div style="margin-top:5px;font-size:0.71rem;color:#e2e8f0;">' +
+          (sel.aptoSemMobM2 ? ('🏠 Sem mobília: <strong>' + fmtM2(sel.aptoSemMobM2) + '/m²</strong> (' + fmtK(sel.aptoSemMobTicket) + ')<br>') : '') +
+          (sel.aptoMobM2 ? ('✨ Mobiliado: <strong>' + fmtM2(sel.aptoMobM2) + '/m²</strong> (' + fmtK(sel.aptoMobTicket) + ')') : '') + '</div>') : '') +
+        ((sel.andares && Object.keys(sel.andares).length) ? ('<div style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.12);font-size:0.7rem;color:#cbd5e1;">' +
+          Object.keys(sel.andares).map((ak) => '<div>• <strong>' + ak + ':</strong> ' + fmtM2(sel.andares[ak].m2) + '/m² (' + fmtK(sel.andares[ak].ticket) + ' • ' + sel.andares[ak].am + ' am.)</div>').join('') + '</div>') : '') +
+        '</div>' +
+        '<div style="padding:9px;border-radius:10px;background:rgba(59,130,246,0.1);border:1px solid rgba(96,165,250,0.4);">' +
+        '<div style="font-size:0.7rem;color:#bfdbfe;">VIZINHOS NO RAIO (' + viz.length + ' condomínios)</div>' +
+        '<div style="font-size:1.15rem;font-weight:900;color:#fff;">' + (medV ? fmtM2(medV) + '/m²' : 'Sem vizinhos') + '</div>' +
+        '<div style="font-size:0.72rem;">' + badge + '</div></div></div>' +
+        (viz.length ? ('<div style="margin-top:7px;max-height:110px;overflow:auto;font-size:0.73rem;color:#e2e8f0;">' +
+          viz.slice(0, 8).map((x) => '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.08);"><span>' + x.o.nome + ' <em style="color:#94a3b8;">(' + (x.d < 1 ? Math.round(x.d * 1000) + 'm' : x.d.toFixed(1) + ' km') + ')</em></span><strong>' + fmtM2(x.ov) + '/m²</strong></div>').join('') +
+          '</div>') : '') + '</div>';
+    }
+
+    const scales = SCALE_OPTIONS[st.prod] || SCALE_OPTIONS.terreno;
+    const selStyle = 'flex:1 1 155px;padding:9px 10px;border-radius:12px;border:1px solid rgba(52,211,153,0.45);background:#0c162b;color:#f8fafc;font-size:0.77rem;font-weight:700;';
+
+    root.innerHTML =
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">' +
+      '<select id="v922ProdSel" style="' + selStyle + '">' +
+      [['terreno', '📐 Terreno / Lote / Área'], ['casa', '🏠 Casa / Sobrado'], ['apto', '🏢 Apartamento'], ['chacara', '🌿 Chácara / Sítio']].map(([k, l]) =>
+        '<option value="' + k + '"' + (st.prod === k ? ' selected' : '') + '>' + l + '</option>'
+      ).join('') + '</select>' +
+      '<select id="v922ScaleSel" style="' + selStyle + 'border-color:rgba(244,210,106,0.5);">' +
+      scales.map(([k, l]) => '<option value="' + k + '"' + (st.scale === k ? ' selected' : '') + '>' + l + '</option>').join('') +
+      '</select>' +
+      '<button type="button" id="v922ToggleAdv" style="flex:0 0 auto;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);background:' + (st.showAdv ? 'rgba(244,210,106,0.18)' : 'rgba(15,23,42,0.8)') + ';color:#f4d26a;font-size:0.76rem;font-weight:700;cursor:pointer;">⚙️ Filtros ' + (st.showAdv ? '▴' : '▾') + '</button>' +
+      '</div>' +
+      (st.showAdv ? (
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;margin-bottom:8px;border-radius:12px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.14);">' +
+        [['all', '🌐 Dentro e Fora'], ['cond', '🔒 Só Condomínio'], ['fora', '🏘️ Fora de Condomínio']].map(([k, l]) =>
+          '<button type="button" class="v922-cond" data-c="' + k + '" style="padding:5px 9px;border-radius:9px;border:1px solid ' + (st.cond === k ? '#f4d26a' : 'rgba(255,255,255,0.18)') + ';background:' + (st.cond === k ? 'rgba(244,210,106,0.18)' : 'transparent') + ';color:#fff;font-size:0.72rem;font-weight:700;cursor:pointer;">' + l + '</button>'
+        ).join('') + '</div>'
+      ) : '') +
+      '<input type="search" id="v922Search" value="' + (st.query || '').replace(/"/g, '&quot;') + '" placeholder="🔍 Buscar bairro, condomínio, edifício ou rodovia (ex.: Estoril, Harmonis, Murano, SP-225)..." style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:12px;border:1px solid rgba(52,211,153,0.4);background:#0c162b;color:#fff;font-size:0.78rem;margin-bottom:8px;">' +
+      compHtml +
+      '<div id="v922Map" style="width:100%;height:265px;border-radius:16px;overflow:hidden;border:1px solid rgba(52,211,153,0.4);margin-bottom:10px;background:#0b1426;"></div>' +
+      // MINI AVALIADOR IA DISCRETO (BASEADO 100% NOS DADOS REAIS DO RADAR)
+      '<div style="padding:10px 12px;border-radius:14px;background:rgba(139,92,246,0.1);border:1px solid rgba(167,139,250,0.4);margin-bottom:10px;">' +
+      '<div style="display:flex;gap:6px;align-items:center;">' +
+      '<input type="text" id="v922IaInput" placeholder="✨ Pergunte ao Avaliador IA (ex.: Casa 180m² com piscina no Estoril vale quanto?)" style="flex:1;padding:8px 10px;border-radius:10px;border:1px solid rgba(167,139,250,0.4);background:#0b1224;color:#fff;font-size:0.76rem;">' +
+      '<button type="button" id="v922IaBtn" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.75rem;font-weight:800;cursor:pointer;">' + (st.iaBusy ? '...' : 'Perguntar') + '</button>' +
+      '</div>' +
+      (st.iaReply ? '<div style="margin-top:8px;font-size:0.76rem;color:#e2e8f0;line-height:1.45;padding:8px 10px;border-radius:10px;background:rgba(15,23,42,0.75);">' + st.iaReply + '</div>' : '') +
+      '</div>' +
+      // MONITOR AO VIVO PÚBLICO
+      '<div style="padding:11px 12px;border-radius:14px;background:rgba(15,23,42,0.88);border:1px solid rgba(52,211,153,0.38);margin-bottom:10px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">' +
+      '<strong style="font-size:0.78rem;color:#f8fafc;">📊 Monitor ao Vivo do Radar (Meta: ' + totLoc + ' bairros &amp; condomínios)</strong>' +
+      '<span style="font-size:0.72rem;font-weight:800;color:' + healthCol + ';">' + healthDot + '</span></div>' +
+      '<div style="width:100%;height:9px;border-radius:999px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:8px;">' +
+      '<div style="width:' + pctBairros + '%;height:100%;background:linear-gradient(90deg,#10b981,#f4d26a);border-radius:999px;"></div></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:0.72rem;color:#cbd5e1;">' +
+      '<div>🌐 Sites lidos: <strong style="color:#fff;">' + visSites + '/' + totSites + '</strong></div>' +
+      '<div>🏠 Imóveis únicos: <strong style="color:#34d399;">' + (m ? (m.amostrasAnalisadas || 0) : 0) + '</strong></div>' +
+      '<div>📍 Bairros: <strong style="color:#f4d26a;">' + bReal.length + '/' + totLoc + ' (' + pctBairros + '%)</strong></div>' +
+      '<div>🏢 Condomínios: <strong style="color:#60a5fa;">' + cReal.length + '</strong></div></div>' +
+      '<div style="margin-top:6px;font-size:0.69rem;color:#94a3b8;">🕒 Última coleta: <strong>' + dtStr + '</strong> • Duplicatas removidas: <strong>' + (m ? (m.duplicatasRemovidas || 0) : 0) + '</strong> • Ciclo leve 3x/dia + janela 30 dias</div></div>' +
+      (rReal.length ? (
+        '<h4 style="margin:10px 0 6px;color:#60a5fa;font-size:0.84rem;">🛣️ Grandes Áreas &amp; Glebas por Rodovia (1.000 m² a 500.000+ m²)</h4>' +
+        '<div style="overflow-x:auto;margin-bottom:10px;"><table class="v95-mkt-table"><thead><tr><th>Rodovia / Eixo</th><th>Lote Grande</th><th>Área (2k–20k)</th><th>Gleba (20k+)</th><th>Am.</th></tr></thead><tbody>' +
+        rReal.map((r) => '<tr><td><strong>' + r.nome + '</strong></td><td>' + fmtM2(r.grandeM2) + '</td><td>' + fmtM2(r.areaM2) + '</td><td>' + fmtM2(r.glebaM2) + '</td><td>' + r.amostras + '</td></tr>').join('') +
+        '</tbody></table></div>'
+      ) : '') +
+      (fConds.length ? (
+        '<h4 style="margin:10px 0 6px;color:#34d399;font-size:0.84rem;">🏢 Condomínios &amp; Edifícios Específicos (' + fConds.length + ' — toque para comparar)</h4>' +
+        '<div style="max-height:210px;overflow:auto;margin-bottom:12px;"><table class="v95-mkt-table"><thead><tr><th>Condomínio / Edifício</th><th>Lote</th><th>Casa Médio</th><th>Casa Alto</th><th>Apto</th><th>Am.</th></tr></thead><tbody>' +
+        fConds.slice(0, 120).map((c) =>
+          '<tr class="v922-crow" data-ck="' + c.key + '" style="cursor:pointer;' + (st.selCondo === c.key ? 'background:rgba(52,211,153,0.18);' : '') + '">' +
+          '<td><strong>' + c.nome + '</strong><div style="font-size:0.66rem;color:#94a3b8;">' + (c.bairro ? c.bairro + ' • ' : '') + (c.cidade || 'Bauru') + ' • <em>Comparar →</em></div></td>' +
+          '<td>' + fmtM2(c.terrenoInteiroM2 || c.terrenoM2) + '</td><td>' + fmtM2(c.casaMedioM2) + '</td><td>' + fmtM2(c.casaAltoM2) + '</td><td>' + fmtM2(c.aptoM2) + '</td><td><strong>' + c.amostras + '</strong></td></tr>'
+        ).join('') + '</tbody></table></div>'
+      ) : '') +
+      (fBairros.length ? (
+        '<h4 style="margin:10px 0 6px;color:#f4d26a;font-size:0.84rem;">📍 Bairros — 3 Patamares de Acabamento + Ticket Médio (' + fBairros.length + ' locais)</h4>' +
+        '<div style="max-height:260px;overflow:auto;"><table class="v95-mkt-table"><thead><tr><th>Bairro / Região</th><th>Lote Int.</th><th>🛠️ Reforma</th><th>🏠 Pronta</th><th>✨ Completa</th><th>Ticket Casa</th></tr></thead><tbody>' +
+        fBairros.map((b) =>
+          '<tr><td><strong>' + b.nome + '</strong><div style="font-size:0.66rem;color:#94a3b8;">' + (b.cidade || 'Bauru') + ' • ' + (b.origem === 'curadoria_manual' ? '<span style="color:#f4d26a;">Curadoria GUILD IMOB</span>' : (b.amostras + ' am.')) + '</div></td>' +
+          '<td>' + fmtM2(b.terrenoInteiroM2 || b.terrenoM2) + '</td><td>' + fmtM2(b.casaReformaM2) + '</td><td>' + fmtM2(b.casaProntaM2 || b.casaM2) + '</td><td>' + fmtM2(b.casaCompletaM2 || b.casaAltoM2) + '</td><td>' + fmtK(b.casaTicketMed) + '</td></tr>'
+        ).join('') + '</tbody></table></div>'
+      ) : '');
+
+    document.getElementById('v922ProdSel').onchange = (e) => { st.prod = e.target.value; st.scale = 'all'; renderV922Radar(); };
+    document.getElementById('v922ScaleSel').onchange = (e) => { st.scale = e.target.value; renderV922Radar(); };
+    document.getElementById('v922ToggleAdv').onclick = () => { st.showAdv = !st.showAdv; renderV922Radar(); };
+    root.querySelectorAll('.v922-cond').forEach((b) => { b.onclick = () => { st.cond = b.getAttribute('data-c'); renderV922Radar(); }; });
+    root.querySelectorAll('.v922-rad').forEach((b) => { b.onclick = () => { st.radiusKm = Number(b.getAttribute('data-r')) || 3; renderV922Radar(); }; });
+    root.querySelectorAll('.v922-crow').forEach((tr) => { tr.onclick = () => { st.selCondo = tr.getAttribute('data-ck'); renderV922Radar(); }; });
+    const cc = document.getElementById('v922CloseComp'); if (cc) cc.onclick = () => { st.selCondo = ''; renderV922Radar(); };
+    const sinp = document.getElementById('v922Search');
+    if (sinp) { sinp.oninput = () => { st.query = sinp.value; renderV922Radar(); const ni = document.getElementById('v922Search'); if (ni) { ni.focus(); ni.setSelectionRange(ni.value.length, ni.value.length); } }; }
+
+    const iaBtn = document.getElementById('v922IaBtn');
+    const iaInp = document.getElementById('v922IaInput');
+    if (iaBtn && iaInp) {
+      const askIa = async () => {
+        const q = iaInp.value.trim();
+        if (!q || st.iaBusy) return;
+        st.iaBusy = true; st.iaReply = 'Consultando amostras reais do Radar...'; renderV922Radar();
+        try {
+          const r = await fetch(getApiUrl(), { method: 'POST', body: JSON.stringify({ action: 'iaAvaliadorRadar', pergunta: q }) });
+          const j = await r.json();
+          st.iaReply = (j && j.ok && j.resposta) ? j.resposta : (j && j.error ? ('⚠️ ' + j.error) : 'Não foi possível consultar agora.');
+        } catch (e) { st.iaReply = '⚠️ Falha de conexão ao consultar o Avaliador IA.'; }
+        st.iaBusy = false; renderV922Radar();
+      };
+      iaBtn.onclick = askIa;
+      iaInp.onkeydown = (e) => { if (e.key === 'Enter') askIa(); };
+    }
+
+    const mapBox = document.getElementById('v922Map');
+    if (mapBox && typeof L !== 'undefined') {
+      try {
+        if (window._v922Map) { try { window._v922Map.remove(); } catch (_) {} }
+        const mp = L.map(mapBox, { zoomControl: true }).setView([-22.348, -49.075], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 17 }).addTo(mp);
+        window._v922Map = mp;
+        const list = (st.cond === 'cond' ? fConds : fBairros.concat(fConds));
+        const pinLayer = L.layerGroup().addTo(mp);
+        const drawZoomPins = () => {
+          pinLayer.clearLayers();
+          const showNames = mp.getZoom() >= 14;
+          const used = {};
+          list.forEach((it) => {
+            const v = getVal(it, st);
+            if (v <= 0) return;
+            const pt = resolveCoords(it);
+            if (!pt) return;
+            const pk = pt[0].toFixed(3) + ',' + pt[1].toFixed(3);
+            if (used[pk]) return;
+            used[pk] = true;
+            const isC = Boolean(it.categoria);
+            const shortName = String(it.nome || '').replace(/^(Residencial|Condomínio|Edifício)\s+/i, '').slice(0, 18);
+            const labelHtml = (isC && showNames)
+              ? ('<div style="background:rgba(9,17,31,0.97);color:#f4d26a;border:1.5px solid #f4d26a;border-radius:12px;padding:3px 8px;font-size:10.5px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.55);text-align:center;">🏢 ' + shortName + '<br><span style="color:#fff;">' + fmtM2(v) + '/m²</span></div>')
+              : ('<div style="background:rgba(9,17,31,0.95);color:#fff;border:1.5px solid ' + (isC ? '#f4d26a' : '#34d399') + ';border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.45);">' + (isC ? '🏢 ' : '') + fmtM2(v) + '/m²</div>');
+            const icon = L.divIcon({ className: 'v922-pin', html: labelHtml, iconSize: [isC && showNames ? 130 : 96, isC && showNames ? 36 : 24], iconAnchor: [isC && showNames ? 65 : 48, 12] });
+            const pop = '<div style="font-family:Arial,sans-serif;font-size:12px;color:#0f172a;min-width:190px;"><strong>' + it.nome + '</strong><br><span style="color:#64748b;font-size:11px;">' + (it.cidade || 'Bauru') + ' • ' + (it.origem === 'curadoria_manual' ? 'Curadoria GUILD IMOB' : (it.amostras + ' amostras')) + '</span><hr style="margin:5px 0;border:none;border-top:1px solid #e2e8f0;">' +
+              (it.terrenoMeioM2 ? ('📏 Meio Lote (&lt;160m²): <strong>' + fmtM2(it.terrenoMeioM2) + '/m²</strong><br>') : '') +
+              (it.terrenoInteiroM2 ? ('🟩 Lote Inteiro: <strong>' + fmtM2(it.terrenoInteiroM2) + '/m²</strong><br>') : '') +
+              (it.casaReformaM2 ? ('🛠️ Casa Reforma: <strong>' + fmtM2(it.casaReformaM2) + '/m²</strong><br>') : '') +
+              (it.casaProntaM2 ? ('🏠 Casa Pronta: <strong>' + fmtM2(it.casaProntaM2) + '/m²</strong><br>') : '') +
+              (it.casaCompletaM2 ? ('✨ Casa Completa: <strong>' + fmtM2(it.casaCompletaM2) + '/m²</strong><br>') : '') +
+              (it.aptoSemMobM2 ? ('🏠 Apto Sem Mobília: <strong>' + fmtM2(it.aptoSemMobM2) + '/m²</strong><br>') : '') +
+              (it.aptoMobM2 ? ('✨ Apto Mobiliado: <strong>' + fmtM2(it.aptoMobM2) + '/m²</strong><br>') : '') +
+              (it.aptoM2 && !it.aptoMobM2 && !it.aptoSemMobM2 ? ('🏢 Apto: <strong>' + fmtM2(it.aptoM2) + '/m²</strong><br>') : '') + '</div>';
+            const mk = L.marker(pt, { icon }).bindPopup(pop).addTo(pinLayer);
+            if (isC) mk.on('click', () => { st.selCondo = it.key; renderV922Radar(); });
+          });
+        };
+        drawZoomPins();
+        mp.on('zoomend', drawZoomPins);
+        setTimeout(() => { try { mp.invalidateSize(true); } catch (_) {} }, 220);
+      } catch (_) {}
+    }
+  }
+
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target && ev.target.closest && ev.target.closest('.v95-mapa-mode-btn[data-mode="mercado"]');
+    if (btn) setTimeout(renderV922Radar, 60);
+  }, true);
 })();
 </script>
 
