@@ -20463,8 +20463,11 @@
       '<select id="v922ScaleSel" style="' + selStyle + 'border-color:rgba(244,210,106,0.5);">' +
       scales.map(([k, l]) => '<option value="' + k + '"' + (st.scale === k ? ' selected' : '') + '>' + l + '</option>').join('') +
       '</select>' +
-      '<button type="button" id="v922ToggleAdv" style="flex:0 0 auto;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);background:' + (st.showAdv ? 'rgba(244,210,106,0.18)' : 'rgba(15,23,42,0.8)') + ';color:#f4d26a;font-size:0.76rem;font-weight:700;cursor:pointer;">⚙️ Filtros ' + (st.showAdv ? '▴' : '▾') + '</button>' +
+      '<button type="button" id="v922ToggleAdv" style="flex:0 0 auto;padding:9px 11px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);background:' + (st.showAdv ? 'rgba(244,210,106,0.18)' : 'rgba(15,23,42,0.8)') + ';color:#f4d26a;font-size:0.75rem;font-weight:700;cursor:pointer;">⚙️ Filtros ' + (st.showAdv ? '▴' : '▾') + '</button>' +
+      '<button type="button" id="v924BtnGps" style="flex:0 0 auto;padding:9px 11px;border-radius:12px;border:1px solid rgba(52,211,153,0.5);background:rgba(16,185,129,0.14);color:#a7f3d0;font-size:0.75rem;font-weight:700;cursor:pointer;">📍 GPS Aqui</button>' +
+      '<button type="button" id="v924BtnPdf" style="flex:0 0 auto;padding:9px 11px;border-radius:12px;border:1px solid rgba(244,210,106,0.5);background:rgba(244,210,106,0.14);color:#fde68a;font-size:0.75rem;font-weight:700;cursor:pointer;">🖨️ PDF</button>' +
       '</div>' +
+      '<div id="v924GpsRes" style="display:none;margin-bottom:8px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,0.12);border:1px solid rgba(52,211,153,0.45);font-size:0.78rem;color:#ecfdf5;"></div>' +
       (st.showAdv ? (
         '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;margin-bottom:8px;border-radius:12px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.14);">' +
         [['all', '🌐 Dentro e Fora'], ['cond', '🔒 Só Condomínio'], ['fora', '🏘️ Fora de Condomínio']].map(([k, l]) =>
@@ -20522,6 +20525,81 @@
     document.getElementById('v922ProdSel').onchange = (e) => { st.prod = e.target.value; st.scale = 'all'; renderV922Radar(); };
     document.getElementById('v922ScaleSel').onchange = (e) => { st.scale = e.target.value; renderV922Radar(); };
     document.getElementById('v922ToggleAdv').onclick = () => { st.showAdv = !st.showAdv; renderV922Radar(); };
+    const gpsBtn24 = document.getElementById('v924BtnGps');
+    const gpsRes24 = document.getElementById('v924GpsRes');
+    if (gpsBtn24 && gpsRes24) {
+      gpsBtn24.onclick = () => {
+        if (!navigator.geolocation) { gpsRes24.style.display = 'block'; gpsRes24.textContent = '⚠️ Seu navegador não suporta GPS.'; return; }
+        gpsRes24.style.display = 'block';
+        gpsRes24.textContent = '📡 Localizando seu bairro/condomínio via GPS...';
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          let detSub = '', detCity = '';
+          try {
+            const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + latitude + '&lon=' + longitude + '&zoom=15&addressdetails=1');
+            const j = await r.json();
+            const a = j.address || {};
+            detSub = a.suburb || a.neighbourhood || a.quarter || '';
+            detCity = a.city || a.town || a.municipality || '';
+          } catch (_) {}
+          let bestItem = null, bestD = 9999;
+          const pool = cReal.concat(bReal);
+          if (detSub) {
+            const dn = normS(detSub);
+            bestItem = pool.find((x) => { const xn = normS(x.nome || x.key); return xn && (dn.includes(xn) || xn.includes(dn)); }) || null;
+          }
+          if (!bestItem) {
+            pool.forEach((x) => {
+              const pt = resolveCoords(x);
+              if (!pt) return;
+              const d = distKm(latitude, longitude, pt[0], pt[1]);
+              if (d < bestD) { bestD = d; bestItem = x; }
+            });
+          }
+          try {
+            if (window._v922Map && typeof L !== 'undefined') {
+              window._v922Map.flyTo([latitude, longitude], 15, { duration: 1.0 });
+              L.circleMarker([latitude, longitude], { radius: 9, color: '#60a5fa', fillColor: '#3b82f6', fillOpacity: 0.9, weight: 3 })
+                .bindPopup('<strong>📍 Você está aqui</strong><br>' + (detSub || (bestItem && bestItem.nome) || 'Bauru / Piratininga')).addTo(window._v922Map).openPopup();
+            }
+          } catch (_) {}
+          if (bestItem) {
+            gpsRes24.innerHTML =
+              '<div style="font-weight:800;color:#6ee7b7;margin-bottom:4px;">📍 Você está em: ' + (detSub ? (detSub + (detCity ? ' • ' + detCity : '')) : bestItem.nome) + '</div>' +
+              '<div>Referência real mais próxima (<strong>' + bestItem.nome + '</strong> • ' + bestItem.amostras + ' amostras):</div>' +
+              '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;">' +
+              (bestItem.terrenoMeioM2 ? ('<span>📏 Meio Lote: <strong>' + fmtM2(bestItem.terrenoMeioM2) + '/m²</strong></span>') : '') +
+              (bestItem.terrenoInteiroM2 || bestItem.terrenoM2 ? ('<span>🟩 Lote Inteiro: <strong>' + fmtM2(bestItem.terrenoInteiroM2 || bestItem.terrenoM2) + '/m²</strong></span>') : '') +
+              (bestItem.casaProntaM2 || bestItem.casaM2 ? ('<span>🏠 Casa Pronta: <strong>' + fmtM2(bestItem.casaProntaM2 || bestItem.casaM2) + '/m²</strong></span>') : '') +
+              (bestItem.casaCompletaM2 ? ('<span>✨ Casa Completa: <strong>' + fmtM2(bestItem.casaCompletaM2) + '/m²</strong></span>') : '') +
+              (bestItem.aptoM2 ? ('<span>🏢 Apto: <strong>' + fmtM2(bestItem.aptoM2) + '/m²</strong></span>') : '') +
+              '</div>';
+          } else {
+            gpsRes24.textContent = '📍 Localização obtida (' + (detSub || 'região') + '), mas ainda sem amostras reais próximas.';
+          }
+        }, (err) => {
+          gpsRes24.textContent = '⚠️ Não foi possível ativar o GPS (' + (err.message || 'permissão negada') + ').';
+        }, { enableHighAccuracy: true, timeout: 10000 });
+      };
+    }
+    const pdfBtn24 = document.getElementById('v924BtnPdf');
+    if (pdfBtn24) {
+      pdfBtn24.onclick = () => {
+        const w = window.open('', '_blank');
+        if (!w) { if (typeof showToast === 'function') showToast('⚠️ Permita pop-ups para gerar o PDF.'); return; }
+        const bRowsPdf = fBairros.map((b) => '<tr><td><strong>' + b.nome + '</strong> (' + (b.cidade || 'Bauru') + ' • ' + b.amostras + ' am.)</td><td>' + fmtM2(b.terrenoMeioM2) + '</td><td>' + fmtM2(b.terrenoInteiroM2 || b.terrenoM2) + '</td><td>' + fmtM2(b.casaReformaM2) + '</td><td>' + fmtM2(b.casaProntaM2 || b.casaM2) + '</td><td>' + fmtM2(b.casaCompletaM2 || b.casaAltoM2) + '</td><td>' + fmtM2(b.aptoM2) + '</td></tr>').join('');
+        const cRowsPdf = fConds.slice(0, 80).map((c) => '<tr><td><strong>' + c.nome + '</strong> (' + (c.cidade || 'Bauru') + ' • ' + c.amostras + ' am.)</td><td>' + fmtM2(c.terrenoInteiroM2 || c.terrenoM2) + '</td><td>' + fmtM2(c.casaMedioM2) + '</td><td>' + fmtM2(c.casaAltoM2) + '</td><td>' + fmtM2(c.aptoSemMobM2 || c.aptoM2) + '</td><td>' + fmtM2(c.aptoMobM2) + '</td></tr>').join('');
+        w.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Mercado Real — GUILD IMOB</title><style>body{font-family:Arial,sans-serif;color:#0f172a;margin:24px;line-height:1.4;}h1{font-size:18px;margin:0;}h2{font-size:14px;border-left:4px solid #b48a28;padding-left:8px;margin-top:16px;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}th,td{border:1px solid #cbd5e1;padding:5px 7px;text-align:left;}th{background:#f1f5f9;}@media print{.no-print{display:none;}}</style></head><body>' +
+          '<div class="no-print" style="text-align:right;margin-bottom:10px;"><button onclick="window.print()" style="background:#b48a28;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;">🖨️ Salvar PDF / Imprimir</button></div>' +
+          '<h1>GUILD IMOB — Relatório Científico de Mercado Imobiliário (Bauru &amp; Piratininga)</h1>' +
+          '<div style="font-size:11px;color:#475569;margin-top:4px;">Guilherme Delfino • CRECI 272251-F | J-50143 • Emitido em ' + new Date().toLocaleString('pt-BR') + ' • ' + (m ? (m.amostrasAnalisadas || 0) : 0) + ' imóveis únicos validados (Mediana IQR)</div>' +
+          '<h2>1. Condomínios &amp; Edifícios Específicos (R$/m²)</h2><table><thead><tr><th>Condomínio / Edifício</th><th>Lote</th><th>Casa Médio</th><th>Casa Alto</th><th>Apto s/ Mobília</th><th>Apto Mobiliado</th></tr></thead><tbody>' + cRowsPdf + '</tbody></table>' +
+          '<h2>2. Bairros, Vilas, Jardins &amp; Núcleos (R$/m²)</h2><table><thead><tr><th>Localidade</th><th>Meio Lote</th><th>Lote Inteiro</th><th>Casa Reforma</th><th>Casa Pronta</th><th>Casa Completa</th><th>Apto</th></tr></thead><tbody>' + bRowsPdf + '</tbody></table>' +
+          '</body></html>');
+        w.document.close();
+        setTimeout(() => { try { w.focus(); w.print(); } catch (_) {} }, 350);
+      };
+    }
     root.querySelectorAll('.v922-cond').forEach((b) => { b.onclick = () => { st.cond = b.getAttribute('data-c'); renderV922Radar(); }; });
     root.querySelectorAll('.v922-rad').forEach((b) => { b.onclick = () => { st.radiusKm = Number(b.getAttribute('data-r')) || 3; renderV922Radar(); }; });
     root.querySelectorAll('.v922-crow').forEach((tr) => { tr.onclick = () => { st.selCondo = tr.getAttribute('data-ck'); renderV922Radar(); }; });
@@ -20598,6 +20676,35 @@
     const btn = ev.target && ev.target.closest && ev.target.closest('.v95-mapa-mode-btn[data-mode="mercado"]');
     if (btn) setTimeout(renderV922Radar, 60);
   }, true);
+})();
+</script>
+
+
+<script id="guildimob-v923-clean-master-radar">
+(function() {
+  const cleanMasterRadarBtns = () => {
+    const bar = document.getElementById('v93MasterAutomationBar');
+    if (!bar) return;
+    // Remove botões antigos confusos (Ativar Robô Diário 4h e Pesquisar 1 Bairro Agora)
+    bar.querySelectorAll('button').forEach((b) => {
+      const txt = (b.textContent || '').toLowerCase();
+      if (txt.includes('ativar rob') || txt.includes('pesquisar 1 bairro')) {
+        b.style.display = 'none';
+      } else if (txt.includes('atualizar índice mercado')) {
+        b.innerHTML = '🚀 Puxar Lote de Imobiliárias Agora';
+      }
+    });
+    // Adiciona selo fixo de Robô Permanente 3x/dia (sem botão de desligar)
+    if (!document.getElementById('v923AlwaysOnBadge')) {
+      const badge = document.createElement('div');
+      badge.id = 'v923AlwaysOnBadge';
+      badge.style.cssText = 'margin-top:8px;padding:7px 10px;border-radius:10px;background:rgba(16,185,129,0.12);border:1px solid rgba(52,211,153,0.4);font-size:0.74rem;color:#a7f3d0;font-weight:700;';
+      badge.innerHTML = '🟢 Robô do Radar Científico ativo de forma permanente (3x/dia leve • 16 imobiliárias • continuidade automática)';
+      bar.appendChild(badge);
+    }
+  };
+  setInterval(cleanMasterRadarBtns, 1200);
+  setTimeout(cleanMasterRadarBtns, 300);
 })();
 </script>
 
