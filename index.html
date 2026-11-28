@@ -8741,11 +8741,17 @@
       const mQuartos = txt.match(/(\d+)\s*(quarto|dormit)/);
       if (mQuartos) document.getElementById("propQuartos").value = mQuartos[1];
 
-      const mVagas = txt.match(/(\d+)\s*vaga/);
-      if (mVagas) document.getElementById("propVagas").value = mVagas[1];
+      const mVagas = txt.match(/garagem\s*(?:para|pra|p\/)?\s*(\d+)\s*(?:carros?|ve[ií]culos?|vagas?)/)
+        || txt.match(/(\d+)\s*(?:vagas?|carros?\s*cobertos?)/);
+      if (mVagas) { document.getElementById("propVagas").value = mVagas[1]; detected++; }
+      const mBanh = txt.match(/(\d+)\s*(?:banheiros?|wcs?|lavabos?)/);
+      if (mBanh && document.getElementById("propBanheiros")) { document.getElementById("propBanheiros").value = mBanh[1]; detected++; }
+      const mSalas = txt.match(/(\d+)\s*salas?/);
+      if (mSalas && document.getElementById("propSalas")) { document.getElementById("propSalas").value = mSalas[1]; detected++; }
 
-      // Terreno e Construída
-      const mTerreno = txt.match(/terreno\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*m/);
+      // Terreno e Construída (evita roubar número da construção após a palavra TERRENO!)
+      const mTerreno = txt.match(/(\d+(?:[.,]\d+)?)\s*m[²2]?\s*(?:de\s*)?(?:terreno|lote|área total|area total)/)
+        || txt.match(/(?:terreno|lote|área total|area total)\s*(?:de\s*|:?\s*)(\d+(?:[.,]\d+)?)\s*m[²2]?(?!\s*(?:de\s*)?constru)/);
       if (mTerreno) { document.getElementById("propTerreno").value = formatBRDecimal(parseBRNumber(mTerreno[1])); detected++; }
 
       const mConst = txt.match(/(?:constru[ií]da|constru[cç][aã]o|área útil|area util)\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*m/)
@@ -20789,6 +20795,276 @@
   }, true);
 
   setTimeout(updateEditBanner, 600);
+})();
+</script>
+
+
+<script id="guildimob-v926-autofill-rodovias-contato">
+(function() {
+  if (window.__GUILD_V926_AUTOFILL_INIT__) return;
+  window.__GUILD_V926_AUTOFILL_INIT__ = true;
+
+  const REGIONAL_CONDOS = [
+    { key: 'recanto dos nobres', nome: 'Recanto dos Nobres', bairro: 'Rodovia SP-300 — Recanto dos Nobres', cidade: 'Agudos / Bauru - SP', rodovia: 'SP-300 (Marechal Rondon)' },
+    { key: 'terracota', nome: 'Terracota Ecoliving Residence', bairro: 'Rodovia SP-300 / Zona Sul — Terracota Ecoliving', cidade: 'Agudos / Bauru - SP', rodovia: 'SP-300 / Rua Ezequial Vaz' },
+    { key: 'vale do igapo', nome: 'Condomínio Vale do Igapó', bairro: 'Rodovia SP-300 Km 336 — Vale do Igapó', cidade: 'Bauru - SP', rodovia: 'SP-300 Km 336' },
+    { key: 'harmonis', nome: 'Harmonis Parque Residencial', bairro: 'Zona Sul — Harmonis Parque Residencial', cidade: 'Bauru - SP', rodovia: 'Av. Com. José da Silva Martha' },
+    { key: 'tambore', nome: 'Tamboré Bauru', bairro: 'Zona Sul — Tamboré Bauru', cidade: 'Bauru - SP', rodovia: 'Rod. SP-225 / Zona Sul' },
+    { key: 'alphaville', nome: 'Alphaville Bauru', bairro: 'Zona Sul — Alphaville Bauru', cidade: 'Bauru - SP', rodovia: 'Rod. SP-225 / Zona Sul' },
+    { key: 'lago sul', nome: 'Residencial Lago Sul', bairro: 'Zona Sul — Residencial Lago Sul', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'spazio verde', nome: 'Spazio Verde', bairro: 'Zona Sul — Spazio Verde', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'villaggio i', nome: 'Villaggio I', bairro: 'Zona Sul — Villaggio I', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'villaggio ii', nome: 'Villaggio II', bairro: 'Zona Sul — Villaggio II', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'villaggio iii', nome: 'Villaggio III', bairro: 'Zona Sul — Villaggio III', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'paineiras', nome: 'Residencial Paineiras', bairro: 'Zona Sul — Residencial Paineiras', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'fazenda da mata', nome: 'Residencial Fazenda da Mata', bairro: 'Rodovia SP-225 — Fazenda da Mata', cidade: 'Bauru - SP', rodovia: 'SP-225' },
+    { key: 'samambaia', nome: 'Samambaia Parque Residencial', bairro: 'Zona Sul — Samambaia Parque Residencial', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'cidade jardim', nome: 'Residencial Cidade Jardim', bairro: 'Vila Aviação — Cidade Jardim', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'quinta ranieri green', nome: 'Quinta Ranieri Green', bairro: 'Quinta Ranieri — Green', cidade: 'Bauru - SP', rodovia: 'Av. Nações Unidas Sul' },
+    { key: 'quinta ranieri blue', nome: 'Quinta Ranieri Blue', bairro: 'Quinta Ranieri — Blue', cidade: 'Bauru - SP', rodovia: 'Av. Nações Unidas Sul' },
+    { key: 'quinta ranieri gold', nome: 'Quinta Ranieri Gold', bairro: 'Quinta Ranieri — Gold', cidade: 'Bauru - SP', rodovia: 'Av. Nações Unidas Sul' },
+    { key: 'quinta ranieri', nome: 'Quinta Ranieri', bairro: 'Quinta Ranieri', cidade: 'Bauru - SP', rodovia: 'Av. Nações Unidas Sul' },
+    { key: 'terre di toscana', nome: 'Terre di Toscana', bairro: 'Zona Sul — Terre di Toscana', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'villa dumont', nome: 'Villa Dumont', bairro: 'Zona Sul — Villa Dumont', cidade: 'Bauru - SP', rodovia: 'Zona Sul' },
+    { key: 'guestier i', nome: 'Residencial Guestier I', bairro: 'Rodovia SP-225 — Altos da Boa Vista (Guestier I)', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'guestier ii', nome: 'Residencial Guestier II', bairro: 'Rodovia SP-225 — Altos da Boa Vista (Guestier II)', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'guestier iii', nome: 'Residencial Guestier III', bairro: 'Rodovia SP-225 — Altos da Boa Vista (Guestier III)', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'villa de leon', nome: 'Condomínio Villa de León', bairro: 'Rodovia SP-225 — Villa de León', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'vale florido', nome: 'Residencial Vale Florido', bairro: 'Rodovia SP-225 — Vale Florido', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'morada do sol', nome: 'Condomínio Morada do Sol', bairro: 'Rodovia SP-225 — Morada do Sol', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'portal dos lagos', nome: 'Portal dos Lagos', bairro: 'Rodovia SP-225 — Portal dos Lagos', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'villa toscana', nome: 'Condomínio Villa Toscana', bairro: 'Rodovia SP-225 — Villa Toscana', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'terras de piratininga', nome: 'Terras de Piratininga', bairro: 'Rodovia SP-225 — Terras de Piratininga', cidade: 'Piratininga - SP', rodovia: 'SP-225' },
+    { key: 'chacaras bauruenses', nome: 'Chácaras Bauruenses', bairro: 'Rodovia SP-294 — Chácaras Bauruenses', cidade: 'Bauru - SP', rodovia: 'SP-294' },
+    { key: 'estancia monte alegre', nome: 'Estância Monte Alegre', bairro: 'Rodovia SP-300 — Estância Monte Alegre', cidade: 'Bauru / Agudos - SP', rodovia: 'SP-300' },
+    { key: 'sp-300', nome: 'Beira de Rodovia SP-300 (Marechal Rondon)', bairro: 'Rodovia SP-300 (Marechal Rondon) — Km ', cidade: 'Bauru / Agudos - SP', rodovia: 'SP-300' },
+    { key: 'sp-225', nome: 'Beira de Rodovia SP-225 (Bauru–Piratininga)', bairro: 'Rodovia SP-225 (Bauru–Piratininga) — Km ', cidade: 'Piratininga / Bauru - SP', rodovia: 'SP-225' },
+    { key: 'sp-294', nome: 'Beira de Rodovia SP-294 (Bauru–Marília)', bairro: 'Rodovia SP-294 (Bauru–Marília) — Km ', cidade: 'Bauru - SP', rodovia: 'SP-294' },
+    { key: 'sp-321', nome: 'Beira de Rodovia SP-321 (Bauru–Iacanga)', bairro: 'Rodovia SP-321 (Bauru–Iacanga) — Km ', cidade: 'Bauru - SP', rodovia: 'SP-321' }
+  ];
+
+  const normC = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+
+  // Injeta seletor rápido de Condomínio / Rodovia-Km logo abaixo de Bairro *
+  const injectHighwayCondoPicker = () => {
+    const bairroEl = document.getElementById('propBairro');
+    if (!bairroEl || document.getElementById('v926CondoRodoviaSel')) return;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:6px;';
+    wrap.innerHTML =
+      '<select id="v926CondoRodoviaSel" style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(52,211,153,0.45);background:#0c162b;color:#a7f3d0;font-size:0.75rem;font-weight:700;">' +
+      '<option value="">🛣️ Atalho: Condomínio ou Beira de Rodovia (Bauru • Piratininga • Agudos)...</option>' +
+      REGIONAL_CONDOS.map((c, idx) => '<option value="' + idx + '">' + c.nome + ' (' + c.rodovia + ')</option>').join('') +
+      '</select>';
+    bairroEl.insertAdjacentElement('afterend', wrap);
+    document.getElementById('v926CondoRodoviaSel').onchange = (e) => {
+      const idx = e.target.value;
+      if (idx === '') return;
+      const c = REGIONAL_CONDOS[Number(idx)];
+      if (!c) return;
+      bairroEl.value = c.bairro;
+      const condEl = document.getElementById('propCondominio');
+      if (condEl && !c.key.startsWith('sp-')) condEl.value = c.nome;
+      const cidEl = document.getElementById('propCidade');
+      if (cidEl) cidEl.value = c.cidade;
+      if (typeof showToast === 'function') showToast('🛣️ Localização preenchida: ' + c.bairro);
+    };
+  };
+
+  // Complemento inteligente de extração (Rodovia/Condomínio + Contato Corretor/Proprietário + Rua)
+  const extraAutoFillFromClientText = () => {
+    const vt = document.getElementById('voiceTranscript');
+    const raw = vt ? vt.value.trim() : '';
+    if (!raw || raw.length < 10) return;
+    const low = normC(raw);
+
+    // 1. Condomínio / Rodovia automático (evita "Centro — Agudos" em condomínios de rodovia!)
+    for (const c of REGIONAL_CONDOS) {
+      if (!c.key.startsWith('sp-') && low.includes(c.key)) {
+        const bEl = document.getElementById('propBairro');
+        const cEl = document.getElementById('propCondominio');
+        const cidEl = document.getElementById('propCidade');
+        if (bEl) bEl.value = c.bairro;
+        if (cEl) cEl.value = c.nome;
+        if (cidEl) cidEl.value = c.cidade;
+        break;
+      }
+    }
+
+    // 2. Telefone / WhatsApp do Corretor ou Proprietário -> propOwnerWhats
+    const mPhone = raw.match(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?(?:9\d{4}[-.\s]?\d{4})/);
+    if (mPhone && document.getElementById('propOwnerWhats') && !document.getElementById('propOwnerWhats').value.trim()) {
+      document.getElementById('propOwnerWhats').value = mPhone[0].trim();
+    }
+
+    // 3. Nome do Corretor / Proprietário / Contato -> propOwnerNome
+    const mNome = raw.match(/(?:corretor(?:a)?|propriet[aá]rio(?:a)?|contato|falar com|tratar com|whatsapp|creci[^\n]*?)\s*[:\-]?\s*([A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-Za-zÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç\s]{2,34})/i);
+    if (mNome && mNome[1] && document.getElementById('propOwnerNome') && !document.getElementById('propOwnerNome').value.trim()) {
+      const cleanName = mNome[1].replace(/\s*(?:whats|fone|tel|cel|creci|\d).*$/i, '').trim();
+      if (cleanName.length >= 3) document.getElementById('propOwnerNome').value = cleanName;
+    }
+
+    // 4. Rua / Endereço (ex.: "Rua Olga Ayub 269")
+    const mRua = raw.match(/(?:rua|av\.?|avenida|alameda|rodovia|estrada)\s+[A-Za-zÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç0-9\s,.\-]{4,55}/i);
+    if (mRua && document.getElementById('propLogradouro') && !document.getElementById('propLogradouro').value.trim()) {
+      document.getElementById('propLogradouro').value = mRua[0].split('\n')[0].trim();
+    }
+  };
+
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target && ev.target.closest && ev.target.closest('button');
+    if (!btn) return;
+    const id = btn.id || '';
+    const txt = (btn.textContent || '').toLowerCase();
+    if (id === 'btnPolishAI' || txt.includes('detectar campos') || txt.includes('lapidar descri')) {
+      setTimeout(extraAutoFillFromClientText, 80);
+    }
+  }, true);
+
+  setInterval(injectHighwayCondoPicker, 1500);
+  setTimeout(injectHighwayCondoPicker, 400);
+})();
+</script>
+
+
+<script id="guildimob-v927-lazer-condominio-separado">
+(function() {
+  if (window.__GUILD_V927_LAZER_INIT__) return;
+  window.__GUILD_V927_LAZER_INIT__ = true;
+
+  const CONDO_LAZER_CATALOG = {
+    'guestier': ['Portaria 24h', 'Praia Privativa', 'Acqua Park', 'Piscina c/ Bar Molhado', 'Spa & Sauna', 'Arena Beach Tennis', 'Quadra de Tênis', 'Quadra Poliesportiva', 'Cinema ao Ar Livre', 'Restaurante Temático', 'Salão de Festas Gourmet', 'Sala de Jogos', 'Pista de Skate', 'Playground', 'Trilha de Caminhada'],
+    'harmonis': ['Portaria 24h', '5 Clubes Exclusivos', 'Clube de Golfe', 'Clube dos Lagos (Pesca)', 'Clube Reserve', 'Clube Social & Restaurante', 'Clube Sports', 'Parque Urbano 240 mil m²', 'Rede Elétrica Subterrânea'],
+    'terracota': ['Portaria 24h', 'Piscinas Climatizadas', 'Academia Completa', 'Salão de Festas', 'Espaço Gourmet', 'Sala de Jogos', 'Quadra Poliesportiva', 'Beach Tennis', 'Quadra de Tênis', 'Brinquedoteca', 'Playground', 'Pet Place', 'Pista de Caminhada 3 km'],
+    'recanto dos nobres': ['Portaria 24h', 'Ronda Noturna', 'Poço Artesiano (Água Mineral)', 'Área de Lazer do Condomínio', 'Área Verde Preservada'],
+    'tambore': ['Portaria 24h', 'Clube 7 mil m²', 'Piscina Raia 25m', 'Academia Fitness', 'Salão de Festas Gourmet', 'Espaço Grill c/ Forno à Lenha', 'Salão de Jogos', 'Brinquedoteca', 'Quadras de Tênis', 'Quadra Poliesportiva', 'Campo de Futebol', 'Ciclovia'],
+    'terre di toscana': ['Portaria 24h', 'Piscinas', 'Sauna', 'Academia', 'Salão de Festas', 'Beach Tennis', 'Quadra de Tênis', 'Coworking', 'Pista de Caminhada', 'Trilha Dog Walk', 'Área Verde 40 mil m²'],
+    'alphaville': ['Portaria 24h', 'Clube Completo', 'Piscina Adulto/Infantil', 'Academia', 'Salão de Festas', 'Quadra de Tênis', 'Quadra Poliesportiva', 'Campo de Futebol', 'Playground'],
+    'lago sul': ['Portaria 24h', 'Lago Contemplativo', 'Pista de Caminhada', 'Quadra de Tênis', 'Quadra Poliesportiva', 'Salão de Festas', 'Playground', 'Academia'],
+    'spazio verde': ['Portaria 24h', 'Piscina', 'Academia', 'Salão de Festas', 'Espaço Gourmet', 'Quadra de Tênis', 'Quadra Poliesportiva', 'Playground'],
+    'villaggio': ['Portaria 24h', 'Salão de Festas', 'Quadra Poliesportiva', 'Quadra de Tênis', 'Playground', 'Pista de Caminhada', 'Área Verde'],
+    'paineiras': ['Portaria 24h', 'Salão de Festas', 'Quadra Poliesportiva', 'Quadra de Tênis', 'Playground', 'Área Verde'],
+    'samambaia': ['Portaria 24h', 'Salão de Festas', 'Quadra Poliesportiva', 'Playground', 'Pista de Caminhada', 'Área Verde'],
+    'quinta ranieri': ['Portaria 24h', 'Salão de Festas', 'Piscina', 'Academia', 'Quadra Poliesportiva', 'Playground', 'Área Gourmet'],
+    'villa de leon': ['Portaria 24h', 'Salão de Festas', 'Piscina', 'Academia', 'Quadra Poliesportiva', 'Beach Tennis', 'Playground', 'Área Gourmet'],
+    'vale florido': ['Portaria 24h', 'Salão de Festas', 'Quadra Poliesportiva', 'Playground', 'Área Verde'],
+    'vale do igapo': ['Portaria 24h', 'Lago / Pesca', 'Clube Social', 'Piscina', 'Quadras Esportivas', 'Área Verde'],
+    'fazenda da mata': ['Portaria 24h', 'Clube Social', 'Piscina', 'Academia', 'Quadras Esportivas', 'Trilha / Área Verde']
+  };
+
+  const ALL_CONDO_ITEMS = ['Portaria 24h', 'Piscina', 'Spa & Sauna', 'Academia', 'Salão de Festas', 'Espaço Gourmet', 'Beach Tennis', 'Quadra de Tênis', 'Quadra Poliesportiva', 'Campo de Futebol', 'Playground', 'Brinquedoteca', 'Pet Place', 'Pista de Caminhada', 'Lago / Área Verde', 'Coworking', 'Elevador'];
+  const normL = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+  const renderCondoLazerBox = () => {
+    const chkWrap = document.getElementById('checklistContainer') || document.getElementById('propChecklist') || document.querySelector('#propertyForm [id*="checklist" i]');
+    if (!chkWrap) return;
+    let box = document.getElementById('v927CondoLazerBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'v927CondoLazerBox';
+      box.style.cssText = 'margin:10px 0 12px;padding:12px;border-radius:14px;background:rgba(14,116,144,0.12);border:1px solid rgba(34,211,238,0.4);';
+      chkWrap.insertAdjacentElement('beforebegin', box);
+
+      // Adiciona cabeçalho claro separando os diferenciais privativos do imóvel logo abaixo
+      const privHdr = document.createElement('div');
+      privHdr.id = 'v927PrivLazerHdr';
+      privHdr.style.cssText = 'margin:8px 0 6px;font-size:0.8rem;font-weight:800;color:#f4d26a;';
+      privHdr.textContent = '🏠 Diferenciais Privativos do Imóvel (somente o que tem DENTRO da casa/apto):';
+      chkWrap.insertAdjacentElement('beforebegin', privHdr);
+    }
+
+    const selected = (window.state && window.state.selectedTags) ? window.state.selectedTags : new Set();
+    const curCondoTags = Array.from(selected).filter((t) => String(t).startsWith('Condomínio: ')).map((t) => String(t).replace(/^Condomínio:\s*/, ''));
+    const allChoices = Array.from(new Set(curCondoTags.concat(ALL_CONDO_ITEMS)));
+
+    box.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;">' +
+      '<strong style="font-size:0.8rem;color:#67e8f9;">🏘️ Área de Lazer do Condomínio (' + curCondoTags.length + ' itens — separado do imóvel)</strong>' +
+      '<button type="button" id="v927ClearCondoLazer" style="padding:3px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#cbd5e1;font-size:0.7rem;cursor:pointer;">Limpar lazer cond.</button>' +
+      '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+      allChoices.map((item) => {
+        const fullTag = 'Condomínio: ' + item;
+        const on = selected.has(fullTag);
+        return '<button type="button" class="v927-cl-chip" data-tag="' + fullTag.replace(/"/g, '&quot;') + '" style="padding:5px 9px;border-radius:999px;border:1px solid ' + (on ? '#22d3ee' : 'rgba(255,255,255,0.18)') + ';background:' + (on ? 'rgba(34,211,238,0.22)' : 'rgba(15,23,42,0.7)') + ';color:' + (on ? '#ecfeff' : '#94a3b8') + ';font-size:0.72rem;font-weight:700;cursor:pointer;">' + (on ? '✓ ' : '+ ') + item + '</button>';
+      }).join('') +
+      '</div>';
+
+    box.querySelectorAll('.v927-cl-chip').forEach((btn) => {
+      btn.onclick = () => {
+        if (!window.state || !window.state.selectedTags) return;
+        const tg = btn.getAttribute('data-tag');
+        if (window.state.selectedTags.has(tg)) window.state.selectedTags.delete(tg);
+        else window.state.selectedTags.add(tg);
+        renderCondoLazerBox();
+      };
+    });
+    const clr = document.getElementById('v927ClearCondoLazer');
+    if (clr) {
+      clr.onclick = () => {
+        if (!window.state || !window.state.selectedTags) return;
+        Array.from(window.state.selectedTags).forEach((t) => { if (String(t).startsWith('Condomínio: ')) window.state.selectedTags.delete(t); });
+        renderCondoLazerBox();
+      };
+    }
+  };
+
+  const applyCondoLazerPreset = (condoText) => {
+    if (!window.state || !window.state.selectedTags) return;
+    const low = normL(condoText);
+    if (!low) return;
+    let matchedItems = null;
+    for (const k of Object.keys(CONDO_LAZER_CATALOG)) {
+      if (low.includes(k)) { matchedItems = CONDO_LAZER_CATALOG[k]; break; }
+    }
+    if (!matchedItems) return;
+    // Remove lazer antigo de outro condomínio e aplica o lazer oficial do condomínio selecionado
+    Array.from(window.state.selectedTags).forEach((t) => { if (String(t).startsWith('Condomínio: ')) window.state.selectedTags.delete(t); });
+    matchedItems.forEach((it) => window.state.selectedTags.add('Condomínio: ' + it));
+    renderCondoLazerBox();
+    if (typeof showToast === 'function') showToast('🏘️ Lazer do condomínio preenchido automaticamente (' + matchedItems.length + ' itens)!');
+  };
+
+  // Escuta seleção no seletor de Condomínio/Rodovia ou digitação em propCondominio
+  document.addEventListener('change', (ev) => {
+    if (ev.target && (ev.target.id === 'v926CondoRodoviaSel' || ev.target.id === 'propCondominio')) {
+      setTimeout(() => {
+        const cEl = document.getElementById('propCondominio');
+        if (cEl && cEl.value.trim()) applyCondoLazerPreset(cEl.value);
+      }, 60);
+    }
+  }, true);
+
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target && ev.target.closest && ev.target.closest('button');
+    if (!btn) return;
+    const txt = (btn.textContent || '').toLowerCase();
+    if (btn.id === 'btnPolishAI' || txt.includes('detectar campos') || txt.includes('lapidar descri')) {
+      setTimeout(() => {
+        const cEl = document.getElementById('propCondominio');
+        if (cEl && cEl.value.trim()) applyCondoLazerPreset(cEl.value);
+      }, 160);
+    }
+    if (btn.id === 'v925BtnLimparNovo' || (btn.getAttribute('data-v6-target') === 'tabModoVisita')) {
+      setTimeout(renderCondoLazerBox, 120);
+    }
+  }, true);
+
+  // Na ficha pública do imóvel, destaca visualmente as tags de Condomínio separadas das do Imóvel
+  const stylePublicCondoTags = () => {
+    document.querySelectorAll('#detailTags span, #detailTags .tag-pill, .detail-tags span').forEach((sp) => {
+      if (sp.dataset.v927Styled) return;
+      if ((sp.textContent || '').trim().startsWith('Condomínio:')) {
+        sp.dataset.v927Styled = '1';
+        sp.style.borderColor = 'rgba(34,211,238,0.55)';
+        sp.style.background = 'rgba(14,116,144,0.28)';
+        sp.style.color = '#a5f3fc';
+      }
+    });
+  };
+
+  setInterval(() => { renderCondoLazerBox(); stylePublicCondoTags(); }, 1800);
+  setTimeout(renderCondoLazerBox, 500);
 })();
 </script>
 
