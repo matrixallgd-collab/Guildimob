@@ -20005,5 +20005,200 @@
 })();
 </script>
 
+
+<style id="guildimob-v918-desktop-pro-css">
+  /* Módulo exclusivo Desktop (>= 769px) — ZERO alteração no layout mobile */
+  .v918-rail-nav { display: none; }
+  @media (min-width: 769px) {
+    .container { padding-bottom: 96px !important; }
+    .hero-cta-row {
+      flex-wrap: wrap !important;
+      overflow-x: visible !important;
+      row-gap: 8px !important;
+    }
+    .streaming-section {
+      position: relative !important;
+    }
+    .streaming-header {
+      padding-right: 10px;
+    }
+    .streaming-header .pill[data-view-all] {
+      padding: 6px 14px !important;
+      border-color: rgba(251, 191, 36, 0.5) !important;
+      background: rgba(245, 158, 11, 0.14) !important;
+      color: #fcd34d !important;
+      font-weight: 700 !important;
+      cursor: pointer;
+      transition: transform .15s, background .15s;
+    }
+    .streaming-header .pill[data-view-all]:hover {
+      background: rgba(245, 158, 11, 0.28) !important;
+      transform: translateY(-1px);
+    }
+    .streaming-track {
+      cursor: grab;
+      padding-left: 6px !important;
+      padding-right: 52px !important;
+    }
+    .streaming-track.v918-dragging {
+      cursor: grabbing !important;
+      scroll-snap-type: none !important;
+      user-select: none !important;
+    }
+    .v918-rail-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 56%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 68px;
+      border-radius: 14px;
+      border: 1px solid rgba(52, 211, 153, 0.55);
+      background: rgba(6, 18, 30, 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #f8fafc;
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+      z-index: 35;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      transition: opacity .2s ease, transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .v918-rail-nav:hover {
+      background: rgba(16, 185, 129, 0.92);
+      border-color: #6ee7b7;
+      color: #020617;
+      transform: translateY(-50%) scale(1.06);
+    }
+    .v918-rail-nav.v918-prev { left: 4px; }
+    .v918-rail-nav.v918-next { right: 4px; }
+    .v918-rail-nav.v918-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+</style>
+<script id="guildimob-v918-desktop-pro-js" data-cfasync="false">
+(function() {
+  if (window.__GUILD_V918_DESKTOP_PRO__) return;
+  window.__GUILD_V918_DESKTOP_PRO__ = true;
+
+  function enhanceStreamingRails() {
+    document.querySelectorAll('.streaming-section').forEach(section => {
+      const track = section.querySelector('.streaming-track');
+      if (!track || track.__v918Bound) return;
+      track.__v918Bound = true;
+
+      const btnPrev = document.createElement('button');
+      btnPrev.type = 'button';
+      btnPrev.className = 'v918-rail-nav v918-prev v918-hidden';
+      btnPrev.setAttribute('aria-label', 'Ver imóveis anteriores');
+      btnPrev.innerHTML = '&#8249;';
+
+      const btnNext = document.createElement('button');
+      btnNext.type = 'button';
+      btnNext.className = 'v918-rail-nav v918-next';
+      btnNext.setAttribute('aria-label', 'Ver mais imóveis adiante');
+      btnNext.innerHTML = '&#8250;';
+
+      section.appendChild(btnPrev);
+      section.appendChild(btnNext);
+
+      function syncArrows() {
+        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+        if (maxScroll <= 12) {
+          btnPrev.classList.add('v918-hidden');
+          btnNext.classList.add('v918-hidden');
+          return;
+        }
+        btnPrev.classList.toggle('v918-hidden', track.scrollLeft <= 14);
+        btnNext.classList.toggle('v918-hidden', track.scrollLeft >= maxScroll - 14);
+      }
+
+      btnPrev.addEventListener('click', () => {
+        const step = Math.max(560, Math.round(track.clientWidth * 0.78));
+        track.scrollBy({ left: -step, behavior: 'smooth' });
+      });
+      btnNext.addEventListener('click', () => {
+        const step = Math.max(560, Math.round(track.clientWidth * 0.78));
+        track.scrollBy({ left: step, behavior: 'smooth' });
+      });
+
+      track.addEventListener('scroll', syncArrows, { passive: true });
+      window.addEventListener('resize', syncArrows, { passive: true });
+      setTimeout(syncArrows, 120);
+      setTimeout(syncArrows, 600);
+
+      // Arrasto suave com mouse no desktop (click-and-drag)
+      let isDown = false, startX = 0, startScroll = 0, moved = false;
+      track.addEventListener('mousedown', e => {
+        if (e.button !== 0 || e.target.closest('button, a, input')) return;
+        isDown = true;
+        moved = false;
+        startX = e.pageX;
+        startScroll = track.scrollLeft;
+        track.classList.add('v918-dragging');
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        const dx = e.pageX - startX;
+        if (Math.abs(dx) > 8) moved = true;
+        track.scrollLeft = startScroll - dx;
+      });
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        track.classList.remove('v918-dragging');
+        if (moved) {
+          track.__v918SuppressClickUntil = Date.now() + 180;
+        }
+      });
+      track.addEventListener('click', e => {
+        if (track.__v918SuppressClickUntil && Date.now() < track.__v918SuppressClickUntil) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+    });
+  }
+
+  // Atalhos de teclado Desktop: Esc fecha modal aberto; Setas <- / -> passam fotos no detalhe
+  document.addEventListener('keydown', e => {
+    const tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    if (e.key === 'Escape') {
+      const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal.open, [role="dialog"].open'));
+      if (openModals.length) {
+        const topModal = openModals[openModals.length - 1];
+        const closeBtn = topModal.querySelector('[data-close], .modal-close, button[aria-label*="Fechar"], button[aria-label*="fechar"]');
+        if (closeBtn) closeBtn.click();
+        else topModal.classList.remove('open');
+      }
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const detail = document.getElementById('detailModal');
+      if (detail && detail.classList.contains('open')) {
+        const sel = e.key === 'ArrowRight'
+          ? '#detailNextBtn, .gallery-next, button[aria-label*="Próxima"], button[aria-label*="proxima"]'
+          : '#detailPrevBtn, .gallery-prev, button[aria-label*="Anterior"], button[aria-label*="anterior"]';
+        const navBtn = detail.querySelector(sel);
+        if (navBtn) navBtn.click();
+      }
+    }
+  });
+
+  const obs = new MutationObserver(() => enhanceStreamingRails());
+  window.addEventListener('DOMContentLoaded', () => {
+    const sc = document.getElementById('streamingContainer') || document.body;
+    obs.observe(sc, { childList: true, subtree: true });
+    enhanceStreamingRails();
+  });
+  setTimeout(enhanceStreamingRails, 900);
+})();
+</script>
+
 </body>
 </html>
