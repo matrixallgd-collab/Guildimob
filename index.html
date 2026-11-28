@@ -10557,47 +10557,177 @@
       }
       ctx.restore();
 
-      // Bloco Liquid Glass fosco abaixo da foto com informações básicas (sem endereço/CEP)
-      const infoY = photoY + photoH + 26;
-      ctx.fillStyle = "#fbbf24";
-      ctx.font = "bold 60px sans-serif";
-      ctx.fillText(formatBRL(p.valor), photoX + 8, infoY + 56);
+      // Bloco Liquid Glass V9.33 — Layout Editorial Completo (Funil de Preço + 2 Linhas Título + Pílulas Douradas + Lazer Condomínio + CTA WhatsApp)
+      const infoY = photoY + photoH + 22;
+      const footY = pad + cardH - 30;
+      const maxTextW = photoW - 16;
+      const tagsRaw = Array.isArray(p.tags) ? p.tags : (typeof p.tags === "string" ? p.tags.split(",") : []);
+      let pAntigo = 0, pPermuta = 0, pAvista = 0;
+      const privTags = [], condoTags = [];
+      tagsRaw.forEach(t => {
+        const s = String(t || "").trim();
+        if (!s) return;
+        if (s.startsWith("__P_ANT:")) pAntigo = Number(s.slice(8)) || 0;
+        else if (s.startsWith("__P_PERM:")) pPermuta = Number(s.slice(9)) || 0;
+        else if (s.startsWith("__P_AVISTA:")) pAvista = Number(s.slice(11)) || 0;
+        else if (s.startsWith("Condomínio:")) condoTags.push(s.replace(/^Condomínio:\s*/, ""));
+        else privTags.push(s);
+      });
 
+      // 1) Preço / Funil de Preço
+      let curY = infoY + 52;
+      if (pAvista > 0) {
+        ctx.fillStyle = "#34d399";
+        ctx.font = "bold 56px sans-serif";
+        const avTxt = "⚡ " + formatBRL(pAvista) + " à vista";
+        ctx.fillText(avTxt, photoX + 8, curY);
+        if (pPermuta > 0 || pAntigo > 0) {
+          curY += 34;
+          let subX = photoX + 8;
+          if (pPermuta > 0) {
+            ctx.fillStyle = "#fde68a";
+            ctx.font = "bold 26px sans-serif";
+            const pmTxt = "🔄 Permuta: " + formatBRL(pPermuta);
+            ctx.fillText(pmTxt, subX, curY);
+            subX += ctx.measureText(pmTxt).width + 24;
+          }
+          if (pAntigo > 0) {
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "24px sans-serif";
+            const antTxt = "De " + formatBRL(pAntigo);
+            ctx.fillText(antTxt, subX, curY);
+            const aw = ctx.measureText(antTxt).width;
+            ctx.strokeStyle = "#f87171";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(subX, curY - 8); ctx.lineTo(subX + aw, curY - 8); ctx.stroke();
+          }
+        }
+      } else {
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "bold 58px sans-serif";
+        const mainP = formatBRL(p.valor);
+        ctx.fillText(mainP, photoX + 8, curY);
+        if (pAntigo > 0) {
+          const pw = ctx.measureText(mainP).width;
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "25px sans-serif";
+          const antTxt = "De " + formatBRL(pAntigo);
+          ctx.fillText(antTxt, photoX + 26 + pw, curY - 12);
+          const aw = ctx.measureText(antTxt).width;
+          ctx.strokeStyle = "#f87171"; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.moveTo(photoX + 26 + pw, curY - 20); ctx.lineTo(photoX + 26 + pw + aw, curY - 20); ctx.stroke();
+        }
+      }
+
+      // 2) Localização
+      curY += 42;
       ctx.fillStyle = "#93c5fd";
-      ctx.font = "bold 30px sans-serif";
-      ctx.fillText(`📍 ${p.bairro || "Bauru"} • ${p.cidade || "Bauru - SP"}`, photoX + 8, infoY + 106);
+      ctx.font = "bold 28px sans-serif";
+      const locStr = (`📍 ${p.condominio ? p.condominio + " • " : ""}${p.bairro || "Bauru"} • ${p.cidade || "Bauru - SP"}`).slice(0, 62);
+      ctx.fillText(locStr, photoX + 8, curY);
 
+      // 3) Título com quebra elegante em até 2 linhas (sem cortar palavras)
+      curY += 44;
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 36px Georgia, serif";
-      const titleStr = String(p.titulo || "").slice(0, 44);
-      ctx.fillText(titleStr, photoX + 8, infoY + 162);
+      ctx.font = "bold 33px Georgia, serif";
+      const words = String(p.titulo || "").split(/\s+/);
+      let line1 = "", line2 = "";
+      for (let wi = 0; wi < words.length; wi++) {
+        const test = line1 ? (line1 + " " + words[wi]) : words[wi];
+        if (ctx.measureText(test).width <= maxTextW) line1 = test;
+        else { line2 = words.slice(wi).join(" "); break; }
+      }
+      ctx.fillText(line1, photoX + 8, curY);
+      if (line2) {
+        while (line2.length > 4 && ctx.measureText(line2 + "…").width > maxTextW) line2 = line2.slice(0, -1);
+        curY += 40;
+        ctx.fillText(line2 + (ctx.measureText(words.join(" ")).width > maxTextW * 1.95 ? "…" : ""), photoX + 8, curY);
+      }
 
-      // Chips de atributos
+      // 4) Linha de atributos principais (inclui área construída e terreno!)
       const specs = [
         p.suites ? `${p.suites} Suíte${p.suites > 1 ? "s" : ""}` : (p.quartos ? `${p.quartos} Quartos` : ""),
         p.banheiros ? `${p.banheiros} Ban.` : "",
         p.vagas ? `${p.vagas} Vagas` : "",
-        p.areaConstruida ? `${p.areaConstruida} m²` : ""
+        p.areaConstruida ? `${p.areaConstruida} m² constr.` : "",
+        p.areaTerreno ? `${p.areaTerreno} m² terr.` : ""
       ].filter(Boolean);
 
+      curY += 24;
       let cx = photoX + 8;
-      const cy = infoY + 198;
       specs.forEach(sp => {
-        ctx.font = "bold 25px sans-serif";
-        const tw = ctx.measureText(sp).width + 34;
-        drawRoundRect(ctx, cx, cy, tw, 48, 24);
+        ctx.font = "bold 23px sans-serif";
+        const tw = ctx.measureText(sp).width + 30;
+        if (cx + tw > photoX + photoW) return;
+        drawRoundRect(ctx, cx, curY, tw, 44, 22);
         ctx.fillStyle = "rgba(255,255,255,0.10)";
         ctx.fill();
         ctx.strokeStyle = "rgba(212,175,55,0.45)";
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.fillStyle = "#f8fafc";
-        ctx.fillText(sp, cx + 17, cy + 33);
-        cx += tw + 14;
+        ctx.fillText(sp, cx + 15, curY + 30);
+        cx += tw + 12;
       });
 
+      // 5) Pílulas Douradas com os melhores diferenciais privativos do imóvel (preenche o vazio com elegância!)
+      const ctaBoxY = footY - 94;
+      const priorityRe = /(piscina|solar|fotovolt|gourmet|planejad|mobiliad|porcelanato|closet|jacuzzi|hidro|permuta|parcelamento|pomar|escrit[oó]rio|ar condicionado|churrasqueira)/i;
+      const topHighlights = privTags.slice().sort((a, b) => (priorityRe.test(b) ? 1 : 0) - (priorityRe.test(a) ? 1 : 0)).slice(0, 6);
+      curY += 62;
+      if (topHighlights.length && curY + 42 < ctaBoxY) {
+        let hx = photoX + 8;
+        let hRow = 0;
+        topHighlights.forEach(tg => {
+          const lbl = "✦ " + tg.slice(0, 24);
+          ctx.font = "bold 21px sans-serif";
+          const tw = ctx.measureText(lbl).width + 26;
+          if (hx + tw > photoX + photoW) {
+            hRow++;
+            hx = photoX + 8;
+            curY += 48;
+          }
+          if (hRow > 1 || curY + 40 >= ctaBoxY) return;
+          drawRoundRect(ctx, hx, curY, tw, 38, 19);
+          ctx.fillStyle = "rgba(251, 191, 36, 0.16)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(251, 191, 36, 0.65)";
+          ctx.lineWidth = 1.8;
+          ctx.stroke();
+          ctx.fillStyle = "#fef3c7";
+          ctx.fillText(lbl, hx + 13, curY + 26);
+          hx += tw + 10;
+        });
+        curY += 54;
+      }
+
+      // 6) Linha discreta de Lazer do Condomínio (azul-turquesa, separada do imóvel)
+      if (condoTags.length && curY + 28 < ctaBoxY) {
+        ctx.fillStyle = "#67e8f9";
+        ctx.font = "bold 21px sans-serif";
+        const cLine = ("🏘️ Condomínio: " + condoTags.slice(0, 5).join(" • ")).slice(0, 74);
+        ctx.fillText(cLine, photoX + 8, curY + 12);
+      }
+
+      // 7) Faixa dourada de CTA (WhatsApp + Site) logo acima do CRECI
+      if (ctaBoxY > curY + 2) {
+        drawRoundRect(ctx, photoX + 4, ctaBoxY, photoW - 8, 56, 16);
+        const ctaGrad = ctx.createLinearGradient(photoX, ctaBoxY, photoX + photoW, ctaBoxY);
+        ctaGrad.addColorStop(0, "rgba(212,175,55,0.22)");
+        ctaGrad.addColorStop(1, "rgba(16,185,129,0.20)");
+        ctx.fillStyle = ctaGrad;
+        ctx.fill();
+        ctx.strokeStyle = "rgba(244,210,106,0.65)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "#fef9c3";
+        ctx.font = "bold 24px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("📲 Agende sua visita • (14) 98800-2390 • guildimob.com", W / 2, ctaBoxY + 36);
+        ctx.textAlign = "left";
+      }
+
       // Rodapé discreto com Corretor que gerou o card + CRECI individual + Código
-      const footY = pad + cardH - 32;
       const sc = state.systemConfig || {};
       const genUser = (state.authUser && state.authUser.nome) ? state.authUser : null;
       const brokerName = (genUser && genUser.nome) || p.corretorNome || sc.corretorPrincipal || "Guilherme Delfino";
@@ -21335,12 +21465,19 @@
         const pool = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
         const matches = pool.filter((p) => {
           if (!p || String(p.codigo || '').toUpperCase() === curCod) return false;
+          // Bloqueia lançamentos de loteadora (Harmonis, Guestier, HM-, G3-) — loteadora não entra em match de permuta!
+          const codUp = String(p.codigo || '').toUpperCase();
+          if (codUp.startsWith('HM-') || codUp.startsWith('G3-') || p.isLaunch || p.isLancamento || p.lancamento || p.origem === 'lancamento') return false;
+          // Exige que o outro imóvel TAMBÉM participe de permuta (flag/tag/descrição) — zero match à toa!
+          const pTxt = String((p.titulo || '') + ' ' + (p.descricao || '') + ' ' + (Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags || ''))).toLowerCase();
+          const participaPermuta = Boolean(p.aceitaPermuta || /(aceita permuta|permuta|analisa troca|aceita troca)/.test(pTxt));
+          if (!participaPermuta) return false;
           const pv = Number(p.valor || 0);
           return pv >= 40000 && pv <= maxPermVal * 1.08;
         }).sort((a, b) => Math.abs(Number(a.valor) - maxPermVal * 0.85) - Math.abs(Number(b.valor) - maxPermVal * 0.85)).slice(0, 5);
         matchBox.style.display = 'block';
         if (!matches.length) {
-          matchBox.innerHTML = '🤝 <strong>Match de Permuta (teto ' + pct + '% = R$ ' + maxPermVal.toLocaleString('pt-BR') + '):</strong> nenhum imóvel compatível encontrado na base ativa ainda.';
+          matchBox.innerHTML = '🤝 <strong>Match Real de Permuta (teto ' + pct + '% = R$ ' + maxPermVal.toLocaleString('pt-BR') + '):</strong> nenhum outro imóvel <em>participante de permuta</em> encontrado nessa faixa ainda (lotes de loteadora e imóveis fora de permuta ficam excluídos).';
           return;
         }
         matchBox.innerHTML =
