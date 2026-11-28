@@ -8748,8 +8748,11 @@
       const mTerreno = txt.match(/terreno\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*m/);
       if (mTerreno) { document.getElementById("propTerreno").value = formatBRDecimal(parseBRNumber(mTerreno[1])); detected++; }
 
-      const mConst = txt.match(/(?:constru[ií]da|área útil|area util)\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*m/);
+      const mConst = txt.match(/(?:constru[ií]da|constru[cç][aã]o|área útil|area util)\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*m/)
+        || txt.match(/(\d+(?:[.,]\d+)?)\s*m[²2]?\s*(?:de\s*)?(?:constru[cç][aã]o|constru[ií]da|área útil|area util)/);
       if (mConst) { document.getElementById("propConstruida").value = formatBRDecimal(parseBRNumber(mConst[1])); detected++; }
+      const mCepTxt = txt.match(/\b(\d{5}-?\d{3})\b/);
+      if (mCepTxt && document.getElementById("propCep")) { document.getElementById("propCep").value = mCepTxt[1]; detected++; }
 
       // Valor (ex: "1 milhão e 450 mil" ou "950 mil")
       const mMilhao = txt.match(/(\d+(?:[.,]\d+)?)\s*milh(?:ão|ao|ões|oes)(?:\s*e\s*(\d+)\s*mil)?/);
@@ -8760,7 +8763,12 @@
         detected++;
       } else {
         const mMil = txt.match(/(\d{3,4})\s*mil/);
+        const mBrl = txt.match(/r\$\s*([\d\.]{5,14})(?:,\d{2})?/);
         if (mMil) { document.getElementById("propValor").value = parseInt(mMil[1], 10) * 1000; detected++; }
+        else if (mBrl) {
+          const vNum = parseInt(mBrl[1].replace(/\./g, ""), 10);
+          if (vNum >= 30000) { document.getElementById("propValor").value = vNum; detected++; }
+        }
       }
 
       renderChecklistUI();
@@ -8772,7 +8780,11 @@
     /* MOTOR 2: IA GENERATIVA VIA BACKEND SEGURO (PROPERTIES SERVICE) */
     async function polishDescriptionWithAI() {
       const btn = document.getElementById("btnPolishAI");
-      const rascunho = document.getElementById("voiceTranscript").value.trim() || document.getElementById("propDescricao").value.trim();
+      const vtEl = document.getElementById("voiceTranscript");
+      if (vtEl && vtEl.value.trim().length > 10 && typeof extractFieldsFromText === "function") {
+        try { extractFieldsFromText(true); } catch (_) {}
+      }
+      const rascunho = (vtEl ? vtEl.value.trim() : "") || document.getElementById("propDescricao").value.trim();
       const contexto = {
         titulo: document.getElementById("propTitulo").value,
         tipo: document.getElementById("propTipo").value,
@@ -20705,6 +20717,78 @@
   };
   setInterval(cleanMasterRadarBtns, 1200);
   setTimeout(cleanMasterRadarBtns, 300);
+})();
+</script>
+
+
+<script id="guildimob-v925-cadastro-limpo">
+(function() {
+  if (window.__GUILD_V925_CADASTRO_INIT__) return;
+  window.__GUILD_V925_CADASTRO_INIT__ = true;
+
+  const fullResetNewProperty = (silent) => {
+    try {
+      if (typeof resetPropertyForm === 'function') resetPropertyForm();
+    } catch (_) {}
+    const form = document.getElementById('propertyForm');
+    if (form) {
+      form.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea').forEach((el) => {
+        if (el.id !== 'propCidade') el.value = '';
+      });
+    }
+    const editId = document.getElementById('propEditId');
+    if (editId) editId.value = '';
+    const folderId = document.getElementById('propEditFolderId');
+    if (folderId) folderId.value = '';
+    const codEl = document.getElementById('propCodigo');
+    if (codEl) codEl.value = '';
+    const vt = document.getElementById('voiceTranscript');
+    if (vt) vt.value = '';
+    updateEditBanner();
+    if (!silent && typeof showToast === 'function') showToast('🧹 Formulário limpo! Pronto para cadastrar imóvel novo.');
+  };
+
+  const updateEditBanner = () => {
+    const tab = document.getElementById('tabModoVisita');
+    if (!tab) return;
+    let bar = document.getElementById('v925CadastroTopBar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'v925CadastroTopBar';
+      bar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;margin-bottom:10px;border-radius:12px;background:rgba(15,23,42,0.9);border:1px solid rgba(52,211,153,0.4);';
+      bar.innerHTML =
+        '<div id="v925CadastroModeLbl" style="font-size:0.78rem;font-weight:800;color:#6ee7b7;">🆕 Cadastrando Imóvel Novo</div>' +
+        '<button type="button" id="v925BtnLimparNovo" style="padding:6px 11px;border-radius:10px;border:1px solid rgba(244,210,106,0.55);background:rgba(244,210,106,0.14);color:#fde68a;font-size:0.75rem;font-weight:800;cursor:pointer;">🧹 Limpar / Novo Imóvel</button>';
+      tab.insertBefore(bar, tab.firstChild);
+      document.getElementById('v925BtnLimparNovo').onclick = () => fullResetNewProperty(false);
+    }
+    const editId = (document.getElementById('propEditId') || {}).value || '';
+    const cod = (document.getElementById('propCodigo') || {}).value || '';
+    const lbl = document.getElementById('v925CadastroModeLbl');
+    if (lbl) {
+      if (editId) {
+        bar.style.borderColor = 'rgba(251,191,36,0.65)';
+        lbl.style.color = '#fbbf24';
+        lbl.textContent = '✏️ Editando imóvel ' + (cod || editId) + ' (toque em Limpar para cadastrar um novo)';
+      } else {
+        bar.style.borderColor = 'rgba(52,211,153,0.45)';
+        lbl.style.color = '#6ee7b7';
+        lbl.textContent = '🆕 Modo Novo Imóvel (formulário limpo)';
+      }
+    }
+  };
+
+  // Quando clicar no orbe "Cadastro Rápido" do Menu Master, limpa automaticamente qualquer edição anterior!
+  document.addEventListener('click', (ev) => {
+    const orb = ev.target && ev.target.closest && ev.target.closest('.v6-master-orb[data-v6-target="tabModoVisita"]');
+    if (orb) {
+      setTimeout(() => fullResetNewProperty(true), 40);
+    } else if (ev.target && ev.target.closest && ev.target.closest('button')) {
+      setTimeout(updateEditBanner, 120);
+    }
+  }, true);
+
+  setTimeout(updateEditBanner, 600);
 })();
 </script>
 
