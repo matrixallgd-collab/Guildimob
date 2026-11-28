@@ -6571,32 +6571,78 @@
       return Math.max(1, score);
     }
 
+    function getPropertyRankClass_(p) {
+      const full = String((p.tipo || '') + ' ' + (p.titulo || '') + ' ' + (p.condominio || '') + ' ' + (p.bairro || '') + ' ' + (p.descricao || '') + ' ' + (Array.isArray(p.tags) ? p.tags.join(' ') : '')).toLowerCase();
+      const isChac = /(ch[aá]cara|s[ií]tio|fazenda|gleba)/.test(full);
+      const isTerr = !isChac && /(terreno|lote\b|loteamento)/.test(full);
+      const isApto = /(apartamento|\bapto\b|cobertura|flat|studio|edif[ií]cio)/.test(full);
+      const isCond = Boolean(
+        (p.condominio && String(p.condominio).trim().length >= 3) ||
+        /(condom[ií]nio|cond\.|villaggio|tambor[eé]|alphaville|harmonis|guestier|lago sul|spazio verde|quinta ranieri|villa de le[oó]n|vale florido|recanto dos nobres|terracota|terre di toscana|vale do igap[oó]|portaria 24h)/.test(full)
+      );
+      if (isChac) return { key: 'chacara', nome: 'Chácara / Área' };
+      if (isApto) return { key: 'apto', nome: 'Apartamento' };
+      if (isTerr) return isCond ? { key: 'terreno_cond', nome: 'Terreno em Condomínio' } : { key: 'terreno_bairro', nome: 'Terreno em Bairro' };
+      return isCond ? { key: 'casa_cond', nome: 'Casa em Condomínio' } : { key: 'casa_bairro', nome: 'Casa em Bairro' };
+    }
+
     function computePortfolioRanks(allActive) {
       const list = Array.isArray(allActive) ? allActive : [];
       const stats = {};
       if (!list.length) return stats;
 
       const entries = list.map(p => {
-        const val = Math.max(50000, Number(p.valor) || 0);
-        const attr = computePropertyAttrScore(p);
+        const tagsArr = Array.isArray(p.tags) ? p.tags : [];
+        let pAvista = 0, pAntigo = Number(p.valorAnterior || p.precoAnterior || 0);
+        let condoLazerCount = 0;
+        tagsArr.forEach(t => {
+          const s = String(t || '').trim();
+          if (s.startsWith('__P_AVISTA:')) pAvista = Number(s.slice(11)) || pAvista;
+          if (s.startsWith('__P_ANT:')) pAntigo = Number(s.slice(8)) || pAntigo;
+          if (s.startsWith('Condomínio:')) condoLazerCount++;
+        });
+        const val = Math.max(50000, pAvista > 0 ? pAvista : (Number(p.valor) || 0));
+        const rc = getPropertyRankClass_(p);
+        let attr = computePropertyAttrScore(p);
+        const fullTxt = String((p.titulo || '') + ' ' + (p.bairro || '') + ' ' + (p.descricao || '') + ' ' + tagsArr.join(' ')).toLowerCase();
+
+        // Pontuação específica por classe (Condomínio pontua lazer do condomínio; Bairro pontua infraestrutura próxima!)
+        if (rc.key === 'casa_cond' || rc.key === 'terreno_cond' || rc.key === 'apto') {
+          attr += Math.min(18, condoLazerCount * 2);
+        } else {
+          if (/(shopping|escola|mercado|supermercado|farm[aá]cia|padaria|get[uú]lio|na[cç][oõ]es unidas|comendador|usp|unisagrado|hospital|avenida|com[eé]rcio|pr[oó]ximo)/.test(fullTxt)) attr += 10;
+          if (/(estoril|altos da cidade|universit[aá]ria|infante|avia[cç][aã]o|am[eé]rica|europa|colonial|brasil)/.test(fullTxt)) attr += 8;
+        }
+        if (pAntigo > val) attr += 10; // Bônus real de redução de preço (Baixou)
+        // Bônus de Qualidade, Acabamento, Lazer Privativo e Facilidade de Pagamento (Ranking = Qualidade + Preço!)
+        if (/(porcelanato|p[eé]-?direito alto|ilumina[cç][aã]o|automacao|automa[cç][aã]o|m[aá]rmore|granito|alto padr[aã]o)/.test(fullTxt)) attr += 10;
+        if (/(piscina|jacuzzi|hidromassagem|gourmet|churrasqueira|sauna|pomar)/.test(fullTxt)) attr += 10;
+        if (/(energia solar|fotovoltaic|aquecedor solar|planejados|mobiliad|porteira fechada|closet|ar condicionado)/.test(fullTxt)) attr += 10;
+        let pPermuta = 0;
+        tagsArr.forEach(t => { const s = String(t || '').trim(); if (s.startsWith('__P_PERM:')) pPermuta = Number(s.slice(9)) || pPermuta; });
+        const permutaSemAgio = !(pAvista > 0 && pPermuta > pAvista * 1.05);
+        if (/(aceita permuta|permuta)/.test(fullTxt) && permutaSemAgio) attr += 6;
+        if (/(parcelamento direto|financiamento direto)/.test(fullTxt)) attr += 6;
+
         const efficiency = attr / (val / 100000);
-        return { p, val, attr, efficiency };
+        return { p, val, pAntigo, attr, efficiency, rankClass: rc.key, rankClassName: rc.nome };
       });
 
-      const avgGlobalEff = entries.reduce((acc, e) => acc + e.efficiency, 0) / entries.length;
       const maxViews = Math.max(10, ...list.map(x => Number(x.visualizacoes) || 0));
 
       entries.forEach(e => {
-        // Categoria de Peso: compara o imóvel apenas com concorrentes da mesma faixa de preço (0.55x a 1.65x)
-        const peers = entries.filter(x => x.val >= e.val * 0.55 && x.val <= e.val * 1.65);
-        const pool = peers.length >= 2 ? peers : entries;
+        // ISOLAMENTO RÍGIDO POR CLASSE (como em um jogo: condomínio só compete com condomínio, bairro só com bairro!)
+        const sameClass = entries.filter(x => x.rankClass === e.rankClass);
+        const peers = sameClass.filter(x => x.val >= e.val * 0.50 && x.val <= e.val * 1.75);
+        const pool = peers.length >= 2 ? peers : sameClass;
 
-        const poolAvgEff = pool.reduce((acc, x) => acc + x.efficiency, 0) / pool.length;
+        const classAvgEff = sameClass.reduce((acc, x) => acc + x.efficiency, 0) / Math.max(1, sameClass.length);
+        const poolAvgEff = pool.reduce((acc, x) => acc + x.efficiency, 0) / Math.max(1, pool.length);
         const effRatio = poolAvgEff > 0 ? (e.efficiency / poolAvgEff) : 1;
         const curvaFactor = 1 + ((Number((state.systemConfig || {}).bonusForaDaCurva) || 22) / 100);
-        e.isOutlier = effRatio >= curvaFactor || (avgGlobalEff > 0 && e.efficiency / avgGlobalEff >= 1.35);
+        e.isOutlier = effRatio >= curvaFactor || (classAvgEff > 0 && e.efficiency / classAvgEff >= 1.35);
 
-        // Ranking relativo DENTRO da própria categoria de peso
+        // Ranking relativo EXCLUSIVAMENTE dentro da própria classe
         const sortedPool = pool.slice().sort((a, b) => (b.attr + (b.efficiency * 2)) - (a.attr + (a.efficiency * 2)));
         const idx = sortedPool.findIndex(x => x.p.id === e.p.id);
         const pct = pool.length > 1 ? idx / (pool.length - 1) : 0;
@@ -6620,7 +6666,6 @@
           else { tier = "cobre"; label = "Cobre"; pips = 1; }
         }
 
-        // Esmeralda: alta compatibilidade com a busca do cliente
         if (taste >= 6 && tier !== "diamante") {
           tier = "esmeralda"; label = "Esmeralda"; pips = Math.max(4, pips);
         } else if (e.isOutlier && (tier === "cobre" || tier === "bronze" || tier === "prata")) {
@@ -6630,7 +6675,7 @@
         const views = Number(e.p.visualizacoes) || 0;
         const isHot = views >= Math.max(15, maxViews * 0.65);
         const isNew = isPropertyNew48h(e.p);
-        const hasDrop = (Number(e.p.valorAnterior || e.p.precoAnterior) > e.val) ||
+        const hasDrop = (e.pAntigo > e.val) ||
           e.isOutlier ||
           /baixou|oportunidade|reduz/i.test([e.p.titulo, ...(e.p.tags || [])].join(" "));
 
@@ -6650,7 +6695,7 @@
           badge = "🎯 Para Você";
         }
 
-        stats[e.p.id] = { tier, label, pips, aura, badge, isHot, isNew, hasDrop, taste, isOutlier: e.isOutlier };
+        stats[e.p.id] = { tier, label: label + ' • ' + e.rankClassName, pips, aura, badge, isHot, isNew, hasDrop, taste, isOutlier: e.isOutlier, rankClass: e.rankClass, rankClassName: e.rankClassName };
       });
 
       return stats;
@@ -18692,7 +18737,19 @@
     return false;
   };
 
-  // Cascata Científica V9.22: Condomínio Específico -> Bairro Real (Escala/Acabamento) -> Cidade Real
+  // Cascata Avaliadora V9.28 (Método Evolutivo NBR 14653 + Isolamento Condomínio vs Fora + Trava Vizinhança 2,5 km + 3 Preços)
+  const extract3PricesFromTags = (p) => {
+    const out = { antigo: Number(p && p.valorAntigo || 0), permuta: Number(p && p.valorPermuta || 0), avista: Number(p && p.valorAvista || 0) };
+    const tags = Array.isArray(p && p.tags) ? p.tags : (typeof (p && p.tags) === 'string' ? p.tags.split(',') : []);
+    tags.forEach((t) => {
+      const s = String(t || '').trim();
+      if (s.startsWith('__P_ANT:')) out.antigo = Number(s.slice(8)) || out.antigo;
+      if (s.startsWith('__P_PERM:')) out.permuta = Number(s.slice(9)) || out.permuta;
+      if (s.startsWith('__P_AVISTA:')) out.avista = Number(s.slice(11)) || out.avista;
+    });
+    return out;
+  };
+
   const computeMarketBenchmark = (params) => {
     const bairroNorm = norm(params.bairro || params.condominio || '');
     const condoNorm = norm(params.condominio || params.titulo || params.bairro || '');
@@ -18701,84 +18758,121 @@
     const descNorm = norm((params.titulo || '') + ' ' + (params.descricao || '') + ' ' + (params.diferenciais || '') + ' ' + (params.caracteristicas || ''));
     const isTerreno = tipoNorm.includes('terreno') || tipoNorm.includes('lote') || tipoNorm.includes('chacara') || tipoNorm.includes('gleba');
     const isApto = tipoNorm.includes('apart') || tipoNorm.includes('apto') || tipoNorm.includes('flat') || tipoNorm.includes('studio');
-    const area = isTerreno
-      ? Number(params.areaTerreno || params.areaConstruida || 0)
-      : Number(params.areaConstruida || params.areaTerreno || 0);
+    const isCond = Boolean(
+      isApto ||
+      (params.condominio && String(params.condominio).trim().length >= 3) ||
+      /(condominio|cond\.|residencial|villaggio|tambore|alphaville|harmonis|guestier|lago sul|spazio verde|quinta ranieri|villa de leon|vale florido|recanto dos nobres|terracota|terre di toscana|vale do igapo)/.test(condoNorm + ' ' + bairroNorm + ' ' + descNorm)
+    );
+
+    const areaT = Number(params.areaTerreno || 0);
+    const areaC = Number(params.areaConstruida || 0);
+    const area = isTerreno ? (areaT || areaC) : (areaC || areaT);
     if (area < 15) return null;
 
-    // Detecta Patamar de Acabamento (Reforma / Pronta / Completa & Mobiliada)
+    const p3 = extract3PricesFromTags(params);
+    const valorEfetivo = (p3.avista > 0) ? p3.avista : Number(params.valor || 0);
+
     const isReforma = /(reforma|demolir|antiga|original)/.test(descNorm);
     const isCompleta = !isReforma && /(mobiliad|porteira fechada|piscina|jacuzzi|hidromassagem|energia solar|fotovoltaic|porcelanato|gourmet|planejados|alto padrao)/.test(descNorm);
-    const acabLabel = isTerreno ? '' : (isReforma ? ' • Para Reforma' : (isCompleta ? ' • Completa/Lazer' : ' • Pronta'));
+    const acabLabel = isTerreno ? '' : (isReforma ? ' • Reforma' : (isCompleta ? ' • Completa/Lazer' : ' • Pronta'));
 
-    // Nível 1: Condomínio / Edifício específico com amostras reais
-    let refObj = null;
-    let refLabel = '';
+    // Nível 1: Mesmo Condomínio (com amostras reais)
+    let refObj = null, refLabel = '', hasRealLocalRef = false;
     const cMap = (liveMarket && liveMarket.condominios) || {};
-    for (const ck of Object.keys(cMap)) {
-      const cObj = cMap[ck];
-      if (!cObj || (Number(cObj.amostras) || 0) <= 0) continue;
-      const cn = norm(cObj.nome || ck);
-      if (condoNorm && cn.length >= 4 && (condoNorm.includes(cn) || cn.includes(condoNorm))) {
-        refObj = cObj;
-        refLabel = cObj.nome + acabLabel;
-        break;
+    if (isCond) {
+      for (const ck of Object.keys(cMap)) {
+        const cObj = cMap[ck];
+        if (!cObj || (Number(cObj.amostras) || 0) <= 0) continue;
+        const cn = norm(cObj.nome || ck);
+        if (condoNorm && cn.length >= 4 && (condoNorm.includes(cn) || cn.includes(condoNorm))) {
+          refObj = cObj;
+          refLabel = cObj.nome + acabLabel;
+          hasRealLocalRef = (Number(cObj.amostras) || 0) >= 2;
+          break;
+        }
       }
     }
-    // Nível 2: Bairro real (com amostras > 0 ou curadoria manual)
+
+    // Nível 2: Mesmo Bairro (com amostras reais e respeitando Dentro vs Fora de Condomínio)
     if (!refObj) {
       const bMap = (liveMarket && liveMarket.bairros) || {};
       for (const k of Object.keys(bMap)) {
         const bObj = bMap[k];
         if (!bObj || ((Number(bObj.amostras) || 0) <= 0 && bObj.origem !== 'curadoria_manual')) continue;
         const kn = norm(k);
-        if (bairroNorm && (bairroNorm.includes(kn) || kn.includes(bairroNorm))) {
+        if (bairroNorm && kn.length >= 4 && (bairroNorm.includes(kn) || kn.includes(bairroNorm))) {
           refObj = bObj;
-          refLabel = (bObj.nome || k) + acabLabel;
+          refLabel = (bObj.nome || k) + (isCond ? ' (Cond.)' : '') + acabLabel;
+          hasRealLocalRef = (Number(bObj.amostras) || 0) >= 2 || bObj.origem === 'curadoria_manual';
           break;
         }
       }
     }
-    // Nível 3: Cidade real (ou fallback seguro se 1ª coleta ainda não concluiu)
+
+    // Nível 3: Fallback regional (usado para sugestão no cadastro, mas NÃO gera badge vermelho falso nos cards!)
     if (!refObj) {
       const cidMap = (liveMarket && liveMarket.cidades) || DEFAULT_MARKET.cidades;
       if (cidadeNorm.includes('piratininga') || bairroNorm.includes('piratininga')) {
         refObj = (cidMap.piratininga && (cidMap.piratininga.casaM2 || cidMap.piratininga.terrenoM2)) ? cidMap.piratininga : DEFAULT_MARKET.cidades.piratininga;
-        refLabel = 'Piratininga' + acabLabel;
+        refLabel = 'Piratininga' + (isCond ? ' (Condomínios)' : '') + acabLabel;
       } else {
         refObj = (cidMap.bauru && (cidMap.bauru.casaM2 || cidMap.bauru.terrenoM2)) ? cidMap.bauru : DEFAULT_MARKET.cidades.bauru;
-        refLabel = 'Bauru (média regional)' + acabLabel;
+        refLabel = 'Bauru/Região' + (isCond ? ' (Condomínios)' : '') + acabLabel;
       }
     }
 
-    // Seleção científica da base R$/m² por escala (terrenos) ou patamar de acabamento (casas/aptos)
+    // Cálculo do m² de terreno local respeitando Dentro vs Fora de Condomínio e Fator de Escala
+    let m2TerrenoLocal = 0;
+    if (isCond) {
+      m2TerrenoLocal = Number(refObj.terrenoCondM2 || refObj.terrenoInteiroM2 || refObj.terrenoM2 || 0);
+    } else {
+      if (areaT < 160 && areaT > 0) m2TerrenoLocal = Number(refObj.terrenoMeioM2 || refObj.terrenoForaM2 || refObj.terrenoM2 || 0);
+      else if (areaT < 250 && areaT > 0) m2TerrenoLocal = Number(refObj.terrenoInterM2 || refObj.terrenoForaM2 || refObj.terrenoM2 || 0);
+      else if (areaT >= 20000) m2TerrenoLocal = Number(refObj.terrenoGlebaM2 || refObj.terrenoAreaM2 || 0);
+      else if (areaT >= 2000) m2TerrenoLocal = Number(refObj.terrenoAreaM2 || refObj.terrenoGrandeM2 || 0);
+      else if (areaT >= 550) m2TerrenoLocal = Number(refObj.terrenoGrandeM2 || refObj.terrenoForaM2 || refObj.terrenoM2 || 0);
+      else m2TerrenoLocal = Number(refObj.terrenoForaM2 || refObj.terrenoInteiroM2 || refObj.terrenoM2 || 0);
+    }
+    // Ajuste realista para condomínios de chácaras/lotes grandes (ex.: Recanto dos Nobres 1.000–2.000 m²)
+    if (!m2TerrenoLocal && areaT >= 900) m2TerrenoLocal = isCond ? 320 : 220;
+    if (!m2TerrenoLocal) m2TerrenoLocal = isCond ? 1450 : 950;
+
     let baseM2 = 0;
+    let suggestedPrice = 0;
+    let evolutivoNote = '';
+
     if (isTerreno) {
-      if (area < 160) baseM2 = Number(refObj.terrenoMeioM2 || refObj.terrenoForaM2 || refObj.terrenoM2 || 0);
-      else if (area < 250) baseM2 = Number(refObj.terrenoInterM2 || refObj.terrenoInteiroM2 || refObj.terrenoM2 || 0);
-      else if (area < 550) baseM2 = Number(refObj.terrenoInteiroM2 || refObj.terrenoCondM2 || refObj.terrenoM2 || 0);
-      else if (area < 2000) baseM2 = Number(refObj.terrenoGrandeM2 || refObj.terrenoM2 || 0);
-      else if (area < 20000) baseM2 = Number(refObj.terrenoAreaM2 || refObj.terrenoGrandeM2 || refObj.terrenoM2 || 0);
-      else baseM2 = Number(refObj.terrenoGlebaM2 || refObj.terrenoAreaM2 || refObj.terrenoM2 || 0);
-      if (!baseM2) baseM2 = Number(refObj.terrenoM2 || 1350);
+      baseM2 = m2TerrenoLocal;
+      suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
     } else if (isApto) {
       if (isReforma) baseM2 = Number(refObj.aptoReformaM2 || (refObj.aptoM2 ? refObj.aptoM2 * 0.85 : 0));
-      else if (isCompleta) baseM2 = Number(refObj.aptoCompletaM2 || (refObj.aptoM2 ? refObj.aptoM2 * 1.12 : 0));
-      else baseM2 = Number(refObj.aptoProntaM2 || refObj.aptoM2 || 0);
-      if (!baseM2) baseM2 = Number(refObj.aptoM2 || 5400);
+      else if (isCompleta) baseM2 = Number(refObj.aptoCompletaM2 || refObj.aptoMobM2 || (refObj.aptoM2 ? refObj.aptoM2 * 1.12 : 0));
+      else baseM2 = Number(refObj.aptoProntaM2 || refObj.aptoSemMobM2 || refObj.aptoM2 || 0);
+      if (!baseM2) baseM2 = 5400;
+      suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
+    } else if (areaT > 0 && areaC > 0 && (areaT >= 450 || isCond)) {
+      // === MÉTODO EVOLUTIVO NBR 14653: VALOR DO TERRENO + CUSTO DE REPOSIÇÃO DA CONSTRUÇÃO ===
+      const valTerrenoEst = areaT * m2TerrenoLocal;
+      const m2Benfeitoria = isReforma ? 2600 : (isCompleta ? 4650 : 3650);
+      const valConstrucaoEst = areaC * m2Benfeitoria;
+      suggestedPrice = Math.round((valTerrenoEst + valConstrucaoEst) / 1000) * 1000;
+      baseM2 = Math.round(suggestedPrice / areaC);
+      if (valorEfetivo > 0) {
+        const m2ConstReal = Math.max(0, Math.round((valorEfetivo - valTerrenoEst) / areaC));
+        evolutivoNote = ' (Evolutivo: terreno ~' + fmtBRL(Math.round(valTerrenoEst)) + ' + construção R$ ' + m2ConstReal.toLocaleString('pt-BR') + '/m²)';
+      }
     } else {
-      if (isReforma) baseM2 = Number(refObj.casaReformaM2 || (refObj.casaM2 ? refObj.casaM2 * 0.80 : 0));
-      else if (isCompleta) baseM2 = Number(refObj.casaCompletaM2 || refObj.casaAltoM2 || (refObj.casaM2 ? refObj.casaM2 * 1.15 : 0));
-      else baseM2 = Number(refObj.casaProntaM2 || refObj.casaMedioM2 || refObj.casaM2 || 0);
-      if (!baseM2) baseM2 = Number(refObj.casaM2 || 4800);
+      if (isCond) {
+        baseM2 = isReforma ? Number(refObj.casaReformaM2 || 0) : (isCompleta ? Number(refObj.casaCompletaM2 || refObj.casaAltoM2 || refObj.casaCondM2 || 0) : Number(refObj.casaCondM2 || refObj.casaProntaM2 || 0));
+      } else {
+        baseM2 = isReforma ? Number(refObj.casaReformaM2 || 0) : (isCompleta ? Number(refObj.casaCompletaM2 || refObj.casaForaM2 || 0) : Number(refObj.casaForaM2 || refObj.casaProntaM2 || 0));
+      }
+      if (!baseM2) baseM2 = Number(refObj.casaM2 || (isCond ? 5800 : 4400));
+      suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
     }
 
-    const suites = Number(params.suites || 0);
-    if (!isTerreno && !isCompleta && suites >= 3) {
-      baseM2 = baseM2 * (1 + Math.min(0.10, (suites - 2) * 0.035));
-    }
-
-    const suggestedPrice = Math.round((baseM2 * area) / 1000) * 1000;
+    // Sobrescreve params.valor localmente com valorEfetivo (À Vista) para o cálculo do diffPct abaixo
+    params = Object.assign({}, params, { valor: valorEfetivo, _hasRealLocalRef: hasRealLocalRef, _evolutivoNote: evolutivoNote });
     const valor = Number(params.valor || 0);
     const propM2 = valor > 0 ? (valor / area) : 0;
     const diffPct = valor > 0 ? ((valor - suggestedPrice) / suggestedPrice) * 100 : 0;
@@ -18811,7 +18905,8 @@
       cls,
       arrow,
       shortTxt,
-      fullTxt
+      fullTxt: fullTxt + (params._evolutivoNote || ''),
+      hasRealLocalRef: Boolean(params._hasRealLocalRef)
     };
   };
 
@@ -18835,6 +18930,7 @@
 
       const bm = computeMarketBenchmark(prop);
       if (!bm) return;
+      // Selo de mercado (verde ▼ -%, azul → Equilíbrio, vermelho ▲ +%) sempre visível para todos
 
       const badge = document.createElement('span');
       badge.className = 'v95-mkt-ticker ' + bm.cls;
@@ -21065,6 +21161,286 @@
 
   setInterval(() => { renderCondoLazerBox(); stylePublicCondoTags(); }, 1800);
   setTimeout(renderCondoLazerBox, 500);
+})();
+</script>
+
+
+<script id="guildimob-v928-3precos-ranking-regional">
+(function() {
+  if (window.__GUILD_V928_INIT__) return;
+  window.__GUILD_V928_INIT__ = true;
+
+  const fmtBRL28 = (v) => {
+    const n = Math.round(Number(v) || 0);
+    return n > 0 ? ('R$ ' + n.toLocaleString('pt-BR')) : '';
+  };
+
+  const read3Prices = (p) => {
+    const out = { antigo: 0, permuta: 0, avista: 0 };
+    const tags = Array.isArray(p && p.tags) ? p.tags : (typeof (p && p.tags) === 'string' ? p.tags.split(',') : []);
+    tags.forEach((t) => {
+      const s = String(t || '').trim();
+      if (s.startsWith('__P_ANT:')) out.antigo = Number(s.slice(8)) || 0;
+      if (s.startsWith('__P_PERM:')) out.permuta = Number(s.slice(9)) || 0;
+      if (s.startsWith('__P_AVISTA:')) out.avista = Number(s.slice(11)) || 0;
+    });
+    return out;
+  };
+
+  // 1. Injeta os 3 campos opcionais de preço logo abaixo de "Valor (R$) *" no Cadastro Rápido
+  const inject3PriceInputs = () => {
+    const valEl = document.getElementById('propValor');
+    if (!valEl || document.getElementById('v928PriceTripleBox')) return;
+    const fg = valEl.closest('.form-group') || valEl.parentElement;
+    if (!fg) return;
+    const box = document.createElement('div');
+    box.id = 'v928PriceTripleBox';
+    box.style.cssText = 'margin:8px 0 10px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,0.08);border:1px solid rgba(52,211,153,0.35);';
+    box.innerHTML =
+      '<div style="font-size:0.74rem;font-weight:800;color:#6ee7b7;margin-bottom:6px;">💰 Destaque Comercial (Opcional — aparece no card e recalcula o mercado pelo À Vista):</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">' +
+      '<div><label style="font-size:0.7rem;color:#fca5a5;">Preço Antigo (riscado)</label><input id="propValorAntigo" type="number" placeholder="Ex: 1950000" style="width:100%;box-sizing:border-box;padding:8px;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:#0c162b;color:#fff;font-size:0.78rem;"></div>' +
+      '<div><label style="font-size:0.7rem;color:#fde68a;">🔄 Valor c/ Permuta</label><input id="propValorPermuta" type="number" placeholder="Ex: 1850000" style="width:100%;box-sizing:border-box;padding:8px;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:#0c162b;color:#fff;font-size:0.78rem;"></div>' +
+      '<div><label style="font-size:0.7rem;color:#6ee7b7;">⚡ Valor À Vista</label><input id="propValorAvista" type="number" placeholder="Ex: 1500000" style="width:100%;box-sizing:border-box;padding:8px;border-radius:9px;border:1px solid rgba(52,211,153,0.45);background:#0c162b;color:#fff;font-size:0.78rem;"></div>' +
+      '</div>';
+    fg.insertAdjacentElement('afterend', box);
+
+    const syncTagsFromInputs = () => {
+      if (!window.state || !window.state.selectedTags) return;
+      Array.from(window.state.selectedTags).forEach((t) => { if (String(t).startsWith('__P_')) window.state.selectedTags.delete(t); });
+      const a = Number((document.getElementById('propValorAntigo') || {}).value || 0);
+      const pm = Number((document.getElementById('propValorPermuta') || {}).value || 0);
+      const av = Number((document.getElementById('propValorAvista') || {}).value || 0);
+      if (a > 0) window.state.selectedTags.add('__P_ANT:' + Math.round(a));
+      if (pm > 0) window.state.selectedTags.add('__P_PERM:' + Math.round(pm));
+      if (av > 0) window.state.selectedTags.add('__P_AVISTA:' + Math.round(av));
+    };
+
+    ['propValorAntigo', 'propValorPermuta', 'propValorAvista'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) { el.addEventListener('input', syncTagsFromInputs); el.addEventListener('change', syncTagsFromInputs); }
+    });
+  };
+
+  // Preenche os 3 campos quando editar um imóvel existente
+  const syncInputsFromEditTags = () => {
+    if (!window.state || !window.state.selectedTags) return;
+    const p3 = read3Prices({ tags: Array.from(window.state.selectedTags) });
+    const eA = document.getElementById('propValorAntigo'), eP = document.getElementById('propValorPermuta'), eV = document.getElementById('propValorAvista');
+    if (eA && p3.antigo && !eA.value) eA.value = String(p3.antigo);
+    if (eP && p3.permuta && !eP.value) eP.value = String(p3.permuta);
+    if (eV && p3.avista && !eV.value) eV.value = String(p3.avista);
+  };
+
+  // 2. Renderiza os 3 Preços nos Cards + oculta tags técnicas __P_ + melhora texto do Ranking Regional
+  const enhanceCards3PricesAndRanking = () => {
+    const allProps = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+    const byId = new Map();
+    allProps.forEach((p) => { if (p.id) byId.set(String(p.id), p); if (p.codigo) byId.set(String(p.codigo), p); });
+
+    document.querySelectorAll('.prop-card, .property-card').forEach((card) => {
+      const cid = card.getAttribute('data-prop-id') || card.getAttribute('data-id') || card.getAttribute('data-code') || '';
+      const prop = byId.get(cid);
+      if (!prop) return;
+      const p3 = read3Prices(prop);
+      if ((p3.antigo || p3.permuta || p3.avista) && !card.querySelector('.v928-triple-price')) {
+        const priceEl = card.querySelector('.prop-price, .card-price, .gold-text, [class*="price"]');
+        if (priceEl) {
+          const wrap = document.createElement('div');
+          wrap.className = 'v928-triple-price';
+          wrap.style.cssText = 'margin:2px 0 5px;display:flex;flex-direction:column;gap:1px;line-height:1.25;';
+          let h = '';
+          if (p3.antigo > 0) h += '<div style="display:flex;align-items:center;gap:5px;"><span style="text-decoration:line-through;color:#94a3b8;font-size:0.67rem;">De ' + fmtBRL28(p3.antigo) + '</span><span style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.45);border-radius:5px;padding:0 4px;font-size:0.6rem;font-weight:800;">🔥 BAIXOU</span></div>';
+          if (p3.permuta > 0) h += '<div style="color:#fde68a;font-weight:700;font-size:0.76rem;">🔄 ' + fmtBRL28(p3.permuta) + ' <span style="font-weight:500;opacity:0.85;">c/ permuta</span></div>';
+          if (p3.avista > 0) {
+            h += '<div style="color:#34d399;font-weight:900;font-size:1.06rem;letter-spacing:-0.01em;">⚡ ' + fmtBRL28(p3.avista) + ' <span style="font-size:0.7rem;font-weight:800;color:#6ee7b7;">à vista</span></div>';
+            priceEl.style.display = 'none'; // Evita duplicar altura no card quando o funil já destaca o À Vista!
+          }
+          wrap.innerHTML = h;
+          priceEl.insertAdjacentElement('afterend', wrap);
+        }
+      }
+      // Melhora o tooltip do selo de Ranking (Diamante/Esmeralda/Ouro/Cobre) para falar do Mercado de Bauru/Piratininga/Região!
+      const tierEl = card.querySelector('.tier-label, [class*="tier"]');
+      if (tierEl && !tierEl.dataset.v928Rank) {
+        tierEl.dataset.v928Rank = '1';
+        const cidNome = (prop.cidade || 'Bauru/Região').replace(/\s*-\s*SP$/i, '');
+        tierEl.title = 'Ranking de Mercado Real em ' + cidNome + ' (comparado com condomínios/bairros equivalentes da região pelo Método Evolutivo)';
+      }
+    });
+
+    // Oculta qualquer tag técnica __P_ de telas públicas e checklists
+    document.querySelectorAll('#detailTags span, #detailTags .tag-pill, .detail-tags span, .tag-chip').forEach((sp) => {
+      if ((sp.textContent || '').trim().startsWith('__P_')) sp.style.display = 'none';
+    });
+  };
+
+  setInterval(() => { inject3PriceInputs(); syncInputsFromEditTags(); enhanceCards3PricesAndRanking(); }, 1200);
+  setTimeout(() => { inject3PriceInputs(); enhanceCards3PricesAndRanking(); }, 400);
+})();
+</script>
+
+
+<script id="guildimob-v930-permuta-parcelamento-cadeia">
+(function() {
+  if (window.__GUILD_V930_INIT__) return;
+  window.__GUILD_V930_INIT__ = true;
+
+  // 1. Injeta opções de Permuta (%) e Parcelamento Direto no Cadastro Master/Corretor (propertyForm) E na Captação Pública!
+  const injectCondicoesNegociacao = () => {
+    // A) Cadastro Master / Corretor
+    const tripleBox = document.getElementById('v928PriceTripleBox') || document.getElementById('propValor');
+    if (tripleBox && !document.getElementById('v930NegociacaoMaster')) {
+      const box = document.createElement('div');
+      box.id = 'v930NegociacaoMaster';
+      box.style.cssText = 'margin:8px 0 10px;padding:10px 12px;border-radius:12px;background:rgba(59,130,246,0.09);border:1px solid rgba(96,165,250,0.38);display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+      box.innerHTML =
+        '<label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:#e2e8f0;font-weight:700;cursor:pointer;">' +
+        '<input type="checkbox" id="propAceitaPermuta" style="width:16px;height:16px;accent-color:#34d399;"> 🔄 Aceita Permuta</label>' +
+        '<div style="display:flex;align-items:center;gap:5px;">' +
+        '<span style="font-size:0.73rem;color:#93c5fd;">Até</span>' +
+        '<input type="number" id="propPermutaPct" min="0" max="100" placeholder="Ex: 40" style="width:68px;padding:5px 7px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:#0c162b;color:#fff;font-size:0.76rem;">' +
+        '<span style="font-size:0.73rem;color:#93c5fd;">%</span></div>' +
+        '<label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:#e2e8f0;font-weight:700;cursor:pointer;">' +
+        '<input type="checkbox" id="propParcelamentoDireto" style="width:16px;height:16px;accent-color:#f4d26a;"> 🤝 Parcelamento Direto c/ Proprietário</label>';
+      tripleBox.insertAdjacentElement('afterend', box);
+
+      const syncNegTags = () => {
+        if (!window.state || !window.state.selectedTags) return;
+        Array.from(window.state.selectedTags).forEach((t) => {
+          const s = String(t);
+          if (s === 'Aceita Permuta' || s.startsWith('Permuta até ') || s === 'Parcelamento Direto') window.state.selectedTags.delete(t);
+        });
+        const permOn = document.getElementById('propAceitaPermuta').checked;
+        const pct = Math.min(100, Math.max(0, Number(document.getElementById('propPermutaPct').value || 0)));
+        const parcOn = document.getElementById('propParcelamentoDireto').checked;
+        if (permOn) {
+          window.state.selectedTags.add('Aceita Permuta');
+          if (pct > 0) window.state.selectedTags.add('Permuta até ' + pct + '%');
+        }
+        if (parcOn) window.state.selectedTags.add('Parcelamento Direto');
+      };
+      const matchBox = document.createElement('div');
+      matchBox.id = 'v931MasterPermutaMatchBox';
+      matchBox.style.cssText = 'display:none;width:100%;margin-top:6px;padding:9px 10px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(52,211,153,0.45);font-size:0.74rem;color:#ecfdf5;';
+      box.appendChild(matchBox);
+
+      const renderMasterPermutaMatches = () => {
+        const permOn = (document.getElementById('propAceitaPermuta') || {}).checked;
+        const val = Number((document.getElementById('propValorPermuta') || {}).value || (document.getElementById('propValor') || {}).value || 0);
+        const pct = Number((document.getElementById('propPermutaPct') || {}).value || 50) || 50;
+        const curCod = String((document.getElementById('propCodigo') || {}).value || '').trim().toUpperCase();
+        if (!permOn || val < 50000) { matchBox.style.display = 'none'; return; }
+        const maxPermVal = Math.round(val * (Math.min(100, Math.max(10, pct)) / 100));
+        const pool = (window.state && Array.isArray(window.state.properties)) ? window.state.properties : [];
+        const matches = pool.filter((p) => {
+          if (!p || String(p.codigo || '').toUpperCase() === curCod) return false;
+          const pv = Number(p.valor || 0);
+          return pv >= 40000 && pv <= maxPermVal * 1.08;
+        }).sort((a, b) => Math.abs(Number(a.valor) - maxPermVal * 0.85) - Math.abs(Number(b.valor) - maxPermVal * 0.85)).slice(0, 5);
+        matchBox.style.display = 'block';
+        if (!matches.length) {
+          matchBox.innerHTML = '🤝 <strong>Match de Permuta (teto ' + pct + '% = R$ ' + maxPermVal.toLocaleString('pt-BR') + '):</strong> nenhum imóvel compatível encontrado na base ativa ainda.';
+          return;
+        }
+        matchBox.innerHTML =
+          '<div style="font-weight:800;color:#6ee7b7;margin-bottom:5px;">🤝 Match de Permuta Master (' + matches.length + ' imóveis da base cabem em até ' + pct + '% • R$ ' + maxPermVal.toLocaleString('pt-BR') + '):</div>' +
+          matches.map((m) => '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);"><span><strong>' + (m.codigo || '') + '</strong> • ' + (m.tipo || 'Imóvel') + ' em ' + (m.bairro || m.cidade || 'Bauru') + '</span><strong style="color:#fde68a;white-space:nowrap;">R$ ' + Math.round(Number(m.valor || 0)).toLocaleString('pt-BR') + '</strong></div>').join('');
+      };
+
+      ['propAceitaPermuta', 'propPermutaPct', 'propParcelamentoDireto', 'propValor', 'propValorPermuta'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('change', () => { syncNegTags(); renderMasterPermutaMatches(); });
+          el.addEventListener('input', () => { syncNegTags(); renderMasterPermutaMatches(); });
+        }
+      });
+    }
+
+    // B) Formulários Públicos de Captação (Proprietário / Parceiro)
+    document.querySelectorAll('form').forEach((frm, idx) => {
+      if (frm.id === 'propertyForm' || frm.querySelector('.v930-pub-neg')) return;
+      const valInp = frm.querySelector('input[id*="valor" i], input[name*="valor" i]');
+      if (!valInp) return;
+      const anchor = valInp.closest('.form-group') || valInp.parentElement;
+      if (!anchor) return;
+      const pubBox = document.createElement('div');
+      pubBox.className = 'v930-pub-neg';
+      pubBox.style.cssText = 'margin:8px 0;padding:9px 11px;border-radius:11px;background:rgba(59,130,246,0.08);border:1px solid rgba(96,165,250,0.35);display:flex;flex-wrap:wrap;gap:9px;align-items:center;font-size:0.76rem;color:#e2e8f0;';
+      pubBox.innerHTML =
+        '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="v930-pub-perm" style="accent-color:#34d399;"> 🔄 Aceita Permuta</label>' +
+        '<input type="number" class="v930-pub-pct" min="0" max="100" placeholder="% permuta" style="width:82px;padding:4px 6px;border-radius:7px;border:1px solid rgba(255,255,255,0.2);background:#0c162b;color:#fff;font-size:0.74rem;">' +
+        '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="v930-pub-parc" style="accent-color:#f4d26a;"> 🤝 Parcelamento Direto</label>';
+      anchor.insertAdjacentElement('afterend', pubBox);
+
+      // Ao enviar formulário público, anexa as condições marcadas na descrição/observações para nunca perder a informação!
+      frm.addEventListener('submit', () => {
+        const pOn = pubBox.querySelector('.v930-pub-perm').checked;
+        const pct = Number(pubBox.querySelector('.v930-pub-pct').value || 0);
+        const dOn = pubBox.querySelector('.v930-pub-parc').checked;
+        const notes = [];
+        if (pOn) notes.push('Aceita Permuta' + (pct > 0 ? (' até ' + pct + '%') : ''));
+        if (dOn) notes.push('Aceita Parcelamento Direto com Proprietário');
+        if (notes.length) {
+          const ta = frm.querySelector('textarea');
+          if (ta && !ta.value.includes(notes[0])) ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + 'Condições: ' + notes.join(' | ');
+        }
+      }, true);
+    });
+  };
+
+  // 2. Auto-preenche Permuta (%) e Parcelamento Direto a partir do texto colado pelo cliente
+  const autoFillNegFromText = () => {
+    const vt = document.getElementById('voiceTranscript');
+    if (!vt || !vt.value.trim()) return;
+    const low = vt.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const chkP = document.getElementById('propAceitaPermuta');
+    const inpPct = document.getElementById('propPermutaPct');
+    const chkD = document.getElementById('propParcelamentoDireto');
+    if (chkP && /(permuta|analisa troca|aceita troca|pega imovel|pega carro)/.test(low)) {
+      chkP.checked = true;
+      const mPct = low.match(/(\d{1,3})\s*%\s*(?:em\s*)?permuta/) || low.match(/permuta\s*(?:de\s*|at[eé]\s*)?(\d{1,3})\s*%/);
+      if (mPct && inpPct) inpPct.value = mPct[1];
+      chkP.dispatchEvent(new Event('change'));
+    }
+    if (chkD && /(parcelamento direto|financiamento direto|parcela direto|direto com o? ?propriet)/.test(low)) {
+      chkD.checked = true;
+      chkD.dispatchEvent(new Event('change'));
+    }
+  };
+
+  // 3. Efeito em Cadeia Automático: sempre que o Radar de mercado atualizar ou imóveis mudarem, recalcula Ranking + badges ▲/▼ em todos os cards!
+  const origFetch30 = window.fetch;
+  window.fetch = async function(...args) {
+    const resp = await origFetch30.apply(this, args);
+    try {
+      if (String(args[0] || '').includes('script.google.com')) {
+        resp.clone().json().then((j) => {
+          if (j && (j.mercadoRegional || j.imoveis)) {
+            setTimeout(() => {
+              try {
+                if (typeof renderCatalog === 'function') renderCatalog();
+                document.querySelectorAll('.v95-mkt-ticker').forEach((el) => el.remove());
+              } catch (_) {}
+            }, 300);
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+    return resp;
+  };
+
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target && ev.target.closest && ev.target.closest('button');
+    if (!btn) return;
+    const txt = (btn.textContent || '').toLowerCase();
+    if (btn.id === 'btnPolishAI' || txt.includes('detectar campos') || txt.includes('lapidar descri')) {
+      setTimeout(autoFillNegFromText, 120);
+    }
+  }, true);
+
+  setInterval(injectCondicoesNegociacao, 1500);
+  setTimeout(injectCondicoesNegociacao, 450);
 })();
 </script>
 
